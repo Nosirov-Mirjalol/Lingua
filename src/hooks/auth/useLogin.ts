@@ -1,8 +1,8 @@
-import type { AxiosError } from 'axios'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
+import type { ApiError } from '@/api/client'
 import { loginService } from '@/api/service/auth/auth.service'
-import type { LoginResponse } from '@/api/service/auth/auth.type'
+import type { LoginRequest, LoginResponse } from '@/api/service/auth/auth.type'
 import useUserStore, { type UserInfo } from '@/stores/userStore'
 import { useAuthStore } from '@/stores/auth-store'
 
@@ -13,7 +13,7 @@ type UseLoginOptions = {
 export const useLogin = ({ redirectTo }: UseLoginOptions = {}) => {
   const navigate = useNavigate()
 
-  return useMutation<LoginResponse & { status?: number }, AxiosError, any>({
+  return useMutation<LoginResponse & { status?: number }, ApiError, LoginRequest>({
     mutationFn: async (credentials) => {
       const response = await loginService(credentials)
       return { ...response, status: 200 }

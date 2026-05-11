@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from '@tanstack/react-router'
 import { Loader2, LogIn } from 'lucide-react'
 import { toast } from 'sonner'
-import type { AxiosError } from 'axios'
+import type { ApiError } from '@/api/client'
 import { cn } from '@/lib/utils'
 import { useLogin } from '@/hooks/auth/useLogin'
 import { Button } from '@/components/ui/button'
@@ -18,28 +18,10 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
-import {
-  PASSWORD_REGEX,
-  USERNAME_REGEX,
-  sanitizePassword,
-  sanitizeUsername,
-} from '../../validators'
 
 const formSchema = z.object({
-  username: z
-    .string()
-    .min(1, 'Foydalanuvchi nomini kiritishingiz shart.')
-    .regex(
-      USERNAME_REGEX,
-      "Foydalanuvchi nomi 3 tadan 20 tagacha lotin harfi, raqam yoki pastki chiziqdan iborat bo'lsin"
-    ),
-  password: z
-    .string()
-    .min(1, 'Parolni kiritishingiz shart.')
-    .regex(
-      PASSWORD_REGEX,
-      "Parol 7 tadan 32 tagacha bo'lsin va bo'sh joy qatnashmasin"
-    ),
+  username: z.string().trim().min(1, 'Foydalanuvchi nomini kiritishingiz shart.'),
+  password: z.string().min(1, 'Parolni kiritishingiz shart.'),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -69,8 +51,9 @@ export function UserAuthForm({
     toast.promise(loginMutation.mutateAsync(data), {
       loading: 'Tizimga kirilmoqda...',
       success: 'Xush kelibsiz!',
-      error: (err: AxiosError<{ message?: string }>) =>
-        err.response?.data?.message ?? "Login muvaffaqiyatsiz. Qayta urinib ko'ring.",
+      error: (err: unknown) =>
+        (err as Partial<ApiError>)?.message?.trim() ||
+        "Login muvaffaqiyatsiz. Qayta urinib ko'ring.",
     })
   }
 
@@ -90,10 +73,9 @@ export function UserAuthForm({
               <FormControl>
                 <Input
                   placeholder='Foydalanuvchi nomini kiriting'
+                  autoComplete='username'
                   className={focusInputStyle}
-                  maxLength={20}
                   {...field}
-                  onChange={(e) => field.onChange(sanitizeUsername(e.target.value))}
                 />
               </FormControl>
               <FormMessage />
@@ -118,10 +100,9 @@ export function UserAuthForm({
               <FormControl>
                 <PasswordInput
                   placeholder='Parolni kiriting'
+                  autoComplete='current-password'
                   className={focusInputStyle}
-                  maxLength={32}
                   {...field}
-                  onChange={(e) => field.onChange(sanitizePassword(e.target.value))}
                 />
               </FormControl>
               <FormMessage />

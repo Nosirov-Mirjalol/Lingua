@@ -14,6 +14,18 @@ export interface ApiError {
   data?: unknown
 }
 
+const PUBLIC_AUTH_PATHS = [
+  '/api/auth/login/',
+  '/api/auth/register/',
+  '/api/auth/forgot-password/',
+  '/api/auth/verfiy-password/',
+]
+
+function shouldAttachAuthHeader(url?: string): boolean {
+  if (!url) return true
+  return !PUBLIC_AUTH_PATHS.some((path) => url.includes(path))
+}
+
 /** Django REST Framework 400: { "field": ["msg"], "detail": "..." } */
 function formatDrfErrorDetail(data: unknown): string | null {
   if (data == null) return null
@@ -59,7 +71,7 @@ function formatDrfErrorDetail(data: unknown): string | null {
 class ApiClient {
   private client: AxiosInstance
   constructor() {
-    const envBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+    const envBaseUrl = import.meta.env.VITE_API_BASE_URL|| ''
     const fallbackDevBaseUrl = import.meta.env.DEV
       ? 'http://localhost:8000'
       : ''
@@ -79,6 +91,14 @@ class ApiClient {
     // har bir apiga so'rov ketishidan oldin ishlaydigan function
     this.client.interceptors.request.use(
       (config) => {
+        if (!shouldAttachAuthHeader(config.url)) {
+          if (config.headers) {
+            delete (config.headers as Record<string, unknown>).Authorization
+            delete (config.headers as Record<string, unknown>).authorization
+          }
+          return config
+        }
+
         const token = useUserStore.getState().userToken?.accessToken
 
         if (token) {
