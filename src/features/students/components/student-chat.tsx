@@ -29,14 +29,22 @@ export function StudentChat() {
   const [mobileShowChat, setMobileShowChat] = useState(false)
   const [messageText, setMessageText] = useState('')
   const [search, setSearch] = useState('')
+  const [activeCategory, setActiveCategory] = useState<'all' | 'admin' | 'teacher'>('all')
 
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
-  const filteredConversations = conversations.filter((c) =>
-    c.participant.toLowerCase().includes(search.toLowerCase())
-  )
+  const filteredConversations = conversations.filter((c) => {
+    const matchesSearch = c.participant.toLowerCase().includes(search.toLowerCase())
+    if (activeCategory === 'all') return matchesSearch
+    
+    // Simple logic for categories: if name contains 'Support' or 'Bot', it's admin
+    const isAdmin = c.participant.toLowerCase().includes('support') || c.participant.toLowerCase().includes('bot')
+    if (activeCategory === 'admin') return matchesSearch && isAdmin
+    if (activeCategory === 'teacher') return matchesSearch && !isAdmin
+    return matchesSearch
+  })
 
   const handleSendMessage = (e: FormEvent) => {
     e.preventDefault()
@@ -71,20 +79,46 @@ export function StudentChat() {
                 Lingua Chat
               </h2>
             </div>
-            <Button variant='ghost' size='icon' className='rounded-full'>
-              <Plus size={20} className='text-muted-foreground' />
-            </Button>
           </div>
 
-          <div className='relative'>
-            <SearchIcon className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-            <input
-              type='text'
-              placeholder='Search messages...'
-              className='h-10 w-full rounded-xl border-none bg-background pr-4 pl-10 text-sm shadow-sm ring-1 ring-border transition-all focus:ring-2 focus:ring-rose-500 focus:outline-none'
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+          <div className='space-y-3'>
+            <div className='relative'>
+              <SearchIcon className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+              <input
+                type='text'
+                placeholder='Search messages...'
+                className='h-10 w-full rounded-xl border-none bg-background pr-4 pl-10 text-sm shadow-sm ring-1 ring-border transition-all focus:ring-2 focus:ring-rose-500 focus:outline-none'
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className='flex gap-2'>
+              <Button
+                variant={activeCategory === 'teacher' ? 'default' : 'outline'}
+                className='flex-1 h-9 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all'
+                onClick={() => {
+                  setActiveCategory('teacher')
+                  // Auto-select first teacher if available
+                  const firstTeacher = conversations.find(c => !(c.participant.toLowerCase().includes('support') || c.participant.toLowerCase().includes('bot')))
+                  if (firstTeacher) setSelectedConvoId(firstTeacher.id)
+                }}
+              >
+                Teachers
+              </Button>
+              <Button
+                variant={activeCategory === 'admin' ? 'default' : 'outline'}
+                className='flex-1 h-9 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all'
+                onClick={() => {
+                  setActiveCategory('admin')
+                  // Auto-select admin/support if available
+                  const admin = conversations.find(c => c.participant.toLowerCase().includes('support') || c.participant.toLowerCase().includes('bot'))
+                  if (admin) setSelectedConvoId(admin.id)
+                }}
+              >
+                Admin
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -98,9 +132,9 @@ export function StudentChat() {
                   setMobileShowChat(true)
                 }}
                 className={cn(
-                  'group flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-accent hover:text-accent-foreground hover:shadow-sm',
+                  'group flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-accent/50',
                   selectedConvoId === convo.id &&
-                    'bg-accent shadow-md ring-1 ring-border'
+                    'bg-accent shadow-sm ring-1 ring-border'
                 )}
               >
                 <div className='relative'>
@@ -130,6 +164,11 @@ export function StudentChat() {
                 </div>
               </button>
             ))}
+            {filteredConversations.length === 0 && (
+              <div className='p-8 text-center text-muted-foreground text-sm'>
+                No conversations found
+              </div>
+            )}
           </div>
         </ScrollArea>
       </div>
@@ -187,8 +226,8 @@ export function StudentChat() {
             </div>
 
             {/* Messages Area */}
-            <ScrollArea className='flex-1 bg-muted/10 p-4 lg:p-6'>
-              <div className='flex flex-col gap-4'>
+            <ScrollArea className='flex-1 bg-muted/5 p-4 lg:p-6'>
+              <div className='flex flex-col gap-4 max-w-4xl mx-auto'>
                 <div className='mx-auto rounded-full bg-muted/80 px-4 py-1 text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
                   Today
                 </div>
@@ -203,7 +242,7 @@ export function StudentChat() {
                   >
                     <div
                       className={cn(
-                        'rounded-2xl px-4 py-2.5 text-sm shadow-sm',
+                        'rounded-2xl px-4 py-2 text-sm shadow-sm',
                         msg.sender === 'student'
                           ? 'rounded-br-none bg-rose-600 text-white'
                           : 'rounded-bl-none border bg-card text-foreground'
@@ -213,7 +252,7 @@ export function StudentChat() {
                     </div>
                     <span
                       className={cn(
-                        'text-[10px] font-medium text-muted-foreground',
+                        'text-[10px] font-medium text-muted-foreground px-1',
                         msg.sender === 'student' ? 'text-right' : 'text-left'
                       )}
                     >
@@ -225,38 +264,27 @@ export function StudentChat() {
               <div ref={scrollRef} />
             </ScrollArea>
 
-            {/* Input Area */}
-            <div className='border-t p-4'>
+            {/* Telegram-style Input Area */}
+            <div className='p-4 bg-background/50 border-t'>
               <form
                 onSubmit={handleSendMessage}
-                className='flex items-end gap-2 lg:gap-3'
+                className='flex items-end gap-2 max-w-4xl mx-auto'
               >
-                <div className='mb-1 flex gap-1'>
+                <div className='flex-1 flex items-end gap-1 bg-card border rounded-[26px] px-2 py-1.5 shadow-sm transition-all focus-within:ring-1 focus-within:ring-rose-500/20'>
                   <Button
                     type='button'
                     variant='ghost'
                     size='icon'
-                    className='h-9 w-9 rounded-full text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'
-                    onClick={handlePickImage}
-                  >
-                    <ImagePlus size={20} />
-                  </Button>
-                  <Button
-                    type='button'
-                    variant='ghost'
-                    size='icon'
-                    className='h-9 w-9 rounded-full text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'
+                    className='h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'
                     onClick={handlePickFile}
                   >
                     <Paperclip size={20} />
                   </Button>
-                </div>
-
-                <div className='relative flex-1'>
+                  
                   <textarea
                     rows={1}
-                    placeholder='Write a message...'
-                    className='block w-full resize-none rounded-2xl border-none bg-muted px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-500/20 focus:outline-none'
+                    placeholder='Message...'
+                    className='flex-1 min-h-[40px] max-h-48 resize-none bg-transparent border-none py-2.5 px-2 text-sm focus:ring-0 focus:outline-none placeholder:text-muted-foreground/50'
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={(e) => {
@@ -265,16 +293,34 @@ export function StudentChat() {
                         handleSendMessage(e)
                       }
                     }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement
+                      target.style.height = 'auto'
+                      target.style.height = `${target.scrollHeight}px`
+                    }}
                   />
+
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    size='icon'
+                    className='h-9 w-9 shrink-0 rounded-full text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'
+                    onClick={handlePickImage}
+                  >
+                    <ImagePlus size={20} />
+                  </Button>
                 </div>
 
                 <Button
                   type='submit'
                   size='icon'
-                  className='h-10 w-10 shrink-0 rounded-full bg-rose-600 text-white shadow-lg transition-transform hover:bg-rose-700 active:scale-95'
+                  className={cn(
+                    'h-12 w-12 shrink-0 rounded-full bg-rose-600 text-white shadow-md transition-all active:scale-90 flex items-center justify-center',
+                    !messageText.trim() && 'opacity-0 scale-50 pointer-events-none'
+                  )}
                   disabled={!messageText.trim()}
                 >
-                  <Send size={18} className='ml-0.5' />
+                  <Send size={22} className='translate-x-0.5' />
                 </Button>
               </form>
 
@@ -293,12 +339,41 @@ export function StudentChat() {
               <MessagesSquare size={48} />
             </div>
             <h3 className='mb-2 text-xl font-bold text-foreground'>
-              Select a conversation
+              Welcome to Lingua Chat
             </h3>
-            <p className='max-w-[280px] text-sm text-muted-foreground'>
-              Choose a teacher from the left to start a real-time conversation
-              about your studies.
+            <p className='max-w-[320px] text-sm text-muted-foreground mb-8'>
+              Select a conversation from the left to start messaging, or quickly reach out to our team:
             </p>
+            <div className='grid grid-cols-2 gap-4 w-full max-w-sm'>
+              <Button 
+                variant='outline' 
+                className='h-24 flex flex-col gap-2 rounded-2xl border-dashed border-2'
+                onClick={() => {
+                  setActiveCategory('admin')
+                  const admin = conversations.find(c => c.participant.toLowerCase().includes('support') || c.participant.toLowerCase().includes('bot'))
+                  if (admin) setSelectedConvoId(admin.id)
+                }}
+              >
+                <div className='h-8 w-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'>
+                   <Plus size={18} />
+                </div>
+                Message Admin
+              </Button>
+              <Button 
+                variant='outline' 
+                className='h-24 flex flex-col gap-2 rounded-2xl border-dashed border-2'
+                onClick={() => {
+                  setActiveCategory('teacher')
+                  const firstTeacher = conversations.find(c => !(c.participant.toLowerCase().includes('support') || c.participant.toLowerCase().includes('bot')))
+                  if (firstTeacher) setSelectedConvoId(firstTeacher.id)
+                }}
+              >
+                <div className='h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'>
+                   <Plus size={18} />
+                </div>
+                Message Teacher
+              </Button>
+            </div>
           </div>
         )}
       </div>
