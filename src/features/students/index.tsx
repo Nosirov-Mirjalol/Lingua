@@ -296,7 +296,7 @@ export default function StudentsPage() {
 
   return (
     <SearchProvider>
-      <div className='min-h-screen bg-[#F8FAFC] dark:bg-[#020617]'>
+      <div className='min-h-screen bg-background'>
         <Header>
           <Search className='me-auto' />
           <ThemeSwitch />
@@ -308,7 +308,7 @@ export default function StudentsPage() {
           <div
             style={{
               fontSize: 11,
-              color: '#94a3b8',
+              color: 'var(--muted-foreground)',
               fontWeight: 600,
               letterSpacing: '0.05em',
             }}
@@ -319,10 +319,10 @@ export default function StudentsPage() {
           <div className='mb-8'>
             <div className='flex items-center justify-between'>
               <div>
-                <h1 className='text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white'>
+                <h1 className='text-3xl font-extrabold tracking-tight text-foreground'>
                   Students List
                 </h1>
-                <p className='mt-1 text-sm font-medium text-gray-600 dark:text-gray-400'>
+                <p className='mt-1 text-sm font-medium text-muted-foreground'>
                   All students information and payment status
                 </p>
               </div>
@@ -349,13 +349,13 @@ export default function StudentsPage() {
                 </DialogTrigger>
                 <DialogContent className='sm:max-w-125' showCloseButton={false}>
                   <div className='flex items-start justify-between px-6 pt-6'>
-                    <DialogTitle className='text-xl font-semibold text-slate-900'>
+                    <DialogTitle className='text-xl font-semibold text-foreground'>
                       Add Student
                     </DialogTitle>
                     <button
                       type='button'
                       onClick={() => setIsModalOpen(false)}
-                      className='grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      className='grid h-10 w-10 place-items-center rounded-full bg-muted text-foreground hover:bg-accent'
                     >
                       <X size={18} />
                     </button>
@@ -383,18 +383,18 @@ export default function StudentsPage() {
                           <img
                             src={avatarPreview}
                             alt='Avatar'
-                            className='h-20 w-20 rounded-full border-2 border-gray-300 object-cover'
+                            className='h-20 w-20 rounded-full border-2 border-border object-cover'
                           />
                         ) : (
-                          <div className='flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-gray-100'>
-                            <Plus className='h-8 w-8 text-gray-400' />
+                          <div className='flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed border-border bg-muted'>
+                            <Plus className='h-8 w-8 text-muted-foreground' />
                           </div>
                         )}
-                        <div className='absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#C00639]'>
+                        <div className='absolute -right-1 -bottom-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-[#C00639]'>
                           <Plus className='h-3 w-3 text-white' />
                         </div>
                       </div>
-                      <p className='text-sm text-gray-500'>Upload image</p>
+                      <p className='text-sm text-muted-foreground'>Upload image</p>
                     </div>
 
                     {/* Form Fields */}
@@ -486,7 +486,7 @@ export default function StudentsPage() {
                           />
                           <Label
                             htmlFor='status'
-                            className='text-sm text-gray-600'
+                            className='text-sm text-muted-foreground'
                           >
                             Active
                           </Label>
@@ -541,69 +541,69 @@ export default function StudentsPage() {
           <div className='mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>
+                <CardTitle className='text-sm font-medium text-muted-foreground'>
                   Yangi
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-blue-100 p-2'>
-                  <Plus className='h-4 w-4 text-blue-600' />
+                <div className='h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 p-2'>
+                  <Plus className='h-4 w-4 text-blue-600 dark:text-blue-400' />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                <div className='text-2xl font-bold text-foreground'>
                   12
                 </div>
-                <p className='text-xs text-gray-500'>Bu oy qo'shilgan</p>
+                <p className='text-xs text-muted-foreground'>Bu oy qo'shilgan</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>
+                <CardTitle className='text-sm font-medium text-muted-foreground'>
                   To'lagan
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-green-100 p-2'>
-                  <Plus className='h-4 w-4 text-green-600' />
+                <div className='h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 p-2'>
+                  <Plus className='h-4 w-4 text-green-600 dark:text-green-400' />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                <div className='text-2xl font-bold text-foreground'>
                   234
                 </div>
-                <p className='text-xs text-gray-500'>To'lov qilgan</p>
+                <p className='text-xs text-muted-foreground'>To'lov qilgan</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>
+                <CardTitle className='text-sm font-medium text-muted-foreground'>
                   Qarzdorlar
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-red-100 p-2'>
-                  <Plus className='h-4 w-4 text-red-600' />
+                <div className='h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/30 p-2'>
+                  <Plus className='h-4 w-4 text-red-600 dark:text-red-400' />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                <div className='text-2xl font-bold text-foreground'>
                   8
                 </div>
-                <p className='text-xs text-gray-500'>Debtors</p>
+                <p className='text-xs text-muted-foreground'>Debtors</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>
+                <CardTitle className='text-sm font-medium text-muted-foreground'>
                   O'sish
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-purple-100 p-2'>
-                  <Plus className='h-4 w-4 text-purple-600' />
+                <div className='h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 p-2'>
+                  <Plus className='h-4 w-4 text-purple-600 dark:text-purple-400' />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                <div className='text-2xl font-bold text-foreground'>
                   +15%
                 </div>
-                <p className='text-xs text-gray-500'>O'tgan oyga nisbatan</p>
+                <p className='text-xs text-muted-foreground'>O'tgan oyga nisbatan</p>
               </CardContent>
             </Card>
           </div>
@@ -641,7 +641,7 @@ export default function StudentsPage() {
                           }
                         >
                           <AvatarImage src={student.avatar || undefined} />
-                          <AvatarFallback className='bg-gray-100 text-gray-600'>
+                          <AvatarFallback className='bg-muted text-muted-foreground'>
                             <User className='h-4 w-4' />
                           </AvatarFallback>
                         </Avatar>
@@ -653,11 +653,12 @@ export default function StudentsPage() {
                       <TableCell>{student.group}</TableCell>
                       <TableCell>
                         <Badge
-                          className={
+                          className={cn(
                             paymentStatusColors[
                               student.paymentStatus as keyof typeof paymentStatusColors
-                            ]
-                          }
+                            ],
+                            'dark:bg-opacity-20'
+                          )}
                         >
                           {student.paymentStatus === 'paid' && "To'langan"}
                           {student.paymentStatus === 'pending' && 'Kutilmoqda'}
@@ -666,11 +667,12 @@ export default function StudentsPage() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          className={
+                          className={cn(
                             statusColors[
                               student.status as keyof typeof statusColors
-                            ]
-                          }
+                            ],
+                            'dark:bg-opacity-20'
+                          )}
                         >
                           {student.status === 'active' ? 'Faol' : 'Inactive'}
                         </Badge>
@@ -681,7 +683,7 @@ export default function StudentsPage() {
                             variant='ghost'
                             size='sm'
                             onClick={() => handleViewStudent(student)}
-                            className='hover:bg-blue-50 hover:text-blue-600'
+                            className='hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'
                             title='View'
                           >
                             <Eye className='h-4 w-4' />
@@ -690,7 +692,7 @@ export default function StudentsPage() {
                             variant='ghost'
                             size='sm'
                             onClick={() => handleEditStudent(student)}
-                            className='hover:bg-green-50 hover:text-green-600'
+                            className='hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400'
                             title='Edit'
                           >
                             <Edit className='h-4 w-4' />
@@ -699,7 +701,7 @@ export default function StudentsPage() {
                             variant='ghost'
                             size='sm'
                             onClick={() => handleDeleteStudent(student)}
-                            className='text-red-600 hover:bg-red-50 hover:text-red-700'
+                            className='text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-400'
                             title='Delete'
                           >
                             <Trash2 className='h-4 w-4' />
@@ -715,7 +717,7 @@ export default function StudentsPage() {
 
           {/* Pagination */}
           <div className='mt-6 flex items-center justify-between'>
-            <div className='text-sm text-gray-700'>
+            <div className='text-sm text-muted-foreground'>
               1-{studentsData.length} dan {studentsData.length} ta
               ko'rsatilmoqda
             </div>
@@ -733,6 +735,7 @@ export default function StudentsPage() {
           </div>
         </Main>
         <ToastContainer />
+
 
         {/* Image Preview Modal */}
         <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>

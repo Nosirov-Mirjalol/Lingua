@@ -50,10 +50,10 @@ function StudentProfilePage() {
   }
 
   return (
-    <div className='mx-auto max-w-4xl space-y-6'>
+    <div className='max-w-4xl space-y-6'>
       <div className='space-y-2'>
-        <p className='text-sm uppercase tracking-[0.2em] text-slate-500'>Profile</p>
-        <h1 className='text-3xl font-semibold text-slate-900'>Manage your student profile</h1>
+        <p className='text-sm uppercase tracking-[0.2em] text-muted-foreground'>Profile</p>
+        <h1 className='text-3xl font-semibold text-foreground'>Manage your student profile</h1>
       </div>
 
       <Card>

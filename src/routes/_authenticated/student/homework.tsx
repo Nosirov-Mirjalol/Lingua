@@ -43,9 +43,9 @@ function StudentHomeworkPage() {
   }, [activeId, assignments])
 
   const statusBadge = (status: 'Pending' | 'Submitted' | 'Late') => {
-    if (status === 'Submitted') return 'bg-emerald-50 text-emerald-700 border-emerald-200'
-    if (status === 'Late') return 'bg-rose-50 text-rose-700 border-rose-200'
-    return 'bg-amber-50 text-amber-700 border-amber-200'
+    if (status === 'Submitted') return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'
+    if (status === 'Late') return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800'
+    return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800'
   }
 
   const normalizedDueDate = (value: string) => {
@@ -81,24 +81,24 @@ function StudentHomeworkPage() {
       <div className='px-4 md:px-8'>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between'>
           <div>
-            <h1 className='text-3xl font-semibold text-slate-900'>Vazifalar</h1>
-            <p className='text-sm text-slate-500'>Keep track of your language milestones and assignments.</p>
+            <h1 className='text-3xl font-semibold text-foreground'>Vazifalar</h1>
+            <p className='text-sm text-muted-foreground'>Keep track of your language milestones and assignments.</p>
           </div>
         </div>
 
         <div className='mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]'>
-          <Card className='border-slate-200/80 shadow-sm'>
+          <Card className='shadow-sm'>
             <CardHeader className='pb-2'>
               <div className='flex items-center justify-between gap-3'>
                 <div>
                   <CardTitle className='text-base'>Assignment Hub</CardTitle>
-                  <p className='text-xs text-slate-500'>Pick a task to see details and submit.</p>
+                  <p className='text-xs text-muted-foreground'>Pick a task to see details and submit.</p>
                 </div>
                 <Button
                   type='button'
                   variant='ghost'
                   size='icon'
-                  className='text-slate-600'
+                  className='text-muted-foreground'
                   onClick={() => setFilterOpen(true)}
                   aria-label='Open filters'
                 >
@@ -119,19 +119,19 @@ function StudentHomeworkPage() {
                           type='button'
                           onClick={() => setActiveId(item.id)}
                           className={cn(
-                            'w-full text-left rounded-2xl border bg-white px-3 py-2.5 transition',
-                            'hover:border-slate-200 hover:shadow-sm',
+                            'w-full text-left rounded-2xl border bg-card px-3 py-2.5 transition',
+                            'hover:bg-accent hover:text-accent-foreground hover:shadow-sm',
                             isActive
-                              ? 'border-rose-200 ring-2 ring-rose-100'
-                              : 'border-slate-100'
+                              ? 'border-primary ring-2 ring-primary/20'
+                              : 'border-border'
                           )}
                         >
                           <div className='flex items-start justify-between gap-3'>
                             <div className='min-w-0'>
-                              <p className='truncate text-sm font-semibold text-slate-900'>
+                              <p className='truncate text-sm font-semibold text-foreground'>
                                 {item.title}
                               </p>
-                              <p className='truncate text-xs text-slate-500'>{item.course}</p>
+                              <p className='truncate text-xs text-muted-foreground'>{item.course}</p>
                             </div>
                             <Badge
                               variant='outline'
@@ -142,17 +142,17 @@ function StudentHomeworkPage() {
                           </div>
 
                           <div className='mt-3 flex items-center justify-between gap-3'>
-                            <div className='flex items-center gap-2 text-xs text-slate-500'>
+                            <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                               <Calendar className='size-3.5' />
                               <span>Due {item.dueDate}</span>
                             </div>
-                            <div className='flex items-center gap-2 text-xs text-slate-500'>
+                            <div className='flex items-center gap-2 text-xs text-muted-foreground'>
                               <Clock className='size-3.5' />
                               <span>{Math.max(0, 100 - item.completion)}% left</span>
                             </div>
                           </div>
 
-                          <div className='mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100'>
+                          <div className='mt-3 h-2 w-full overflow-hidden rounded-full bg-muted'>
                             <div
                               className='h-full rounded-full bg-rose-500'
                               style={{ width: `${item.completion}%` }}
@@ -167,13 +167,13 @@ function StudentHomeworkPage() {
             </CardContent>
           </Card>
 
-          <Card className='border-slate-200/80 shadow-sm'>
+          <Card className='shadow-sm'>
             {activeAssignment ? (
               <>
                 <CardHeader className='pb-3'>
                   <div className='flex flex-col gap-4 md:flex-row md:items-start md:justify-between'>
                     <div className='min-w-0'>
-                      <p className='text-xs font-semibold tracking-wide text-slate-500'>
+                      <p className='text-xs font-semibold tracking-wide text-muted-foreground'>
                         {activeAssignment.course.toUpperCase()}
                       </p>
                       <CardTitle className='mt-2 text-2xl leading-tight'>
@@ -188,29 +188,29 @@ function StudentHomeworkPage() {
                         </Badge>
                         <Badge
                           variant='outline'
-                          className='rounded-full bg-slate-50 text-slate-700 border-slate-200'
+                          className='rounded-full bg-muted text-muted-foreground'
                         >
                           Due {activeAssignment.dueDate}
                         </Badge>
                         <Badge
                           variant='outline'
-                          className='rounded-full bg-slate-50 text-slate-700 border-slate-200'
+                          className='rounded-full bg-muted text-muted-foreground'
                         >
                           Grade weight: 15%
                         </Badge>
                       </div>
                     </div>
 
-                    <div className='flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3'>
+                    <div className='flex items-center gap-3 rounded-2xl border bg-card px-4 py-3'>
                       <Avatar className='size-10'>
-                        <AvatarFallback className='bg-rose-50 text-rose-700'>
+                        <AvatarFallback className='bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'>
                           T
                         </AvatarFallback>
                       </Avatar>
                       <div className='leading-tight'>
-                        <p className='text-xs font-semibold text-slate-500'>Teacher</p>
-                        <p className='text-sm font-semibold text-slate-900'>Ms. Sarah</p>
-                        <p className='text-xs text-slate-500'>Linguistics Department</p>
+                        <p className='text-xs font-semibold text-muted-foreground'>Teacher</p>
+                        <p className='text-sm font-semibold text-foreground'>Ms. Sarah</p>
+                        <p className='text-xs text-muted-foreground'>Linguistics Department</p>
                       </div>
                     </div>
                   </div>
@@ -220,42 +220,42 @@ function StudentHomeworkPage() {
                   <div className='grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px]'>
                     <div className='space-y-4'>
                       <div>
-                        <h3 className='text-sm font-semibold text-slate-900'>Task Description</h3>
-                        <p className='mt-2 text-sm leading-relaxed text-slate-600'>
+                        <h3 className='text-sm font-semibold text-foreground'>Task Description</h3>
+                        <p className='mt-2 text-sm leading-relaxed text-muted-foreground'>
                           Write a clear and well-structured submission for this assignment. Focus on accuracy, vocabulary, and clarity.
                         </p>
                       </div>
 
-                      <div className='rounded-2xl border border-slate-200 bg-white p-3'>
-                        <h4 className='text-sm font-semibold text-slate-900'>Requirements</h4>
+                      <div className='rounded-2xl border bg-card p-3'>
+                        <h4 className='text-sm font-semibold text-foreground'>Requirements</h4>
                         <div className='mt-3 space-y-2'>
-                          <div className='flex items-start gap-2 text-sm text-slate-600'>
+                          <div className='flex items-start gap-2 text-sm text-muted-foreground'>
                             <span className='mt-1 size-1.5 shrink-0 rounded-full bg-rose-500' />
                             <p>Answer all questions in complete sentences.</p>
                           </div>
-                          <div className='flex items-start gap-2 text-sm text-slate-600'>
+                          <div className='flex items-start gap-2 text-sm text-muted-foreground'>
                             <span className='mt-1 size-1.5 shrink-0 rounded-full bg-rose-500' />
                             <p>Use at least 10 new vocabulary words from the unit.</p>
                           </div>
-                          <div className='flex items-start gap-2 text-sm text-slate-600'>
+                          <div className='flex items-start gap-2 text-sm text-muted-foreground'>
                             <span className='mt-1 size-1.5 shrink-0 rounded-full bg-rose-500' />
                             <p>Submit as PDF or DOCX.</p>
                           </div>
                         </div>
                       </div>
 
-                      <div className='rounded-2xl border border-slate-200 bg-white p-3'>
-                        <h4 className='text-sm font-semibold text-slate-900'>Attached Files</h4>
-                        <div className='mt-3 flex items-center gap-2 text-sm text-slate-600'>
-                          <Paperclip className='size-4 text-slate-500' />
+                      <div className='rounded-2xl border bg-card p-3'>
+                        <h4 className='text-sm font-semibold text-foreground'>Attached Files</h4>
+                        <div className='mt-3 flex items-center gap-2 text-sm text-muted-foreground'>
+                          <Paperclip className='size-4 text-muted-foreground' />
                           <span>No files attached.</span>
                         </div>
                       </div>
                     </div>
 
                     <div className='space-y-4'>
-                      <div className='rounded-2xl border border-slate-200 bg-white p-3'>
-                        <h3 className='text-sm font-semibold text-slate-900'>Submission Portal</h3>
+                      <div className='rounded-2xl border bg-card p-3'>
+                        <h3 className='text-sm font-semibold text-foreground'>Submission Portal</h3>
                         <input
                           ref={fileInputRef}
                           type='file'
@@ -270,31 +270,31 @@ function StudentHomeworkPage() {
                           type='button'
                           onClick={() => fileInputRef.current?.click()}
                           className={cn(
-                            'mt-3 w-full rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center transition',
-                            'hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-200'
+                            'mt-3 w-full rounded-2xl border-2 border-dashed border-border bg-muted/50 p-6 text-center transition',
+                            'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20'
                           )}
                         >
-                          <UploadCloud className='mx-auto size-10 text-slate-400' />
-                          <p className='mt-3 text-sm font-semibold text-slate-700'>
+                          <UploadCloud className='mx-auto size-10 text-muted-foreground' />
+                          <p className='mt-3 text-sm font-semibold text-foreground'>
                             Drag and drop your file here
                           </p>
-                          <p className='mt-1 text-xs text-slate-500'>or click to browse</p>
+                          <p className='mt-1 text-xs text-muted-foreground'>or click to browse</p>
                           {selectedFileName ? (
-                            <p className='mt-3 truncate text-xs font-medium text-slate-700'>
+                            <p className='mt-3 truncate text-xs font-medium text-foreground'>
                               {selectedFileName}
                             </p>
                           ) : null}
                         </button>
                       </div>
 
-                      <div className='rounded-2xl border border-slate-200 bg-white p-3'>
-                        <h3 className='text-sm font-semibold text-slate-900'>Teacher&apos;s Previous Notes</h3>
-                        <p className='mt-2 text-sm leading-relaxed text-slate-600'>
+                      <div className='rounded-2xl border bg-card p-3'>
+                        <h3 className='text-sm font-semibold text-foreground'>Teacher&apos;s Previous Notes</h3>
+                        <p className='mt-2 text-sm leading-relaxed text-muted-foreground'>
                           Keep your paragraphs short and focused. Remember to support your ideas with examples.
                         </p>
                       </div>
 
-                      <Button className='h-12 w-full rounded-2xl bg-rose-600 text-base hover:bg-rose-700'>
+                      <Button className='h-12 w-full rounded-2xl bg-rose-600 text-base hover:bg-rose-700 text-white'>
                         Submit Homework
                       </Button>
                     </div>
@@ -302,7 +302,7 @@ function StudentHomeworkPage() {
                 </CardContent>
               </>
             ) : (
-              <CardContent className='flex h-[300px] items-center justify-center text-slate-500'>
+              <CardContent className='flex h-[300px] items-center justify-center text-muted-foreground'>
                 No homework found.
               </CardContent>
             )}
@@ -319,7 +319,7 @@ function StudentHomeworkPage() {
 
           <div className='grid gap-5'>
             <div className='grid gap-3'>
-              <p className='text-sm font-semibold text-slate-900'>Holat</p>
+              <p className='text-sm font-semibold text-foreground'>Holat</p>
               <RadioGroup
                 value={statusFilter}
                 onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
@@ -345,7 +345,7 @@ function StudentHomeworkPage() {
             </div>
 
             <div className='grid gap-3'>
-              <p className='text-sm font-semibold text-slate-900'>Tartiblash</p>
+              <p className='text-sm font-semibold text-foreground'>Tartiblash</p>
               <RadioGroup
                 value={sortBy}
                 onValueChange={(v) => setSortBy(v as typeof sortBy)}

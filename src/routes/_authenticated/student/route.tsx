@@ -44,7 +44,7 @@ function StudentLayout() {
           <StudentSidebar />
           <SidebarInset
             className={cn(
-              '@container/content bg-slate-50',
+              '@container/content bg-background',
               'has-data-[layout=fixed]:h-svh',
               'peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]'
             )}

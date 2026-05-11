@@ -14,14 +14,14 @@ function StudentOverviewPage() {
   const { data: dashboard } = useStudentDashboard()
 
   return (
-    <div className='mx-auto max-w-7xl space-y-6'>
-      <section className='rounded-3xl border border-slate-200 bg-white p-6 shadow-sm'>
+    <div className='max-w-7xl space-y-6'>
+      <section className='rounded-3xl border bg-card p-6 shadow-sm'>
         <div className='flex flex-col gap-4 md:flex-row md:items-end md:justify-between'>
           <div>
-            <h1 className='text-3xl font-semibold text-slate-900'>
+            <h1 className='text-3xl font-semibold text-foreground'>
               Welcome back, {profile?.username ?? 'Learner'}
             </h1>
-            <p className='mt-2 text-sm text-slate-600'>
+            <p className='mt-2 text-sm text-muted-foreground'>
               Your personal student portal is ready. Keep the momentum going.
             </p>
           </div>
@@ -69,9 +69,9 @@ function StudentOverviewPage() {
           </CardHeader>
           <CardContent className='grid gap-4'>
             <div className='space-y-4'>
-              <div className='rounded-3xl border border-slate-200 bg-slate-50 p-4'>
-                <p className='text-sm font-medium text-slate-500'>Next lesson</p>
-                <p className='mt-2 text-lg font-semibold text-slate-900'>
+              <div className='rounded-3xl border bg-muted/50 p-4'>
+                <p className='text-sm font-medium text-muted-foreground'>Next lesson</p>
+                <p className='mt-2 text-lg font-semibold text-foreground'>
                   {profile?.nextLesson}
                 </p>
               </div>
@@ -85,12 +85,12 @@ function StudentOverviewPage() {
               {dashboard?.highlights.map((highlight) => (
                 <div
                   key={highlight.title}
-                  className='rounded-3xl border border-slate-200 bg-white p-4'
+                  className='rounded-3xl border bg-card p-4'
                 >
-                  <p className='text-xs uppercase tracking-[0.18em] text-slate-500'>
+                  <p className='text-xs uppercase tracking-[0.18em] text-muted-foreground'>
                     {highlight.title}
                   </p>
-                  <p className='mt-2 text-base font-semibold text-slate-900'>
+                  <p className='mt-2 text-base font-semibold text-foreground'>
                     {highlight.value}
                   </p>
                 </div>
@@ -108,18 +108,18 @@ function StudentOverviewPage() {
             {dashboard?.quickActions.map((action) => (
               <div
                 key={action.label}
-                className='flex items-center justify-between rounded-3xl border border-slate-200 bg-white p-4'
+                className='flex items-center justify-between rounded-3xl border bg-card p-4'
               >
                 <div>
-                  <p className='font-medium text-slate-900'>{action.label}</p>
-                  <p className='text-sm text-slate-500'>{action.description}</p>
+                  <p className='font-medium text-foreground'>{action.label}</p>
+                  <p className='text-sm text-muted-foreground'>{action.description}</p>
                 </div>
-                <ArrowRight className='h-5 w-5 text-slate-400' />
+                <ArrowRight className='h-5 w-5 text-muted-foreground' />
               </div>
             ))}
-            <div className='rounded-3xl border border-slate-200 bg-slate-50 p-4'>
-              <p className='text-sm text-slate-600'>Goal</p>
-              <p className='mt-1 text-base font-semibold text-slate-900'>
+            <div className='rounded-3xl border bg-muted/50 p-4'>
+              <p className='text-sm text-muted-foreground'>Goal</p>
+              <p className='mt-1 text-base font-semibold text-foreground'>
                 {profile?.goal}
               </p>
             </div>
@@ -146,13 +146,13 @@ function StudentOverviewPage() {
             <CardTitle>Keep an eye on</CardTitle>
           </CardHeader>
           <CardContent className='space-y-3'>
-            <Badge className='rounded-full bg-slate-100 text-slate-700'>
+            <Badge className='rounded-full bg-muted text-muted-foreground border'>
               New module available
             </Badge>
-            <Badge className='rounded-full bg-emerald-100 text-emerald-700'>
+            <Badge className='rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'>
               Feedback ready
             </Badge>
-            <Badge className='rounded-full bg-amber-100 text-amber-700'>
+            <Badge className='rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'>
               Live class tomorrow
             </Badge>
           </CardContent>
@@ -166,11 +166,11 @@ function DashboardCard({ title, value, icon }: { title: string; value: string | 
   return (
     <Card>
       <CardContent className='space-y-4'>
-        <div className='flex items-center justify-between text-slate-500'>
+        <div className='flex items-center justify-between text-muted-foreground'>
           <p className='text-sm font-medium'>{title}</p>
-          <span className='rounded-2xl bg-slate-100 p-2 text-slate-700'>{icon}</span>
+          <span className='rounded-2xl bg-muted p-2 text-foreground'>{icon}</span>
         </div>
-        <p className='text-3xl font-semibold text-slate-900'>{value}</p>
+        <p className='text-3xl font-semibold text-foreground'>{value}</p>
       </CardContent>
     </Card>
   )
@@ -178,20 +178,20 @@ function DashboardCard({ title, value, icon }: { title: string; value: string | 
 
 function DetailPill({ title, value }: { title: string; value: string }) {
   return (
-    <div className='rounded-3xl border border-slate-200 bg-white p-4'>
-      <p className='text-sm text-slate-500'>{title}</p>
-      <p className='mt-2 text-base font-semibold text-slate-900'>{value}</p>
+    <div className='rounded-3xl border bg-card p-4'>
+      <p className='text-sm text-muted-foreground'>{title}</p>
+      <p className='mt-2 text-base font-semibold text-foreground'>{value}</p>
     </div>
   )
 }
 
 function ProgressTile({ title, value }: { title: string; value: string }) {
   return (
-    <div className='rounded-3xl border border-slate-200 bg-slate-50 p-4'>
-      <p className='text-sm text-slate-500'>{title}</p>
+    <div className='rounded-3xl border bg-muted/50 p-4'>
+      <p className='text-sm text-muted-foreground'>{title}</p>
       <div className='mt-3 flex items-center gap-3'>
-        <p className='text-2xl font-semibold text-slate-900'>{value}</p>
-        <div className='flex-1 overflow-hidden rounded-full bg-slate-200'>
+        <p className='text-2xl font-semibold text-foreground'>{value}</p>
+        <div className='flex-1 overflow-hidden rounded-full bg-muted'>
           <div className='h-2 rounded-full bg-rose-500' style={{ width: value }} />
         </div>
       </div>

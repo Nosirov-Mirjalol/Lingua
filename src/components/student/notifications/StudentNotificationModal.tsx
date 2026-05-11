@@ -36,22 +36,22 @@ export function StudentNotificationModal({
             return (
               <div
                 key={notification.id}
-                className='rounded-3xl border border-slate-200 bg-white p-4 shadow-sm'
+                className='rounded-3xl border bg-card p-4 shadow-sm'
               >
                 <div className='flex items-start gap-3'>
-                  <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700'>
+                  <div className='flex h-11 w-11 items-center justify-center rounded-2xl bg-muted text-foreground'>
                     <Icon size={18} />
                   </div>
                   <div className='min-w-0 flex-1'>
                     <div className='flex items-center justify-between gap-3'>
-                      <p className='font-semibold text-slate-900'>
+                      <p className='font-semibold text-foreground'>
                         {notification.title}
                       </p>
-                      <span className='text-xs text-slate-500'>
+                      <span className='text-xs text-muted-foreground'>
                         {notification.time}
                       </span>
                     </div>
-                    <p className='mt-1 text-sm leading-6 text-slate-600'>
+                    <p className='mt-1 text-sm leading-6 text-muted-foreground'>
                       {notification.description}
                     </p>
                   </div>

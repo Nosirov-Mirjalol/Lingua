@@ -53,11 +53,11 @@ export function StudentChat() {
   const handlePickFile = () => fileInputRef.current?.click()
 
   return (
-    <div className='flex h-[calc(100vh-8rem)] w-full gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:gap-0'>
+    <div className='flex h-[calc(100vh-8rem)] w-full gap-0 overflow-hidden rounded-xl border bg-card shadow-sm lg:gap-0'>
       {/* Sidebar - Conversation List */}
       <div
         className={cn(
-          'flex w-full flex-col border-r border-slate-100 bg-slate-50/50 sm:w-80 lg:w-96',
+          'flex w-full flex-col border-r bg-muted/30 sm:w-80 lg:w-96',
           mobileShowChat && 'hidden sm:flex'
         )}
       >
@@ -67,21 +67,21 @@ export function StudentChat() {
               <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-rose-600 text-white'>
                 <MessagesSquare size={18} />
               </div>
-              <h2 className='text-lg font-semibold text-slate-900'>
+              <h2 className='text-lg font-semibold text-foreground'>
                 Lingua Chat
               </h2>
             </div>
             <Button variant='ghost' size='icon' className='rounded-full'>
-              <Plus size={20} className='text-slate-500' />
+              <Plus size={20} className='text-muted-foreground' />
             </Button>
           </div>
 
           <div className='relative'>
-            <SearchIcon className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400' />
+            <SearchIcon className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
             <input
               type='text'
               placeholder='Search messages...'
-              className='h-10 w-full rounded-xl border-none bg-white pr-4 pl-10 text-sm shadow-sm ring-1 ring-slate-200 transition-all focus:ring-2 focus:ring-rose-500 focus:outline-none'
+              className='h-10 w-full rounded-xl border-none bg-background pr-4 pl-10 text-sm shadow-sm ring-1 ring-border transition-all focus:ring-2 focus:ring-rose-500 focus:outline-none'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -98,33 +98,33 @@ export function StudentChat() {
                   setMobileShowChat(true)
                 }}
                 className={cn(
-                  'group flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-white hover:shadow-sm',
+                  'group flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-accent hover:text-accent-foreground hover:shadow-sm',
                   selectedConvoId === convo.id &&
-                    'bg-white shadow-md ring-1 ring-slate-100'
+                    'bg-accent shadow-md ring-1 ring-border'
                 )}
               >
                 <div className='relative'>
-                  <Avatar className='h-12 w-12 border-2 border-white shadow-sm'>
-                    <AvatarFallback className='bg-slate-100 text-slate-600'>
+                  <Avatar className='h-12 w-12 border-2 border-background shadow-sm'>
+                    <AvatarFallback className='bg-muted text-muted-foreground'>
                       {convo.participant.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   {convo.unread > 0 && (
-                    <span className='absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-[10px] font-medium text-white ring-2 ring-white'>
+                    <span className='absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-[10px] font-medium text-white ring-2 ring-background'>
                       {convo.unread}
                     </span>
                   )}
                 </div>
                 <div className='min-w-0 flex-1'>
                   <div className='flex items-center justify-between'>
-                    <span className='truncate font-semibold text-slate-900'>
+                    <span className='truncate font-semibold text-foreground'>
                       {convo.participant}
                     </span>
-                    <span className='text-[10px] font-medium text-slate-400'>
+                    <span className='text-[10px] font-medium text-muted-foreground'>
                       {convo.time}
                     </span>
                   </div>
-                  <p className='line-clamp-1 truncate text-sm text-slate-500'>
+                  <p className='line-clamp-1 truncate text-sm text-muted-foreground'>
                     {convo.lastMessage}
                   </p>
                 </div>
@@ -137,14 +137,14 @@ export function StudentChat() {
       {/* Main Chat Area */}
       <div
         className={cn(
-          'flex flex-1 flex-col bg-white',
+          'flex flex-1 flex-col bg-card',
           !mobileShowChat && 'hidden sm:flex'
         )}
       >
         {selectedConvo ? (
           <>
             {/* Chat Header */}
-            <div className='flex h-16 items-center justify-between border-b border-slate-100 px-4 lg:px-6'>
+            <div className='flex h-16 items-center justify-between border-b px-4 lg:px-6'>
               <div className='flex items-center gap-3'>
                 <Button
                   variant='ghost'
@@ -155,12 +155,12 @@ export function StudentChat() {
                   <ArrowLeft size={20} />
                 </Button>
                 <Avatar className='h-10 w-10 shadow-sm'>
-                  <AvatarFallback className='bg-rose-50 text-rose-600'>
+                  <AvatarFallback className='bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400'>
                     {selectedConvo.participant.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className='text-sm leading-none font-bold text-slate-900'>
+                  <h3 className='text-sm leading-none font-bold text-foreground'>
                     {selectedConvo.participant}
                   </h3>
                   <span className='text-[10px] font-medium text-emerald-500'>
@@ -172,14 +172,14 @@ export function StudentChat() {
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='h-9 w-9 rounded-full text-slate-400'
+                  className='h-9 w-9 rounded-full text-muted-foreground'
                 >
                   <SearchIcon size={18} />
                 </Button>
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='h-9 w-9 rounded-full text-slate-400'
+                  className='h-9 w-9 rounded-full text-muted-foreground'
                 >
                   <MoreVertical size={18} />
                 </Button>
@@ -187,9 +187,9 @@ export function StudentChat() {
             </div>
 
             {/* Messages Area */}
-            <ScrollArea className='flex-1 bg-slate-50/30 p-4 lg:p-6'>
+            <ScrollArea className='flex-1 bg-muted/10 p-4 lg:p-6'>
               <div className='flex flex-col gap-4'>
-                <div className='mx-auto rounded-full bg-slate-100/80 px-4 py-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase'>
+                <div className='mx-auto rounded-full bg-muted/80 px-4 py-1 text-[10px] font-bold tracking-wider text-muted-foreground uppercase'>
                   Today
                 </div>
 
@@ -206,14 +206,14 @@ export function StudentChat() {
                         'rounded-2xl px-4 py-2.5 text-sm shadow-sm',
                         msg.sender === 'student'
                           ? 'rounded-br-none bg-rose-600 text-white'
-                          : 'rounded-bl-none border border-slate-100 bg-white text-slate-700'
+                          : 'rounded-bl-none border bg-card text-foreground'
                       )}
                     >
                       {msg.body}
                     </div>
                     <span
                       className={cn(
-                        'text-[10px] font-medium text-slate-400',
+                        'text-[10px] font-medium text-muted-foreground',
                         msg.sender === 'student' ? 'text-right' : 'text-left'
                       )}
                     >
@@ -226,7 +226,7 @@ export function StudentChat() {
             </ScrollArea>
 
             {/* Input Area */}
-            <div className='border-t border-slate-100 p-4'>
+            <div className='border-t p-4'>
               <form
                 onSubmit={handleSendMessage}
                 className='flex items-end gap-2 lg:gap-3'
@@ -236,7 +236,7 @@ export function StudentChat() {
                     type='button'
                     variant='ghost'
                     size='icon'
-                    className='h-9 w-9 rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600'
+                    className='h-9 w-9 rounded-full text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'
                     onClick={handlePickImage}
                   >
                     <ImagePlus size={20} />
@@ -245,7 +245,7 @@ export function StudentChat() {
                     type='button'
                     variant='ghost'
                     size='icon'
-                    className='h-9 w-9 rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600'
+                    className='h-9 w-9 rounded-full text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'
                     onClick={handlePickFile}
                   >
                     <Paperclip size={20} />
@@ -256,7 +256,7 @@ export function StudentChat() {
                   <textarea
                     rows={1}
                     placeholder='Write a message...'
-                    className='block w-full resize-none rounded-2xl border-none bg-slate-100/80 px-4 py-2.5 text-sm focus:bg-slate-100 focus:ring-2 focus:ring-rose-500/20 focus:outline-none'
+                    className='block w-full resize-none rounded-2xl border-none bg-muted px-4 py-2.5 text-sm focus:ring-2 focus:ring-rose-500/20 focus:outline-none'
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={(e) => {
@@ -289,13 +289,13 @@ export function StudentChat() {
           </>
         ) : (
           <div className='flex flex-1 flex-col items-center justify-center p-8 text-center'>
-            <div className='mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-slate-50 text-slate-200'>
+            <div className='mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-muted text-muted-foreground/20'>
               <MessagesSquare size={48} />
             </div>
-            <h3 className='mb-2 text-xl font-bold text-slate-900'>
+            <h3 className='mb-2 text-xl font-bold text-foreground'>
               Select a conversation
             </h3>
-            <p className='max-w-[280px] text-sm text-slate-500'>
+            <p className='max-w-[280px] text-sm text-muted-foreground'>
               Choose a teacher from the left to start a real-time conversation
               about your studies.
             </p>
