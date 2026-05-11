@@ -1,0 +1,181 @@
+import { useId, useMemo, useState } from 'react'
+import { FileUp, Send, X } from 'lucide-react'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+
+type CreateAssignmentModalProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function CreateAssignmentModal({
+  open,
+  onOpenChange,
+}: CreateAssignmentModalProps) {
+  const taskTitleId = useId()
+  const descriptionId = useId()
+
+  const [title, setTitle] = useState('')
+  const [group, setGroup] = useState('IELTS Intensive')
+  const [dueDate, setDueDate] = useState('')
+  const [description, setDescription] = useState('')
+  const [files, setFiles] = useState<File[]>([])
+
+  const fileLabel = useMemo(() => {
+    if (!files.length) return 'Fayllarni shu yerga tashlang'
+    if (files.length === 1) return files[0].name
+    return `${files.length} ta fayl tanlandi`
+  }, [files])
+
+  const handleFiles = (next: FileList | null) => {
+    if (!next) return
+    setFiles(Array.from(next))
+  }
+
+  const handleSubmit = () => {
+    onOpenChange(false)
+    setTitle('')
+    setGroup('IELTS Intensive')
+    setDueDate('')
+    setDescription('')
+    setFiles([])
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        showCloseButton={false}
+        className='max-w-[720px] gap-0 overflow-hidden rounded-[28px] border-0 bg-white p-0 shadow-[0_30px_90px_-50px_rgba(2,6,23,0.45)]'
+      >
+        <div className='flex items-start justify-between px-10 pt-8'>
+          <DialogHeader className='gap-1'>
+            <DialogTitle className='text-xl font-extrabold text-slate-900'>
+              Yangi vazifa qo'shish
+            </DialogTitle>
+            <p className='text-sm text-slate-500'>
+              O'quvchilar uchun yangi topshiriq yarating
+            </p>
+          </DialogHeader>
+
+          <DialogClose asChild>
+            <button
+              type='button'
+              className='grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200'
+            >
+              <X size={18} />
+            </button>
+          </DialogClose>
+        </div>
+
+        <div className='px-10 pt-6 pb-8'>
+          <div className='grid gap-5'>
+            <div>
+              <p className='text-[11px] font-extrabold tracking-[0.14em] text-rose-700'>
+                VAZIFA NOMI
+              </p>
+              <Input
+                id={taskTitleId}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder='Masalan: Unit 5 Vocabulary Practice'
+                className='mt-2 h-12 rounded-xl border-0 bg-slate-100 px-4 text-sm shadow-none'
+              />
+            </div>
+
+            <div className='grid grid-cols-2 gap-4'>
+              <div>
+                <p className='text-[11px] font-extrabold tracking-[0.14em] text-rose-700'>
+                  GURUHNI TANLANG
+                </p>
+                <div className='relative mt-2'>
+                  <select
+                    value={group}
+                    onChange={(e) => setGroup(e.target.value)}
+                    className='h-12 w-full appearance-none rounded-xl border-0 bg-slate-100 px-4 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-rose-600/20'
+                  >
+                    <option>IELTS Intensive</option>
+                    <option>General English B2</option>
+                    <option>Kids Starter</option>
+                  </select>
+                  <span className='pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-slate-400'></span>
+                </div>
+              </div>
+
+              <div>
+                <p className='text-[11px] font-extrabold tracking-[0.14em] text-rose-700'>
+                  MUDDAT
+                </p>
+                <Input
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  placeholder='mm/dd/yyyy'
+                  className='mt-2 h-12 rounded-xl border-0 bg-slate-100 px-4 text-sm shadow-none'
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className='text-[11px] font-extrabold tracking-[0.14em] text-rose-700'>
+                TAVSIF
+              </p>
+              <Textarea
+                id={descriptionId}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Vazifa bo'yicha ko'rsatmalarni shu yerda yozing..."
+                className='mt-2 min-h-32 rounded-xl border-0 bg-slate-100 px-4 py-3 text-sm shadow-none'
+              />
+            </div>
+
+            <div>
+              <p className='text-[11px] font-extrabold tracking-[0.14em] text-rose-700'>
+                FAYL BIRIKTIRISH
+              </p>
+              <label className='mt-2 block cursor-pointer rounded-2xl border border-dashed border-rose-200 bg-white px-6 py-8 text-center hover:bg-rose-50/30'>
+                <input
+                  type='file'
+                  className='hidden'
+                  multiple
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+                <div className='mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-rose-100 text-rose-700'>
+                  <FileUp size={18} />
+                </div>
+                <p className='text-sm font-bold text-slate-800'>{fileLabel}</p>
+                <p className='mt-1 text-xs text-slate-500'>
+                  yoki kompyuterdan tanlang (PDF, DOCX, JPG - Max 10MB)
+                </p>
+              </label>
+            </div>
+
+            <div className='mt-2 flex items-center justify-end gap-3'>
+              <DialogClose asChild>
+                <button
+                  type='button'
+                  className='h-11 rounded-full bg-slate-100 px-6 text-sm font-bold text-slate-600 hover:bg-slate-200'
+                >
+                  Bekor qilish
+                </button>
+              </DialogClose>
+              <button
+                type='button'
+                onClick={handleSubmit}
+                className='primary-gradient inline-flex h-11 items-center gap-2 rounded-full px-7 text-sm font-bold text-white shadow-lg shadow-rose-900/15'
+              >
+                <Send size={16} />
+                Vazifani yuborish
+              </button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
