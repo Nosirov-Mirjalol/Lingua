@@ -42,15 +42,14 @@ export function TeacherSidebar({ isOpen, setIsOpen }: TeacherSidebarProps) {
 
   return (
     <>
-      {/* Mobile Overlay */}
+    
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
-          className='fixed inset-0 z-[100] bg-black/50 md:hidden'
+          className='fixed inset-0 z-100 bg-black/50 md:hidden'
         />
       )}
 
-      {/* Desktop Sidebar */}
       <aside className='sticky top-0 hidden h-screen w-64 flex-col gap-2 border-r border-slate-200/50 bg-slate-50 p-4 md:flex'>
         <div className='mb-4 px-4 py-6'>
           <h1 className='font-headline text-lg font-black tracking-tight text-rose-700 uppercase'>
@@ -92,10 +91,8 @@ export function TeacherSidebar({ isOpen, setIsOpen }: TeacherSidebarProps) {
           </button>
         </div>
       </aside>
-
-      {/* Mobile Sidebar Drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-[101] flex h-screen w-64 flex-col gap-2 border-r border-slate-200/50 bg-slate-50 p-4 transition-transform duration-300 md:hidden ${
+        className={`fixed inset-y-0 left-0 z-101 flex h-screen w-64 flex-col gap-2 border-r border-slate-200/50 bg-slate-50 p-4 transition-transform duration-300 md:hidden ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

@@ -5,7 +5,7 @@ import { useAdminTeachers } from '@/hooks/admin/teachers/useAdminTeachers'
 import { useDeleteAdminTeacher } from '@/hooks/admin/teachers/useDeleteAdminTeacher'
 import { useUpdateAdminTeacher } from '@/hooks/admin/teachers/useUpdateAdminTeacher'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -104,8 +104,8 @@ export default function AdminTeachersPage() {
   const remove = (id: number) => {
     if (!confirm("O'chirishga ishonchingiz komilmi?")) return
     toast.promise(deleteMutation.mutateAsync(id), {
-      loading: 'O'chirilmoqda...',
-      success: 'O'chirildi',
+      loading: "O'chirilmoqda...",
+      success: "O'chirildi",
       error: 'Xato yuz berdi',
     })
   }

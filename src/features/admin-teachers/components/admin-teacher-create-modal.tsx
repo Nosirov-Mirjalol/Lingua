@@ -35,7 +35,7 @@ export function AdminTeacherCreateModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     const payload = {
       username: formData.username.trim(),
       email: formData.email.trim(),
@@ -43,6 +43,7 @@ export function AdminTeacherCreateModal({
       last_name: formData.last_name.trim(),
       phone: formData.phone.trim() || undefined,
       password: formData.password.trim(),
+      role: 'teacher' as const,
     }
 
     toast.promise(createMutation.mutateAsync(payload), {
@@ -71,7 +72,11 @@ export function AdminTeacherCreateModal({
             Yangi teacher
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className='space-y-4 py-2'>
+        <form
+          id='admin-teacher-create-form'
+          onSubmit={handleSubmit}
+          className='space-y-4 py-2'
+        >
           <div className='space-y-2'>
             <Label htmlFor='username' className='text-xs font-semibold'>
               Username
@@ -158,11 +163,17 @@ export function AdminTeacherCreateModal({
             type='button'
             onClick={() => onOpenChange(false)}
             className='rounded-xl'
+            disabled={createMutation.isPending}
           >
             Bekor qilish
           </Button>
-          <Button type='submit' className='rounded-xl bg-slate-900 font-bold hover:bg-slate-800'>
-            Yaratish
+          <Button
+            type='submit'
+            form='admin-teacher-create-form'
+            className='rounded-xl bg-slate-900 font-bold hover:bg-slate-800'
+            disabled={createMutation.isPending}
+          >
+            {createMutation.isPending ? 'Yaratilmoqda...' : 'Yaratish'}
           </Button>
         </div>
       </DialogContent>

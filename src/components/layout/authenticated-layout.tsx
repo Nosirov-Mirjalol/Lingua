@@ -1,5 +1,8 @@
+import { useEffect } from 'react'
 import { Outlet, useRouterState } from '@tanstack/react-router'
+import { toast } from 'sonner'
 import { getCookie } from '@/lib/cookies'
+import { consumeLoginSuccessToast } from '@/lib/login-feedback'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
@@ -19,6 +22,16 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     pathname.startsWith('/teacher-dashboard/')
   const isStudentArea =
     pathname === '/student' || pathname.startsWith('/student/')
+
+  useEffect(() => {
+    const feedback = consumeLoginSuccessToast()
+    if (!feedback) return
+
+    toast.dismiss()
+    toast.success(feedback.title, {
+      duration: 2500,
+    })
+  }, [pathname])
 
   if (isTeacherArea || isStudentArea) {
     return (
