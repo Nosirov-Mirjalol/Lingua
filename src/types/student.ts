@@ -67,6 +67,15 @@ export interface StudentCourse {
   badge: string
 }
 
+export interface StudentNotification {
+  id: number
+  title: string
+  description: string
+  time: string
+  category: 'Reminder' | 'Announcement' | 'Update'
+  read: boolean
+}
+
 
 export type HomeworkStatus = 'pending' | 'submitted' | 'late' | 'completed'
 

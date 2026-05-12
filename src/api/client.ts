@@ -16,7 +16,6 @@ export interface ApiError {
 
 const PUBLIC_AUTH_PATHS = [
   '/api/auth/login/',
-  '/api/auth/register/',
   '/api/auth/forgot-password/',
   '/api/auth/verfiy-password/',
 ]
@@ -146,8 +145,15 @@ class ApiClient {
 
           // 401 — token eskirgan yoki noto'g'ri
           if (status === 401) {
-            useUserStore.getState().actions.clearUserInfoAndToken()
-            window.location.href = '/sign-in'
+            const requestUrl = String(error.config?.url ?? '')
+            const isPublicAuthRequest = PUBLIC_AUTH_PATHS.some((path) =>
+              requestUrl.includes(path)
+            )
+
+            if (!isPublicAuthRequest) {
+              useUserStore.getState().actions.clearUserInfoAndToken()
+              window.location.href = '/sign-in'
+            }
           }
 
           const msg = String(

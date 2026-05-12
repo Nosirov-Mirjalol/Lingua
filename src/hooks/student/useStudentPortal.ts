@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { studentsData } from '@/data/students-data'
 import type {
   StudentAssignment,
   StudentConversation,
@@ -10,13 +9,12 @@ import type {
   StudentScheduleItem,
 } from '@/types/student'
 
-const getStoredUser = () => {
+const getStoredUser = (): Partial<StudentProfile> | null => {
   if (typeof window === 'undefined') return null
 
-  const raw = sessionStorage.getItem('linguapro_user')
-  if (!raw) return null
-
   try {
+    const raw = sessionStorage.getItem('linguapro_user')
+    if (!raw) return null
     return JSON.parse(raw) as Partial<StudentProfile>
   } catch {
     return null
@@ -46,12 +44,6 @@ const buildProfile = (): StudentProfile => {
   }
 }
 
-const courseGroups = Array.from(
-  new Map(
-    studentsData.map((item) => [item.groupName, item])
-  ).entries()
-)
-
 export const useStudentProfile = () => {
   return useQuery({
     queryKey: ['student', 'profile'],
@@ -65,7 +57,6 @@ export const useStudentDashboard = () => {
     queryKey: ['student', 'dashboard'],
     queryFn: async () => {
       const profile = buildProfile()
-      const activeCourses = courseGroups.length
       const completedHours = `${Math.max(40, Math.round(profile.completion * 0.8))}h`
 
       return {

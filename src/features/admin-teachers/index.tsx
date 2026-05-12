@@ -104,8 +104,8 @@ export default function AdminTeachersPage() {
   const remove = (id: number) => {
     if (!confirm("O'chirishga ishonchingiz komilmi?")) return
     toast.promise(deleteMutation.mutateAsync(id), {
-      loading: 'O'chirilmoqda...',
-      success: 'O'chirildi',
+      loading: "O'chirilmoqda...",
+      success: "O'chirildi",
       error: 'Xato yuz berdi',
     })
   }

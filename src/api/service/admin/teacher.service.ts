@@ -108,6 +108,6 @@ export const updateAdminTeacher = (
   return apiClient.patch<AdminTeacher>(`/api/teachers/${teacherId}/`, updatePayload)
 }
 
-export const deleteAdminTeacher = (teacherId: number): Promise<unknown> {
+export const deleteAdminTeacher = (teacherId: number): Promise<unknown> => {
   return apiClient.delete<unknown>(`/api/teachers/${teacherId}/`)
 }
