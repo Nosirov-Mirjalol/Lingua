@@ -285,13 +285,18 @@ function StudentHomeworkPage() {
                             </p>
                           ) : null}
                         </button>
-                      </div>
 
-                      <div className='rounded-2xl border bg-card p-3'>
-                        <h3 className='text-sm font-semibold text-foreground'>Teacher&apos;s Previous Notes</h3>
-                        <p className='mt-2 text-sm leading-relaxed text-muted-foreground'>
-                          Keep your paragraphs short and focused. Remember to support your ideas with examples.
-                        </p>
+                        <div className='mt-4 space-y-2'>
+                          <label htmlFor='submission-comment' className='text-xs font-semibold text-muted-foreground uppercase tracking-wider'>
+                            Submission Comments
+                          </label>
+                          <textarea
+                            id='submission-comment'
+                            rows={3}
+                            placeholder='Add a note to your teacher...'
+                            className='w-full rounded-xl border bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500/20 focus:outline-none resize-none'
+                          />
+                        </div>
                       </div>
 
                       <Button className='h-12 w-full rounded-2xl bg-rose-600 text-base hover:bg-rose-700 text-white'>
