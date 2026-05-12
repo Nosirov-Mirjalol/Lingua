@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { studentsData } from '@/data/students-data'
+import { getStudentCourses } from '@/api/service/student/course.service'
 import type {
   StudentAssignment,
   StudentConversation,
@@ -46,12 +46,6 @@ const buildProfile = (): StudentProfile => {
   }
 }
 
-const courseGroups = Array.from(
-  new Map(
-    studentsData.map((item) => [item.groupName, item])
-  ).entries()
-)
-
 export const useStudentProfile = () => {
   return useQuery({
     queryKey: ['student', 'profile'],
@@ -65,7 +59,6 @@ export const useStudentDashboard = () => {
     queryKey: ['student', 'dashboard'],
     queryFn: async () => {
       const profile = buildProfile()
-      const activeCourses = courseGroups.length
       const completedHours = `${Math.max(40, Math.round(profile.completion * 0.8))}h`
 
       return {
@@ -224,35 +217,7 @@ export const useStudentMessages = () => {
 export const useStudentCourses = () => {
   return useQuery({
     queryKey: ['student', 'courses'],
-    queryFn: async (): Promise<StudentCourse[]> => [
-      {
-        id: 1,
-        title: 'Advanced English Communication',
-        instructor: 'Ms. Ziya',
-        progress: 82,
-        duration: '24 lessons',
-        nextModule: 'Pronunciation practice',
-        badge: 'Core course',
-      },
-      {
-        id: 2,
-        title: 'Grammar Workshop',
-        instructor: 'Mr. Eldor',
-        progress: 68,
-        duration: '18 lessons',
-        nextModule: 'Conditional sentences',
-        badge: 'Elective',
-      },
-      {
-        id: 3,
-        title: 'Conversation Practice',
-        instructor: 'Mrs. Nilufar',
-        progress: 90,
-        duration: '12 lessons',
-        nextModule: 'Role play session',
-        badge: 'Live cohort',
-      },
-    ],
+    queryFn: (): Promise<StudentCourse[]> => getStudentCourses(),
     staleTime: 60_000,
   })
 }

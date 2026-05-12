@@ -26,6 +26,19 @@ function shouldAttachAuthHeader(url?: string): boolean {
   return !PUBLIC_AUTH_PATHS.some((path) => url.includes(path))
 }
 
+function getStoredAccessToken() {
+  const fromStore = useUserStore.getState().userToken?.accessToken
+  if (fromStore) return fromStore
+
+  if (typeof window === 'undefined') return ''
+
+  const fromSession = sessionStorage.getItem('linguapro_access_token') ?? ''
+  if (fromSession) return fromSession
+
+  const fromLocal = localStorage.getItem('access_token') ?? ''
+  return fromLocal
+}
+
 /** Django REST Framework 400: { "field": ["msg"], "detail": "..." } */
 function formatDrfErrorDetail(data: unknown): string | null {
   if (data == null) return null
@@ -99,7 +112,7 @@ class ApiClient {
           return config
         }
 
-        const token = useUserStore.getState().userToken?.accessToken
+        const token = getStoredAccessToken()
 
         if (token) {
           config.headers.Authorization = `Bearer ${token}`

@@ -59,12 +59,27 @@ export interface StudentConversation {
 
 export interface StudentCourse {
   id: number
+  name: string
+  description: string
+  objective: string
+  level: string
+  durationMonths: number | null
+  price: string
+  isActive: boolean
+  courseId?: number | null
+  studentCount?: number | null
+  startDate?: string
+  startTime?: string
+  endTime?: string
+}
+
+export interface StudentNotification {
+  id: number
   title: string
-  instructor: string
-  progress: number
-  duration: string
-  nextModule: string
-  badge: string
+  description: string
+  time: string
+  category: 'Reminder' | 'Announcement' | 'Update'
+  read: boolean
 }
 
 

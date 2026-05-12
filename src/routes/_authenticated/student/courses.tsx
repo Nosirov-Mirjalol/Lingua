@@ -1,71 +1,104 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { ChevronRight, Trophy } from 'lucide-react'
-import { useStudentCourses } from '@/hooks/student/useStudentPortal'
-import { Button } from '@/components/ui/button'
+import { createFileRoute } from '@tanstack/react-router'
+import { BookOpen } from 'lucide-react'
+import { useAdminCourses } from '@/hooks/admin/courses/useAdminCourses'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/_authenticated/student/courses')({
   component: StudentCoursesPage,
 })
 
+function CourseCardSkeleton() {
+  return (
+    <Card className='border-border/60 bg-card/80'>
+      <CardHeader className='space-y-3'>
+        <Skeleton className='h-6 w-2/3' />
+        <Skeleton className='h-4 w-1/3' />
+      </CardHeader>
+      <CardContent className='pt-0'>
+        <Skeleton className='h-20 w-full rounded-2xl' />
+      </CardContent>
+    </Card>
+  )
+}
+
 function StudentCoursesPage() {
-  const { data: courses = [] } = useStudentCourses()
+  const { data: courses = [], isLoading, isError } = useAdminCourses('')
 
   return (
     <div className='max-w-7xl space-y-6'>
       <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
         <div>
-          <p className='text-sm uppercase tracking-[0.2em] text-muted-foreground'>Courses</p>
-          <h1 className='text-3xl font-semibold text-foreground'>Learning path</h1>
+          <p className='text-sm uppercase tracking-[0.2em] text-muted-foreground'>
+            Courses
+          </p>
+          <h1 className='text-3xl font-semibold text-foreground'>
+            Available courses
+          </h1>
         </div>
-        <Button>
-          <Trophy className='mr-2 h-4 w-4' />
-          View certifications
-        </Button>
+        <Badge className='rounded-full bg-rose-100 px-3 py-1 text-rose-700'>
+          {courses.length} ta kurs
+        </Badge>
       </div>
 
-      <div className='grid gap-4 xl:grid-cols-3'>
-        {courses.map((course) => (
-          <Card key={course.id}>
-            <CardHeader>
-              <div className='flex items-start justify-between gap-3'>
-                <div>
-                  <CardTitle>{course.title}</CardTitle>
-                  <p className='text-sm text-muted-foreground'>{course.instructor}</p>
+      {isLoading ? (
+        <div className='grid gap-4 xl:grid-cols-3'>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <CourseCardSkeleton key={index} />
+          ))}
+        </div>
+      ) : isError ? (
+        <Card className='border-dashed'>
+          <CardContent className='py-10 text-center'>
+            <BookOpen className='mx-auto mb-3 h-10 w-10 text-muted-foreground' />
+            <p className='text-base font-semibold text-foreground'>
+              Kurslar hozircha ko&apos;rinmadi
+            </p>
+          </CardContent>
+        </Card>
+      ) : courses.length === 0 ? (
+        <Card className='border-dashed'>
+          <CardContent className='py-10 text-center'>
+            <BookOpen className='mx-auto mb-3 h-10 w-10 text-muted-foreground' />
+            <p className='text-base font-semibold text-foreground'>
+              Hozircha kurslar topilmadi
+            </p>
+            <p className='mt-2 text-sm text-muted-foreground'>
+              Admin qo&apos;shgan kurslar shu yerda ko&apos;rinadi.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className='grid gap-4 xl:grid-cols-3'>
+          {courses.map((course) => (
+            <Card
+              key={course.id}
+              className='border-border/60 bg-card/90 transition-transform hover:-translate-y-0.5'
+            >
+              <CardHeader className='space-y-2'>
+                <div className='flex items-start justify-between gap-3'>
+                  <div className='min-w-0 flex-1'>
+                    <CardTitle className='truncate'>{course.name}</CardTitle>
+                    <p className='mt-1 text-sm text-muted-foreground'>
+                      Course ID: #{course.id}
+                    </p>
+                  </div>
+                  <Badge className='rounded-full bg-muted text-muted-foreground'>
+                    Course
+                  </Badge>
                 </div>
-                <Badge className='rounded-full bg-muted text-muted-foreground'>
-                  {course.badge}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='rounded-3xl bg-muted/50 p-4'>
-                <p className='text-sm text-muted-foreground'>Progress</p>
-                <div className='mt-3 h-2 overflow-hidden rounded-full bg-muted'>
-                  <div
-                    className='h-2 rounded-full bg-rose-500'
-                    style={{ width: `${course.progress}%` }}
-                  />
+              </CardHeader>
+              <CardContent className='pt-0'>
+                <div className='rounded-2xl bg-muted/40 p-4 text-sm text-muted-foreground'>
+                  Admin paneldagi kurslar ro&apos;yxati.
                 </div>
-                <p className='mt-2 text-sm font-semibold text-foreground'>
-                  {course.progress}% complete
-                </p>
-              </div>
-              <div className='flex items-center justify-between text-sm text-muted-foreground'>
-                <span>{course.duration}</span>
-                <span>{course.nextModule}</span>
-              </div>
-              <Link
-                to='/student/homework'
-                className='inline-flex items-center gap-2 text-sm font-semibold text-rose-600'
-              >
-                Continue course <ChevronRight size={16} />
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
+
