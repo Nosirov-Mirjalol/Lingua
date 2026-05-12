@@ -3,6 +3,7 @@ export interface MessageSender {
   username: string
   full_name: string
   role: 'admin' | 'teacher' | 'student'
+  accountNo?: string
 }
 
 export interface LastMessage {
@@ -28,8 +29,9 @@ export interface Message {
   message_type: 'text' | 'file' | 'image'
   file_url: string | null
   image_url: string | null
-  is_read: string
-  read_count: string
+  is_read: boolean | string
+  read_count: number | string
+  is_own?: boolean
   created_at: string
 }
 
