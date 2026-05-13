@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { getSessionUserRole } from '@/lib/auth-role'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
@@ -10,24 +11,15 @@ import { StudentGuard } from '@/components/student/layout/StudentGuard'
 
 export const Route = createFileRoute('/_authenticated/student')({
   beforeLoad: () => {
-    if (typeof window === 'undefined') return
-
-    const raw = sessionStorage.getItem('linguapro_user')
-    if (!raw) throw redirect({ to: '/sign-in' })
-
-    try {
-      const user = JSON.parse(raw) as { role?: string }
-      if (!user.role) throw redirect({ to: '/sign-in' })
-      if (user.role !== 'user' && user.role !== 'student') {
-        if (user.role === 'teacher') {
-          throw redirect({ to: '/teacher-dashboard' })
-        }
-        if (user.role === 'admin') {
-          throw redirect({ to: '/admin-dashboard' })
-        }
-        throw redirect({ to: '/sign-in' })
+    const role = getSessionUserRole()
+    if (!role) throw redirect({ to: '/sign-in' })
+    if (role !== 'user' && role !== 'student') {
+      if (role === 'teacher') {
+        throw redirect({ to: '/teacher-dashboard' })
       }
-    } catch {
+      if (role === 'admin') {
+        throw redirect({ to: '/admin-dashboard' })
+      }
       throw redirect({ to: '/sign-in' })
     }
   },

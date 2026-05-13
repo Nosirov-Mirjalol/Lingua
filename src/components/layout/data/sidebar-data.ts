@@ -108,7 +108,7 @@ export const adminSidebarData: SidebarData = {
         },
         {
           title: 'Chats',
-          url: '/chats',
+          url: '/admin-chats',
           icon: MessageSquare,
         },
       ],

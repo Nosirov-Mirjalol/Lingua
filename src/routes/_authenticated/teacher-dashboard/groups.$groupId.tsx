@@ -6,6 +6,7 @@ import { useAddStudentToGroup } from '@/hooks/teacher/groups/useAddStudentToGrou
 import { useRemoveStudentFromGroup } from '@/hooks/teacher/groups/useRemoveStudentFromGroup'
 import { useTeacherGroups } from '@/hooks/teacher/groups/useTeacherGroups'
 import { useStudents } from '@/hooks/teacher/students/useStudents'
+import { formatDisplayDate } from '@/lib/date-format'
 import { RoseButton } from '@/components/ui/rose-button'
 import {
   Select,
@@ -200,7 +201,7 @@ function GroupDetailPage() {
                       )}
                     </p>
                     <p className='text-xs text-slate-500'>
-                      Joined: {new Date(s.joined_at).toLocaleString()}
+                      Joined: {formatDisplayDate(s.joined_at) || 'Mavjud emas'}
                     </p>
                   </div>
 

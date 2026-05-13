@@ -6,6 +6,9 @@ export function Toaster({ ...props }: ToasterProps) {
 
   return (
     <Sonner
+      duration={props.duration ?? 2500}
+      position={props.position ?? 'top-right'}
+      visibleToasts={props.visibleToasts ?? 1}
       theme={theme as ToasterProps['theme']}
       className='toaster group [&_div[data-content]]:w-full'
       style={

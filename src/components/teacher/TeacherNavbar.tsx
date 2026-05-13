@@ -94,8 +94,6 @@ export function TeacherNavbar({ onMenuClick }: TeacherNavbarProps) {
             />
           </div>
         </div>
-
-        {/* Right */}
         <div className='flex items-center gap-1'>
           <Link
             to='/teacher-dashboard/settings'

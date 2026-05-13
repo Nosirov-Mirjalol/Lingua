@@ -5,7 +5,7 @@ import { useAdminTeachers } from '@/hooks/admin/teachers/useAdminTeachers'
 import { useDeleteAdminTeacher } from '@/hooks/admin/teachers/useDeleteAdminTeacher'
 import { useUpdateAdminTeacher } from '@/hooks/admin/teachers/useUpdateAdminTeacher'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,

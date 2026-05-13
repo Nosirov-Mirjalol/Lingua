@@ -47,14 +47,15 @@ export function UserAuthForm({
     },
   })
 
-  function onSubmit(data: FormValues) {
-    toast.promise(loginMutation.mutateAsync(data), {
-      loading: 'Tizimga kirilmoqda...',
-      success: 'Xush kelibsiz!',
-      error: (err: unknown) =>
+  async function onSubmit(data: FormValues) {
+    try {
+      await loginMutation.mutateAsync(data)
+    } catch (err: unknown) {
+      toast.error(
         (err as Partial<ApiError>)?.message?.trim() ||
-        "Login muvaffaqiyatsiz. Qayta urinib ko'ring.",
-    })
+          "Login muvaffaqiyatsiz. Qayta urinib ko'ring."
+      )
+    }
   }
 
   return (
@@ -75,6 +76,7 @@ export function UserAuthForm({
                   placeholder='Foydalanuvchi nomini kiriting'
                   autoComplete='username'
                   className={focusInputStyle}
+                  disabled={loginMutation.isPending}
                   {...field}
                 />
               </FormControl>
@@ -102,6 +104,7 @@ export function UserAuthForm({
                   placeholder='Parolni kiriting'
                   autoComplete='current-password'
                   className={focusInputStyle}
+                  disabled={loginMutation.isPending}
                   {...field}
                 />
               </FormControl>
@@ -111,15 +114,17 @@ export function UserAuthForm({
         />
 
         <Button
+          type='submit'
           className='mt-2 w-full bg-[#C70C3D] text-white transition-colors hover:bg-[#C70C3D]/90'
           disabled={loginMutation.isPending}
+          aria-busy={loginMutation.isPending}
         >
           {loginMutation.isPending ? (
             <Loader2 className='mr-2 h-4 w-4 animate-spin' />
           ) : (
             <LogIn className='mr-2 h-4 w-4' />
           )}
-          Tizimga kirish
+          {loginMutation.isPending ? 'Kirilmoqda...' : 'Tizimga kirish'}
         </Button>
       </form>
     </Form>

@@ -1,5 +1,6 @@
 import { useLayout } from '@/context/layout-provider'
 import { useRouterState } from '@tanstack/react-router'
+import { normalizeUserRole } from '@/lib/auth-role'
 import { useAuthStore } from '@/stores/auth-store'
 import {
   Sidebar,
@@ -22,7 +23,9 @@ function getStoredRole(): SidebarRole {
     const raw = sessionStorage.getItem('linguapro_user')
     if (!raw) return 'admin'
     const parsed = JSON.parse(raw) as { role?: unknown }
-    return parsed.role === 'teacher' ? 'teacher' : 'admin'
+    const role = normalizeUserRole(parsed.role)
+    if (role === 'teacher') return 'teacher'
+    return 'admin'
   } catch {
     return 'admin'
   }

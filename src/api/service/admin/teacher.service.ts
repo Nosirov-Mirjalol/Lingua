@@ -7,6 +7,7 @@ export type AdminTeacher = {
   first_name: string
   last_name: string
   phone?: string
+  is_active?: boolean
   created_at?: string
 }
 
@@ -17,7 +18,7 @@ export type AdminTeacherCreatePayload = {
   last_name: string
   phone?: string
   password: string
-  role: 'teacher'
+  role?: 'teacher'
 }
 
 export type AdminTeacherUpdatePayload = Partial<
