@@ -23,8 +23,8 @@ function ResultsPage() {
     <div>
       <div className='mb-8 flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold text-gray-800'>Results</h1>
-          <p className='mt-2 text-gray-500'>
+          <h1 className='text-3xl font-bold text-gray-800 dark:text-white'>Results</h1>
+          <p className='mt-2 text-gray-500 dark:text-gray-400'>
             View and analyze student performance
           </p>
         </div>
@@ -36,7 +36,7 @@ function ResultsPage() {
             <Plus size={18} />
             Add Result
           </RoseButton>
-          <button className='flex items-center gap-2 rounded-xl border border-gray-200 px-6 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50'>
+          <button className='flex items-center gap-2 rounded-xl border border-gray-200 dark:border-slate-800 px-6 py-3 text-sm font-semibold text-gray-700 dark:text-slate-300 shadow-sm transition-all duration-200 hover:bg-gray-50 dark:hover:bg-slate-800'>
             <Download size={18} />
             Export Report
           </button>
@@ -53,9 +53,9 @@ function ResultsPage() {
 
       {/* Stats Cards */}
       <div className='mb-8 grid grid-cols-4 gap-4'>
-        <div className='rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'>
+        <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none border border-transparent dark:border-slate-800'>
           <div className='mb-4 flex items-center justify-between'>
-            <div className='rounded-xl bg-[#fff0f3] p-3 text-[#b80035]'>
+            <div className='rounded-xl bg-[#fff0f3] dark:bg-rose-950/50 p-3 text-[#b80035] dark:text-rose-400'>
               <BarChart3 size={24} />
             </div>
             <span className='flex items-center gap-1 text-sm font-semibold text-green-600'>
@@ -63,12 +63,12 @@ function ResultsPage() {
               +5%
             </span>
           </div>
-          <p className='text-3xl font-bold text-gray-800'>87%</p>
-          <p className='text-sm text-gray-500'>Average Score</p>
+          <p className='text-3xl font-bold text-gray-800 dark:text-white'>87%</p>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>Average Score</p>
         </div>
-        <div className='rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'>
+        <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none border border-transparent dark:border-slate-800'>
           <div className='mb-4 flex items-center justify-between'>
-            <div className='rounded-xl bg-green-100 p-3 text-green-600'>
+            <div className='rounded-xl bg-green-100 dark:bg-emerald-950/50 p-3 text-green-600 dark:text-emerald-400'>
               <TrendingUp size={24} />
             </div>
             <span className='flex items-center gap-1 text-sm font-semibold text-green-600'>
@@ -76,12 +76,12 @@ function ResultsPage() {
               +12%
             </span>
           </div>
-          <p className='text-3xl font-bold text-gray-800'>92%</p>
-          <p className='text-sm text-gray-500'>Pass Rate</p>
+          <p className='text-3xl font-bold text-gray-800 dark:text-white'>92%</p>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>Pass Rate</p>
         </div>
-        <div className='rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'>
+        <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none border border-transparent dark:border-slate-800'>
           <div className='mb-4 flex items-center justify-between'>
-            <div className='rounded-xl bg-yellow-100 p-3 text-yellow-600'>
+            <div className='rounded-xl bg-yellow-100 dark:bg-yellow-950/50 p-3 text-yellow-600 dark:text-yellow-400'>
               <TrendingDown size={24} />
             </div>
             <span className='flex items-center gap-1 text-sm font-semibold text-red-600'>
@@ -89,12 +89,12 @@ function ResultsPage() {
               -3%
             </span>
           </div>
-          <p className='text-3xl font-bold text-gray-800'>78%</p>
-          <p className='text-sm text-gray-500'>Completion Rate</p>
+          <p className='text-3xl font-bold text-gray-800 dark:text-white'>78%</p>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>Completion Rate</p>
         </div>
-        <div className='rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'>
+        <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none border border-transparent dark:border-slate-800'>
           <div className='mb-4 flex items-center justify-between'>
-            <div className='rounded-xl bg-blue-100 p-3 text-blue-600'>
+            <div className='rounded-xl bg-blue-100 dark:bg-blue-950/50 p-3 text-blue-600 dark:text-blue-400'>
               <BarChart3 size={24} />
             </div>
             <span className='flex items-center gap-1 text-sm font-semibold text-green-600'>
@@ -102,35 +102,35 @@ function ResultsPage() {
               +8%
             </span>
           </div>
-          <p className='text-3xl font-bold text-gray-800'>156</p>
-          <p className='text-sm text-gray-500'>Total Assessments</p>
+          <p className='text-3xl font-bold text-gray-800 dark:text-white'>156</p>
+          <p className='text-sm text-gray-500 dark:text-gray-400'>Total Assessments</p>
         </div>
       </div>
 
       {/* Results Table */}
-      <div className='rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'>
+      <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none border border-transparent dark:border-slate-800'>
         <div className='mb-6 flex items-center justify-between'>
-          <h2 className='text-lg font-bold text-gray-800'>Recent Results</h2>
-          <button className='text-sm font-semibold text-[#b80035] hover:underline'>
+          <h2 className='text-lg font-bold text-gray-800 dark:text-white'>Recent Results</h2>
+          <button className='text-sm font-semibold text-[#b80035] dark:text-rose-400 hover:underline'>
             View All
           </button>
         </div>
         <table className='w-full'>
           <thead>
-            <tr className='border-b border-gray-200'>
-              <th className='pb-4 text-left text-sm font-semibold text-gray-600'>
+            <tr className='border-b border-gray-200 dark:border-slate-800'>
+              <th className='pb-4 text-left text-sm font-semibold text-gray-600 dark:text-slate-400'>
                 Student
               </th>
-              <th className='pb-4 text-left text-sm font-semibold text-gray-600'>
+              <th className='pb-4 text-left text-sm font-semibold text-gray-600 dark:text-slate-400'>
                 Assessment
               </th>
-              <th className='pb-4 text-left text-sm font-semibold text-gray-600'>
+              <th className='pb-4 text-left text-sm font-semibold text-gray-600 dark:text-slate-400'>
                 Score
               </th>
-              <th className='pb-4 text-left text-sm font-semibold text-gray-600'>
+              <th className='pb-4 text-left text-sm font-semibold text-gray-600 dark:text-slate-400'>
                 Date
               </th>
-              <th className='pb-4 text-left text-sm font-semibold text-gray-600'>
+              <th className='pb-4 text-left text-sm font-semibold text-gray-600 dark:text-slate-400'>
                 Status
               </th>
             </tr>
@@ -168,36 +168,33 @@ function ResultsPage() {
             ].map((result, index) => (
               <tr
                 key={index}
-                className='border-b border-gray-100 last:border-0'
+                className='border-b border-gray-100 dark:border-slate-800 last:border-0'
               >
                 <td className='py-4'>
                   <div className='flex items-center gap-3'>
                     <div className='flex h-10 w-10 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white'>
-                      {result.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')}
+                      {result.name}
                     </div>
-                    <span className='font-medium text-gray-800'>
+                    <span className='font-medium text-gray-800 dark:text-white'>
                       {result.name}
                     </span>
                   </div>
                 </td>
-                <td className='py-4 text-sm text-gray-600'>
+                <td className='py-4 text-sm text-gray-600 dark:text-slate-400'>
                   {result.assessment}
                 </td>
-                <td className='py-4 text-sm font-semibold text-gray-800'>
+                <td className='py-4 text-sm font-semibold text-gray-800 dark:text-white'>
                   {result.score}
                 </td>
-                <td className='py-4 text-sm text-gray-600'>{result.date}</td>
+                <td className='py-4 text-sm text-gray-600 dark:text-slate-400'>{result.date}</td>
                 <td className='py-4'>
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
                       result.status === 'excellent'
-                        ? 'bg-green-100 text-green-700'
+                        ? 'bg-green-100 dark:bg-emerald-950/50 text-green-700 dark:text-emerald-400'
                         : result.status === 'good'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400'
+                          : 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400'
                     }`}
                   >
                     {result.status.charAt(0).toUpperCase() +

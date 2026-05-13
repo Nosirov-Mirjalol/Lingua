@@ -81,15 +81,15 @@ const StatCard = ({
   label: string
   badge?: React.ReactNode
 }) => (
-  <div className='group rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] transition-all duration-300 hover:shadow-[0_25px_50px_-10px_rgba(184,0,53,0.1)]'>
+  <div className='group rounded-2xl bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none transition-all duration-300 hover:shadow-[0_25px_50px_-10px_rgba(184,0,53,0.1)] dark:hover:border-rose-900/50'>
     <div className='flex items-start justify-between'>
-      <div className='rounded-xl bg-[#fff0f3] p-3 text-[#b80035] transition-transform duration-300 group-hover:scale-110'>
+      <div className='rounded-xl bg-[#fff0f3] dark:bg-rose-950 p-3 text-[#b80035] dark:text-rose-400 transition-transform duration-300 group-hover:scale-110'>
         {icon}
       </div>
       {badge && <div className='shrink-0 animate-pulse'>{badge}</div>}
     </div>
-    <p className='mt-4 text-3xl font-bold text-gray-800'>{value}</p>
-    <p className='mt-1 text-sm text-gray-500'>{label}</p>
+    <p className='mt-4 text-3xl font-bold text-gray-800 dark:text-white'>{value}</p>
+    <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>{label}</p>
   </div>
 )
 
@@ -109,8 +109,8 @@ const LinkBtn = ({
     disabled={loading}
     className={`flex items-center gap-2 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 ${
       variant === 'primary'
-        ? 'text-sm font-semibold text-[#b80035] hover:underline'
-        : 'rounded-lg px-4 py-2 text-sm font-semibold text-[#b80035] hover:bg-[#fff0f3] active:bg-[#ffe6ec]'
+        ? 'text-sm font-semibold text-[#b80035] dark:text-rose-400 hover:underline'
+        : 'rounded-lg px-4 py-2 text-sm font-semibold text-[#b80035] dark:text-rose-400 hover:bg-[#fff0f3] dark:hover:bg-rose-950 active:bg-[#ffe6ec] dark:active:bg-rose-900'
     }`}
   >
     {loading ? (
@@ -217,14 +217,14 @@ function DashboardPage() {
     <>
       {/* Welcome */}
       <div className='mb-6 md:mb-8'>
-        <h1 className='text-2xl font-bold text-gray-800 md:text-3xl'>
+        <h1 className='text-2xl font-bold text-gray-800 dark:text-white md:text-3xl'>
           Welcome back,{' '}
-          <span className='text-[#b80035]'>
+          <span className='text-[#b80035] dark:text-rose-400'>
             {profile?.full_name || profile?.username || 'teacher'}
           </span>
           .
         </h1>
-        <p className='mt-2 text-gray-500'>
+        <p className='mt-2 text-gray-500 dark:text-gray-400'>
           Here's what's happening with your classes today.
         </p>
       </div>
@@ -247,7 +247,7 @@ function DashboardPage() {
           label='Tasks Pending'
           badge={
             pendingAssignments.length > 0 && (
-              <span className='rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-600'>
+              <span className='rounded-full bg-red-100 dark:bg-red-950 px-2 py-1 text-xs font-semibold text-red-600 dark:text-red-400'>
                 Active
               </span>
             )
@@ -271,9 +271,9 @@ function DashboardPage() {
       {/* Main */}
       <div className='mb-6 grid grid-cols-1 gap-6 md:mb-8 lg:grid-cols-5'>
         {/* Assignments */}
-        <div className='col-span-1 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] md:p-6 lg:col-span-3'>
+        <div className='col-span-1 rounded-2xl bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none md:p-6 lg:col-span-3'>
           <div className='mb-6 flex items-center justify-between'>
-            <h2 className='text-lg font-bold text-gray-800'>
+            <h2 className='text-lg font-bold text-gray-800 dark:text-white'>
               Pending Assignments
             </h2>
             <LinkBtn
@@ -284,11 +284,11 @@ function DashboardPage() {
           </div>
 
           {loadingAssignments ? (
-            <p className='py-8 text-center text-sm text-gray-500'>
+            <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
               Yuklanmoqda...
             </p>
           ) : pendingAssignments.length === 0 ? (
-            <p className='py-8 text-center text-sm text-gray-500'>
+            <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
               Hozircha pending topshiriqlar yo'q
             </p>
           ) : (
@@ -298,10 +298,10 @@ function DashboardPage() {
               )
               const statusColor =
                 daysLeft <= 1
-                  ? 'bg-red-100 text-red-700'
+                  ? 'bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-400'
                   : daysLeft <= 3
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-green-100 text-green-700'
+                    ? 'bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400'
+                    : 'bg-green-100 dark:bg-emerald-950/50 text-green-700 dark:text-emerald-400'
 
               const statusData = statusByAssignmentId[a.id]
               const total = statusData?.length ?? 0
@@ -327,17 +327,17 @@ function DashboardPage() {
               return (
                 <div
                   key={a.id}
-                  className='flex flex-col items-start justify-between gap-3 border-b border-gray-100 py-4 last:border-0 sm:flex-row sm:items-center sm:gap-4'
+                  className='flex flex-col items-start justify-between gap-3 border-b border-gray-100 dark:border-slate-700 py-4 last:border-0 sm:flex-row sm:items-center sm:gap-4'
                 >
                   <div className='flex w-full items-center gap-4 sm:w-auto'>
-                    <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white'>
+                    <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500 dark:bg-blue-600 text-sm font-semibold text-white'>
                       {getInitials(a.title)}
                     </div>
                     <div className='min-w-0 flex-1'>
-                      <p className='truncate font-semibold text-gray-800'>
+                      <p className='truncate font-semibold text-gray-800 dark:text-white'>
                         {a.title}
                       </p>
-                      <p className='truncate text-xs text-gray-500'>
+                      <p className='truncate text-xs text-gray-500 dark:text-gray-400'>
                         Guruh ID: {a.group} • Muddat:{' '}
                         {formatRelativeDate(a.deadline, now)}
                       </p>
@@ -360,7 +360,7 @@ function DashboardPage() {
                         <button
                           type='button'
                           onClick={handleOpenStatus}
-                          className='inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#b80035] hover:bg-[#fff0f3] active:bg-[#ffe6ec] disabled:opacity-50'
+                          className='inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#b80035] dark:text-rose-400 hover:bg-[#fff0f3] dark:hover:bg-rose-950 active:bg-[#ffe6ec] dark:active:bg-rose-900 disabled:opacity-50'
                           disabled={statusLoadingId === a.id}
                           aria-label='Holati'
                         >
@@ -371,7 +371,7 @@ function DashboardPage() {
                           )}
                           Holati
                           {statusData ? (
-                            <span className='text-xs font-semibold text-gray-500'>
+                            <span className='text-xs font-semibold text-gray-500 dark:text-gray-400'>
                               {submitted}/{total} topshirgan
                             </span>
                           ) : null}
@@ -379,55 +379,55 @@ function DashboardPage() {
                       </PopoverTrigger>
                       <PopoverContent
                         align='end'
-                        className='w-64 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.12)]'
+                        className='w-64 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.12)] dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)]'
                       >
                         {statusLoadingId === a.id ? (
-                          <div className='flex items-center gap-2 text-sm text-gray-600'>
+                          <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
                             <Loader2 size={16} className='animate-spin' />
                             Yuklanmoqda...
                           </div>
                         ) : statusData ? (
                           <div className='space-y-3'>
                             <div>
-                              <p className='text-sm font-bold text-gray-800'>
+                              <p className='text-sm font-bold text-gray-800 dark:text-white'>
                                 Topshirish holati
                               </p>
-                              <p className='mt-1 text-xs text-gray-500'>
+                              <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
                                 Jami talabalar: {total}
                               </p>
                             </div>
 
                             <div className='grid grid-cols-2 gap-2 text-sm'>
-                              <div className='rounded-xl bg-emerald-50 px-3 py-2'>
-                                <p className='text-xs font-semibold text-emerald-700'>
+                              <div className='rounded-xl bg-emerald-50 dark:bg-emerald-950 px-3 py-2'>
+                                <p className='text-xs font-semibold text-emerald-700 dark:text-emerald-400'>
                                   Topshirgan
                                 </p>
-                                <p className='mt-1 text-base font-bold text-emerald-700'>
+                                <p className='mt-1 text-base font-bold text-emerald-700 dark:text-emerald-400'>
                                   {submitted}
                                 </p>
                               </div>
-                              <div className='rounded-xl bg-rose-50 px-3 py-2'>
-                                <p className='text-xs font-semibold text-rose-700'>
+                              <div className='rounded-xl bg-rose-50 dark:bg-rose-950 px-3 py-2'>
+                                <p className='text-xs font-semibold text-rose-700 dark:text-rose-400'>
                                   Topshirmagan
                                 </p>
-                                <p className='mt-1 text-base font-bold text-rose-700'>
+                                <p className='mt-1 text-base font-bold text-rose-700 dark:text-rose-400'>
                                   {total - submitted}
                                 </p>
                               </div>
                             </div>
 
-                            <div className='h-2 w-full overflow-hidden rounded-full bg-gray-200'>
+                            <div className='h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700'>
                               <div
                                 className='h-full bg-[#b80035]'
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                            <p className='text-xs text-gray-500'>
+                            <p className='text-xs text-gray-500 dark:text-gray-400'>
                               {submitted} / {total} talaba topshirdi
                             </p>
                           </div>
                         ) : (
-                          <p className='text-sm text-gray-600'>
+                          <p className='text-sm text-gray-600 dark:text-gray-400'>
                             Holat topilmadi
                           </p>
                         )}
@@ -455,9 +455,9 @@ function DashboardPage() {
         </div>
 
         {/* Schedule */}
-        <div className='col-span-1 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] md:p-6 lg:col-span-2'>
+        <div className='col-span-1 rounded-2xl bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none md:p-6 lg:col-span-2'>
           <div className='mb-6 flex items-center justify-between'>
-            <h2 className='text-lg font-bold text-gray-800'>Class Schedule</h2>
+            <h2 className='text-lg font-bold text-gray-800 dark:text-white'>Class Schedule</h2>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <span>
@@ -478,25 +478,25 @@ function DashboardPage() {
           </div>
 
           {loadingGroups ? (
-            <p className='py-8 text-center text-sm text-gray-500'>
+            <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
               Yuklanmoqda...
             </p>
           ) : scheduleItems.length === 0 ? (
-            <p className='py-8 text-center text-sm text-gray-500'>
+            <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
               Bugun darslar yo'q
             </p>
           ) : (
             scheduleItems.map((item, i) => (
               <div key={i} className='flex gap-4 py-3'>
-                <div className='w-1 rounded-full bg-[#b80035]' />
+                <div className='w-1 rounded-full bg-[#b80035] dark:bg-rose-500' />
                 <div className='flex-1'>
-                  <p className='text-sm font-semibold text-gray-800'>
+                  <p className='text-sm font-semibold text-gray-800 dark:text-white'>
                     {item.time}
                   </p>
-                  <p className='mt-1 text-base font-medium text-gray-800'>
+                  <p className='mt-1 text-base font-medium text-gray-800 dark:text-white'>
                     {item.title}
                   </p>
-                  <p className='mt-1 text-sm text-gray-500'>{item.detail}</p>
+                  <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>{item.detail}</p>
                 </div>
               </div>
             ))

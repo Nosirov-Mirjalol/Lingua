@@ -44,7 +44,7 @@ export function NavUser({ user }: NavUserProps) {
     ? '/teacher-dashboard/profile'
     : '/settings/account'
   const settingsPath = isTeacherArea
-    ? '/teacher-dashboard/settings'
+    ? null
     : '/settings'
   const notificationsPath = isTeacherArea
     ? '/teacher-dashboard/notifications'
@@ -95,12 +95,14 @@ export function NavUser({ user }: NavUserProps) {
                     Account
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={settingsPath}>
-                    <CreditCard />
-                    Billing
-                  </Link>
-                </DropdownMenuItem>
+                {settingsPath && (
+                  <DropdownMenuItem asChild>
+                    <Link to={settingsPath}>
+                      <CreditCard />
+                      Billing
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                   <Link to={notificationsPath}>
                     <Bell />
