@@ -51,7 +51,7 @@ const API_ENDPOINTS = {
     USER_ME: '/user',
   },
     STUDENT: {
-    ASSIGNED_GROUPS: '/api/groups/my-groups/',
+    ASSIGNED_GROUPS: '/api/groups/my/',
   },
 }
 
