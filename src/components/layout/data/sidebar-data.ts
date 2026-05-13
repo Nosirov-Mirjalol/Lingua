@@ -42,7 +42,7 @@ export const studentSidebarData: SidebarData = {
         { title: 'Homework', url: '/student/homework', icon: ClipboardList },
         { title: 'Messages', url: '/student/messages', icon: MessageSquare },
         { title: 'Chats', url: '/student-chats', icon: MessageSquare },
-        { title: 'My Group', url: '/student/courses', icon: BookOpen },
+        { title: 'My Group', url: '/student/groups', icon: BookOpen },
         { title: 'Profile', url: '/student/profile', icon: User },
       ],
     },

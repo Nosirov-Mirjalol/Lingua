@@ -1,14 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { getStudentCourses } from '@/api/service/student/course.service'
+import { getMyGroups } from '@/api/service/student/group.service'
 import type {
   StudentAssignment,
   StudentConversation,
-  StudentCourse,
   StudentDashboardStats,
   StudentNotification,
   StudentProfile,
   StudentScheduleItem,
 } from '@/types/student'
+import type { StudentGroup } from '@/api/service/student/group.service'
 
 const getStoredUser = () => {
   if (typeof window === 'undefined') return null
@@ -212,10 +212,10 @@ export const useStudentMessages = () => {
   })
 }
 
-export const useStudentCourses = () => {
+export const useStudentGroups = () => {
   return useQuery({
-    queryKey: ['student', 'courses'],
-    queryFn: (): Promise<StudentCourse[]> => getStudentCourses(),
+    queryKey: ['student', 'groups'],
+    queryFn: (): Promise<StudentGroup[]> => getMyGroups(),
     staleTime: 60_000,
   })
 }
