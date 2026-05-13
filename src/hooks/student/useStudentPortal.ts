@@ -25,24 +25,22 @@ const getStoredUser = () => {
 
 const buildProfile = (): StudentProfile => {
   const stored = getStoredUser()
-  const username = stored?.username || stored?.full_name || 'Lingua Learner'
-  const email = stored?.email || 'student@example.com'
-  const phone = stored?.phone || '+998 90 123 45 67'
-
+  
+  // Return stored data if available, otherwise return empty strings for a clean state
   return {
-    id: stored?.id ?? 100,
-    username,
-    full_name: stored?.full_name || username,
+    id: stored?.id ?? 0,
+    username: stored?.username || '',
+    full_name: stored?.full_name || '',
     role: stored?.role ?? 'user',
-    email,
-    phone,
-    avatar: '/avatars/student1.jpg',
-    activeCourse: 'Advanced English Communication',
-    nextLesson: 'Pronunciation lab with Ms. Ziya at 11:00 AM',
-    completion: 82,
-    attendance: 93,
-    streak: 14,
-    goal: 'Reach B2 fluency in 90 days',
+    avatar: stored?.avatar || '/avatars/student1.jpg',
+    timezone: stored?.timezone || '',
+    bio: stored?.bio || '',
+    learning_goal: stored?.learning_goal || '',
+    activeCourse: stored?.activeCourse || '',
+    nextLesson: stored?.nextLesson || '',
+    completion: stored?.completion ?? 0,
+    attendance: stored?.attendance ?? 0,
+    streak: stored?.streak ?? 0,
   }
 }
 

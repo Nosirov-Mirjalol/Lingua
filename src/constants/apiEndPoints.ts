@@ -50,6 +50,9 @@ const API_ENDPOINTS = {
   USER: {
     USER_ME: '/user',
   },
+    STUDENT: {
+    ASSIGNED_GROUPS: '/api/groups/my-groups/',
+  },
 }
 
 export const {  AUTH,ATTENDANCE, GROUP,COURSE,NOTIFICATIONS,MESSAGES,USER,} = API_ENDPOINTS

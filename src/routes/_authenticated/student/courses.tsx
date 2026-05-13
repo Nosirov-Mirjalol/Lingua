@@ -30,15 +30,12 @@ function StudentCoursesPage() {
     <div className='max-w-7xl space-y-6'>
       <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
         <div>
-          <p className='text-sm uppercase tracking-[0.2em] text-muted-foreground'>
-            Courses
-          </p>
           <h1 className='text-3xl font-semibold text-foreground'>
-            Available courses
+            My Group
           </h1>
         </div>
         <Badge className='rounded-full bg-rose-100 px-3 py-1 text-rose-700'>
-          {courses.length} ta kurs
+          {courses.length} ta guruh
         </Badge>
       </div>
 
@@ -53,7 +50,7 @@ function StudentCoursesPage() {
           <CardContent className='py-10 text-center'>
             <BookOpen className='mx-auto mb-3 h-10 w-10 text-muted-foreground' />
             <p className='text-base font-semibold text-foreground'>
-              Kurslar hozircha ko&apos;rinmadi
+              Guruhlar hozircha mavjud emas
             </p>
           </CardContent>
         </Card>
@@ -62,10 +59,10 @@ function StudentCoursesPage() {
           <CardContent className='py-10 text-center'>
             <BookOpen className='mx-auto mb-3 h-10 w-10 text-muted-foreground' />
             <p className='text-base font-semibold text-foreground'>
-              Hozircha kurslar topilmadi
+              Guruhlar hozircha mavjud emas
             </p>
             <p className='mt-2 text-sm text-muted-foreground'>
-              Admin qo&apos;shgan kurslar shu yerda ko&apos;rinadi.
+              Siz birorta guruhga a&apos;zo emassiz.
             </p>
           </CardContent>
         </Card>
@@ -81,17 +78,17 @@ function StudentCoursesPage() {
                   <div className='min-w-0 flex-1'>
                     <CardTitle className='truncate'>{course.name}</CardTitle>
                     <p className='mt-1 text-sm text-muted-foreground'>
-                      Course ID: #{course.id}
+                      Group ID: #{course.id}
                     </p>
                   </div>
                   <Badge className='rounded-full bg-muted text-muted-foreground'>
-                    Course
+                    Group
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className='pt-0'>
                 <div className='rounded-2xl bg-muted/40 p-4 text-sm text-muted-foreground'>
-                  Admin paneldagi kurslar ro&apos;yxati.
+                  Siz a&apos;zo bo&apos;lgan guruh ma&apos;lumotlari.
                 </div>
               </CardContent>
             </Card>

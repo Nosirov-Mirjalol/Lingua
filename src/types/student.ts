@@ -3,15 +3,15 @@ export interface StudentProfile {
   username: string
   full_name: string
   role: string
-  email: string
-  phone: string
   avatar: string
+  timezone: string
+  bio: string
+  learning_goal: string
   activeCourse: string
   nextLesson: string
   completion: number
   attendance: number
   streak: number
-  goal: string
 }
 
 export interface StudentDashboardStats {

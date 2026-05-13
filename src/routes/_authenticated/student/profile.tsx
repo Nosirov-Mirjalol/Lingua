@@ -13,39 +13,44 @@ export const Route = createFileRoute('/_authenticated/student/profile')({
 })
 
 type ProfileForm = {
+  username: string
   full_name: string
-  email: string
-  phone: string
-  goal: string
+  avatar: string
+  timezone: string
   bio: string
+  learning_goal: string
 }
 
 function StudentProfilePage() {
-  const { data: profile } = useStudentProfile()
+  const { data: profile, isLoading } = useStudentProfile()
   const { register, reset, handleSubmit, formState } = useForm<ProfileForm>({
     defaultValues: {
+      username: '',
       full_name: '',
-      email: '',
-      phone: '',
-      goal: '',
+      avatar: '',
+      timezone: '',
       bio: '',
+      learning_goal: '',
     },
     mode: 'onBlur',
   })
 
+  // Set form values when profile data is loaded from API
   useEffect(() => {
     if (profile) {
       reset({
-        full_name: profile.full_name,
-        email: profile.email,
-        phone: profile.phone,
-        goal: profile.goal,
-        bio: profile.goal,
+        username: profile.username || '',
+        full_name: profile.full_name || '',
+        avatar: profile.avatar || '',
+        timezone: profile.timezone || '',
+        bio: profile.bio || '',
+        learning_goal: profile.learning_goal || '',
       })
     }
   }, [profile, reset])
 
   const onSubmit = (data: ProfileForm) => {
+    // API call for updating profile goes here
     console.log('Update profile', data)
   }
 
@@ -64,29 +69,59 @@ function StudentProfilePage() {
           <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
             <div className='grid gap-4 md:grid-cols-2'>
               <div className='space-y-2'>
-                <Label htmlFor='full_name'>Full name</Label>
-                <Input id='full_name' {...register('full_name')} />
+                <Label htmlFor='username'>Username</Label>
+                <Input 
+                  id='username' 
+                  placeholder='Enter username'
+                  {...register('username')} 
+                />
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='email'>Email address</Label>
-                <Input id='email' type='email' {...register('email')} />
+                <Label htmlFor='full_name'>Full name</Label>
+                <Input 
+                  id='full_name' 
+                  placeholder='Enter full name'
+                  {...register('full_name')} 
+                />
               </div>
             </div>
 
             <div className='grid gap-4 md:grid-cols-2'>
               <div className='space-y-2'>
-                <Label htmlFor='phone'>Phone number</Label>
-                <Input id='phone' {...register('phone')} />
+                <Label htmlFor='avatar'>Avatar URL</Label>
+                <Input 
+                  id='avatar' 
+                  placeholder='https://example.com/avatar.jpg'
+                  {...register('avatar')} 
+                />
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='goal'>Learning goal</Label>
-                <Input id='goal' {...register('goal')} />
+                <Label htmlFor='timezone'>Timezone</Label>
+                <Input 
+                  id='timezone' 
+                  placeholder='UTC+5'
+                  {...register('timezone')} 
+                />
               </div>
             </div>
 
             <div className='space-y-2'>
+              <Label htmlFor='learning_goal'>Learning goal</Label>
+              <Input 
+                id='learning_goal' 
+                placeholder='e.g. Learn English for work'
+                {...register('learning_goal')} 
+              />
+            </div>
+
+            <div className='space-y-2'>
               <Label htmlFor='bio'>Bio</Label>
-              <Textarea id='bio' rows={4} {...register('bio')} />
+              <Textarea 
+                id='bio' 
+                rows={4} 
+                placeholder='Tell us about yourself'
+                {...register('bio')} 
+              />
             </div>
 
             <div className='flex justify-end'>

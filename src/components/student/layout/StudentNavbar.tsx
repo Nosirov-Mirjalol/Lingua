@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ProfileDropdown } from '@/components/profile-dropdown'
 import { StudentNotificationModal } from '@/components/student/notifications/StudentNotificationModal'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
@@ -14,7 +13,7 @@ export function StudentNavbar() {
   return (
     <>
       <Header fixed>
-        <div className='ms-auto flex items-center gap-4 sm:gap-6'>
+        <div className='ms-auto flex items-center gap-2 sm:gap-3'>
           <Search placeholder='Search...' />
           <ThemeSwitch />
 
@@ -29,10 +28,6 @@ export function StudentNavbar() {
           </Button>
 
           <ConfigDrawer />
-
-          <div className='flex items-center'>
-            <ProfileDropdown />
-          </div>
         </div>
       </Header>
 
