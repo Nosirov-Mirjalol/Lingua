@@ -86,7 +86,7 @@ function GroupDetailPage() {
   if (Number.isNaN(numericGroupId)) {
     return (
       <div className='mx-auto max-w-4xl px-4 py-6'>
-        <p className='text-sm text-rose-700'>Invalid group id</p>
+        <p className='text-sm text-rose-700 dark:text-rose-400'>Invalid group id</p>
       </div>
     )
   }
@@ -96,17 +96,17 @@ function GroupDetailPage() {
       <div className='mb-6 flex items-center gap-3'>
         <Link
           to='/teacher-dashboard/groups'
-          className='inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+          className='inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
           aria-label='Back to groups'
         >
           <ArrowLeft size={18} />
         </Link>
 
         <div className='min-w-0'>
-          <h1 className='truncate text-xl font-bold text-slate-900'>
+          <h1 className='truncate text-xl font-bold text-slate-900 dark:text-white'>
             Manage Students
           </h1>
-          <p className='truncate text-sm text-slate-500'>
+          <p className='truncate text-sm text-slate-500 dark:text-slate-400'>
             {isLoadingGroups
               ? 'Loading group...'
               : group
@@ -116,8 +116,8 @@ function GroupDetailPage() {
         </div>
       </div>
 
-      <div className='rounded-lg border border-slate-200 bg-white p-4'>
-        <h2 className='mb-3 text-sm font-semibold text-slate-900'>
+      <div className='rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4'>
+        <h2 className='mb-3 text-sm font-semibold text-slate-900 dark:text-white'>
           Add student
         </h2>
 
@@ -127,18 +127,18 @@ function GroupDetailPage() {
               value={selectedStudentUsername}
               onValueChange={setSelectedStudentUsername}
             >
-              <SelectTrigger className='h-10 w-full rounded-md'>
+              <SelectTrigger className='h-10 w-full rounded-md dark:border-slate-800 dark:bg-slate-900 dark:text-white'>
                 <SelectValue placeholder='Select a student...' />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className='dark:border-slate-800 dark:bg-slate-900 dark:text-white'>
                 {isLoadingStudents ? (
-                  <div className='p-3 text-sm text-slate-500'>Loading...</div>
+                  <div className='p-3 text-sm text-slate-500 dark:text-slate-400'>Loading...</div>
                 ) : isErrorStudents ? (
-                  <div className='p-3 text-sm text-rose-600'>
+                  <div className='p-3 text-sm text-rose-600 dark:text-rose-400'>
                     Error loading students
                   </div>
                 ) : availableStudents.length === 0 ? (
-                  <div className='p-3 text-sm text-slate-500'>
+                  <div className='p-3 text-sm text-slate-500 dark:text-slate-400'>
                     No available students
                   </div>
                 ) : (
@@ -168,21 +168,21 @@ function GroupDetailPage() {
         </div>
       </div>
 
-      <div className='mt-6 rounded-lg border border-slate-200 bg-white'>
-        <div className='flex items-center justify-between border-b border-slate-200 p-4'>
-          <h2 className='text-sm font-semibold text-slate-900'>Students</h2>
-          <div className='flex items-center gap-2 text-sm text-slate-600'>
+      <div className='mt-6 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'>
+        <div className='flex items-center justify-between border-b border-slate-200 dark:border-slate-800 p-4'>
+          <h2 className='text-sm font-semibold text-slate-900 dark:text-white'>Students</h2>
+          <div className='flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400'>
             <Users size={16} />
             <span>{group?.students.length ?? 0}</span>
           </div>
         </div>
 
         {!group ? (
-          <div className='p-4 text-sm text-slate-600'>
+          <div className='p-4 text-sm text-slate-600 dark:text-slate-400'>
             {isLoadingGroups ? 'Loading...' : 'Group not found'}
           </div>
         ) : group.students.length === 0 ? (
-          <div className='p-4 text-sm text-slate-600'>
+          <div className='p-4 text-sm text-slate-600 dark:text-slate-400'>
             No students in this group.
           </div>
         ) : (
@@ -191,23 +191,23 @@ function GroupDetailPage() {
               {group.students.map((s) => (
                 <div
                   key={s.id}
-                  className='flex items-center justify-between rounded-md border border-slate-200 px-3 py-2'
+                  className='flex items-center justify-between rounded-md border border-slate-200 dark:border-slate-800 px-3 py-2'
                 >
                   <div className='min-w-0'>
-                    <p className='truncate text-sm font-medium text-slate-900'>
+                    <p className='truncate text-sm font-medium text-slate-900 dark:text-white'>
                       {pickStudentDisplayName(
                         s.student,
                         s.full_name ?? s.student_name ?? s.username
                       )}
                     </p>
-                    <p className='text-xs text-slate-500'>
+                    <p className='text-xs text-slate-500 dark:text-slate-400'>
                       Joined: {formatDisplayDate(s.joined_at) || 'Mavjud emas'}
                     </p>
                   </div>
 
                   <button
                     type='button'
-                    className='inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 disabled:opacity-50'
+                    className='inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 disabled:opacity-50'
                     onClick={() => handleRemoveStudent(s.student)}
                     disabled={removingStudentId === s.student}
                   >

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useRouterState, useNavigate } from '@tanstack/react-router'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -10,6 +11,20 @@ import { ThemeSwitch } from '@/components/theme-switch'
 
 export function StudentNavbar() {
   const [openNotifications, setOpenNotifications] = useState(false)
+  const navigate = useNavigate()
+  const pathname = useRouterState({
+    select: (s) => s.location.pathname,
+  })
+  const isStudentArea = pathname.startsWith('/student')
+  const isTeacherArea = pathname.startsWith('/teacher-dashboard')
+
+  const handleNotificationClick = () => {
+    if (isTeacherArea) {
+      navigate({ to: '/teacher-dashboard/notifications' })
+    } else {
+      setOpenNotifications(true)
+    }
+  }
 
   return (
     <>
@@ -22,7 +37,7 @@ export function StudentNavbar() {
             variant='ghost'
             size='icon'
             className='h-9 w-9 rounded-full text-foreground hover:bg-primary/10'
-            onClick={() => setOpenNotifications(true)}
+            onClick={handleNotificationClick}
             aria-label='Open notifications'
           >
             <Bell size={18} />
@@ -36,10 +51,12 @@ export function StudentNavbar() {
         </div>
       </Header>
 
-      <StudentNotificationModal
-        open={openNotifications}
-        onOpenChange={setOpenNotifications}
-      />
+      {isStudentArea && (
+        <StudentNotificationModal
+          open={openNotifications}
+          onOpenChange={setOpenNotifications}
+        />
+      )}
     </>
   )
 }

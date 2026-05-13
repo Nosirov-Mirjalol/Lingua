@@ -11,8 +11,8 @@ function AnnouncementsPage() {
     <div>
       <div className='mb-8 flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold text-gray-800'>Announcements</h1>
-          <p className='mt-2 text-gray-500'>Create and manage announcements for your classes</p>
+          <h1 className='text-3xl font-bold text-gray-800 dark:text-white'>Announcements</h1>
+          <p className='mt-2 text-gray-500 dark:text-gray-400'>Create and manage announcements for your classes</p>
         </div>
         <RoseButton className='rounded-xl px-6 py-3' roseVariant='gradient'>
           <Plus size={18} />
@@ -50,28 +50,28 @@ function AnnouncementsPage() {
         ].map((announcement, index) => (
           <div
             key={index}
-            className='rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'
+            className='rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none border border-transparent dark:border-slate-800'
           >
             <div className='flex items-start justify-between'>
               <div className='flex flex-1 gap-4'>
                 <div
                   className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${
-                    announcement.priority === 'high' ? 'bg-[#b80035]' : 'bg-[#fff0f3]'
+                    announcement.priority === 'high' ? 'bg-[#b80035] dark:bg-rose-600' : 'bg-[#fff0f3] dark:bg-rose-950/50'
                   }`}
                 >
-                  <Megaphone size={24} className={announcement.priority === 'high' ? 'text-white' : 'text-[#b80035]'} />
+                  <Megaphone size={24} className={announcement.priority === 'high' ? 'text-white' : 'text-[#b80035] dark:text-rose-400'} />
                 </div>
                 <div className='flex-1'>
                   <div className='mb-2 flex items-center gap-3'>
-                    <h3 className='text-lg font-bold text-gray-800'>{announcement.title}</h3>
+                    <h3 className='text-lg font-bold text-gray-800 dark:text-white'>{announcement.title}</h3>
                     {announcement.priority === 'high' && (
-                      <span className='rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-600'>
+                      <span className='rounded-full bg-red-100 dark:bg-rose-950 px-3 py-1 text-xs font-semibold text-red-600 dark:text-rose-400'>
                         Important
                       </span>
                     )}
                   </div>
-                  <p className='text-gray-600'>{announcement.content}</p>
-                  <div className='mt-4 flex flex-wrap gap-4 text-sm text-gray-500'>
+                  <p className='text-gray-600 dark:text-gray-400'>{announcement.content}</p>
+                  <div className='mt-4 flex flex-wrap gap-4 text-sm text-gray-500 dark:text-slate-500'>
                     <div className='flex items-center gap-2'>
                       <Calendar size={16} />
                       <span>{announcement.date}</span>
@@ -83,7 +83,7 @@ function AnnouncementsPage() {
                     <div className='flex items-center gap-2'>
                       <span>Groups:</span>
                       {announcement.groups.map((group, i) => (
-                        <span key={i} className='rounded-full bg-gray-100 px-2 py-1 text-xs'>
+                        <span key={i} className='rounded-full bg-gray-100 dark:bg-slate-800 px-2 py-1 text-xs dark:text-slate-300'>
                           {group}
                         </span>
                       ))}
@@ -92,10 +92,10 @@ function AnnouncementsPage() {
                 </div>
               </div>
               <div className='flex gap-2'>
-                <button className='rounded-lg p-2 text-gray-400 hover:text-[#b80035] hover:bg-[#fff0f3]'>
+                <button className='rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:text-[#b80035] dark:hover:text-rose-400 hover:bg-[#fff0f3] dark:hover:bg-rose-950/50'>
                   <Edit size={18} />
                 </button>
-                <button className='rounded-lg p-2 text-gray-400 hover:text-red-600 hover:bg-red-50'>
+                <button className='rounded-lg p-2 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-rose-500 hover:bg-red-50 dark:hover:bg-rose-950/50'>
                   <Trash2 size={18} />
                 </button>
               </div>

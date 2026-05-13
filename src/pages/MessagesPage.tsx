@@ -168,7 +168,7 @@ export function MessagesPage() {
 
   if (groupsIsError) {
     return (
-      <div className='flex h-full items-center justify-center text-slate-500'>
+      <div className='flex h-full items-center justify-center text-slate-500 dark:text-slate-400'>
         Xatolik yuz berdi. Iltimos qaytadan urinib ko'ring.
       </div>
     )
@@ -176,24 +176,24 @@ export function MessagesPage() {
 
   return (
     <div className='mx-auto max-w-7xl'>
-      <div className='flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'>
+      <div className='flex h-[calc(100vh-8rem)] w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#020617] shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none'>
         {/* Sidebar */}
         <div
           className={cn(
-            'flex w-full flex-col border-r border-slate-100 bg-slate-50/50 sm:w-80 lg:w-96',
+            'flex w-full flex-col border-r border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 sm:w-80 lg:w-96',
             selectedGroupId && 'hidden sm:flex'
           )}
         >
           <div className='flex items-center justify-between px-4 py-3 sm:py-4'>
-            <h2 className='text-sm font-bold text-slate-900 sm:text-base'>
+            <h2 className='text-sm font-bold text-slate-900 dark:text-white sm:text-base'>
               Xabarlar
             </h2>
-            <span className='rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-500'>
+            <span className='rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400'>
               {groups.length}
             </span>
           </div>
 
-          <hr />
+          <hr className='dark:border-slate-800' />
 
           <div className='flex-1 overflow-y-auto p-2 sm:p-3'>
             {groupsLoading ? (
@@ -217,14 +217,14 @@ export function MessagesPage() {
                       aria-label={group.name}
                       onClick={() => setSelectedGroupId(group.id)}
                       className={cn(
-                        'flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-white hover:shadow-sm sm:gap-4 sm:p-4',
-                        isActive && 'bg-white shadow-md ring-1 ring-slate-100'
+                        'flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm sm:gap-4 sm:p-4',
+                        isActive && 'bg-white dark:bg-slate-800 shadow-md ring-1 ring-slate-100 dark:ring-slate-700'
                       )}
                     >
                       <div
                         className={cn(
-                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-100 text-slate-600 sm:h-12 sm:w-12',
-                          isActive && 'border-rose-100 bg-rose-50 text-rose-600'
+                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 sm:h-12 sm:w-12',
+                          isActive && 'border-rose-100 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
                         )}
                       >
                         <span className='text-sm font-bold sm:text-base'>
@@ -235,14 +235,14 @@ export function MessagesPage() {
                         <div className='flex items-center justify-between'>
                           <span
                             className={cn(
-                              'truncate text-sm font-bold text-slate-900 sm:text-base',
-                              isActive && 'text-rose-600'
+                              'truncate text-sm font-bold text-slate-900 dark:text-white sm:text-base',
+                              isActive && 'text-rose-600 dark:text-rose-400'
                             )}
                           >
                             {group.name}
                           </span>
                           {group.last_message && (
-                            <span className='text-[10px] font-bold text-slate-400'>
+                            <span className='text-[10px] font-bold text-slate-400 dark:text-slate-500'>
                               {format(
                                 new Date(group.last_message.created_at),
                                 'HH:mm'
@@ -250,7 +250,7 @@ export function MessagesPage() {
                             </span>
                           )}
                         </div>
-                        <p className='mt-0.5 truncate text-xs text-slate-500'>
+                        <p className='mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400'>
                           {group.last_message?.content || "Hali xabar yo'q"}
                         </p>
                       </div>
@@ -259,7 +259,7 @@ export function MessagesPage() {
                 })}
               </div>
             ) : (
-              <div className='p-6 text-center text-sm text-slate-400 sm:p-8'>
+              <div className='p-6 text-center text-sm text-slate-400 dark:text-slate-500 sm:p-8'>
                 Guruhlar topilmadi
               </div>
             )}
@@ -269,14 +269,14 @@ export function MessagesPage() {
         {/* Chat area */}
         <div
           className={cn(
-            'flex flex-1 flex-col overflow-hidden bg-white',
+            'flex flex-1 flex-col overflow-hidden bg-white dark:bg-[#020617]',
             !selectedGroupId && 'hidden sm:flex'
           )}
         >
           {selectedGroup ? (
             <>
               {/* Header */}
-              <div className='flex h-16 shrink-0 items-center gap-3 border-b border-slate-50 px-4 sm:h-20 sm:gap-4 sm:px-6'>
+              <div className='flex h-16 shrink-0 items-center gap-3 border-b border-slate-50 dark:border-slate-800 px-4 sm:h-20 sm:gap-4 sm:px-6'>
                 <Button
                   type='button'
                   variant='ghost'
@@ -287,18 +287,18 @@ export function MessagesPage() {
                 >
                   <ArrowLeft size={18} />
                 </Button>
-                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rose-100 bg-rose-50 text-rose-600 sm:h-12 sm:w-12'>
+                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rose-100 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 sm:h-12 sm:w-12'>
                   <span className='text-sm font-bold sm:text-base'>
                     {selectedGroup.name[0]?.toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <h3 className='text-sm leading-none font-bold text-slate-900 sm:text-base'>
+                  <h3 className='text-sm leading-none font-bold text-slate-900 dark:text-white sm:text-base'>
                     {selectedGroup.name}
                   </h3>
                   <div className='mt-1 flex items-center gap-1.5'>
                     <span className='h-2 w-2 rounded-full bg-emerald-500' />
-                    <span className='text-[10px] font-bold tracking-wider text-emerald-600 uppercase sm:text-[11px]'>
+                    <span className='text-[10px] font-bold tracking-wider text-emerald-600 uppercase sm:text-[11px] dark:text-emerald-400'>
                       {selectedGroup.status}
                     </span>
                   </div>
@@ -308,7 +308,7 @@ export function MessagesPage() {
               {/* Messages */}
               <div
                 ref={messagesContainerRef}
-                className='flex-1 overflow-y-auto bg-slate-50/30 p-4 sm:p-6'
+                className='flex-1 overflow-y-auto bg-slate-50/30 dark:bg-slate-900/10 p-4 sm:p-6'
               >
                 <div className='flex flex-col gap-4 sm:gap-6'>
                   {messagesLoading ? (
@@ -342,7 +342,7 @@ export function MessagesPage() {
                           )}
                         >
                           {showSender && (
-                            <span className='ml-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase'>
+                            <span className='ml-1 text-[10px] font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500'>
                               {msg.sender.full_name}
                             </span>
                           )}
@@ -376,8 +376,8 @@ export function MessagesPage() {
                               className={cn(
                                 'max-w-full rounded-2xl px-4 py-2.5 text-sm shadow-sm sm:px-5 sm:py-3',
                                 isOwn
-                                  ? 'rounded-br-none bg-rose-600 text-white'
-                                  : 'rounded-bl-none border border-slate-200 bg-white text-slate-800'
+                                  ? 'rounded-br-none bg-rose-600 text-white shadow-rose-900/20'
+                                  : 'rounded-bl-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100'
                               )}
                             >
                               {msg.message_type === 'image' &&
@@ -399,27 +399,27 @@ export function MessagesPage() {
                               <p className='leading-relaxed'>{msg.content}</p>
                             </div>
                           </div>
-                          <span className='px-1 text-[10px] font-bold text-slate-400'>
+                          <span className='px-1 text-[10px] font-bold text-slate-400 dark:text-slate-500'>
                             {format(new Date(msg.created_at), 'HH:mm')}
                           </span>
                         </div>
                       )
                     })
-                  ) : (
-                    <div className='flex flex-1 items-center justify-center p-8 text-center text-slate-400'>
-                      Hali xabarlar yo'q
-                    </div>
-                  )}
+                    ) : (
+                      <div className='flex flex-1 items-center justify-center p-8 text-center text-slate-400 dark:text-slate-500'>
+                        Hali xabarlar yo'q
+                      </div>
+                    )}
                 </div>
               </div>
 
               {/* Composer */}
-              <div className='shrink-0 border-t border-slate-50 bg-white p-4 sm:p-6'>
+              <div className='shrink-0 border-t border-slate-50 dark:border-slate-800 bg-white dark:bg-[#020617] p-4 sm:p-6'>
                 <form onSubmit={handleSend} className='flex items-end gap-3'>
                   <textarea
                     rows={1}
                     placeholder='Xabar yozing...'
-                    className='flex-1 resize-none rounded-2xl border-none bg-slate-100/50 px-5 py-3 text-sm placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-rose-500/10 focus:outline-none sm:px-6 sm:py-3.5'
+                    className='flex-1 resize-none rounded-2xl border-none bg-slate-100/50 dark:bg-slate-900/50 px-5 py-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-600 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-rose-500/10 focus:outline-none sm:px-6 sm:py-3.5'
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={(e) => {
@@ -431,7 +431,7 @@ export function MessagesPage() {
                     size='icon'
                     aria-label='Yuborish'
                     disabled={!messageText.trim() || sendMutation.isPending}
-                    className='h-10 w-10 shrink-0 rounded-xl bg-rose-600 text-white shadow-lg shadow-rose-200 hover:bg-rose-700 active:scale-95 disabled:opacity-50 sm:h-12 sm:w-12'
+                    className='h-10 w-10 shrink-0 rounded-xl bg-rose-600 text-white shadow-lg shadow-rose-200 dark:shadow-none hover:bg-rose-700 active:scale-95 disabled:opacity-50 sm:h-12 sm:w-12'
                   >
                     <Send size={18} className='ml-0.5 sm:h-5 sm:w-5' />
                   </Button>
@@ -440,13 +440,13 @@ export function MessagesPage() {
             </>
           ) : (
             <div className='flex flex-1 flex-col items-center justify-center p-8 text-center sm:p-12'>
-              <div className='mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-rose-50 text-rose-200 sm:mb-8 sm:h-28 sm:w-28'>
+              <div className='mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/30 text-rose-200 dark:text-rose-800 sm:mb-8 sm:h-28 sm:w-28'>
                 <MessagesSquare size={40} className='sm:h-14 sm:w-14' />
               </div>
-              <h3 className='mb-3 text-xl font-black text-slate-900 sm:text-2xl'>
+              <h3 className='mb-3 text-xl font-black text-slate-900 dark:text-white sm:text-2xl'>
                 Chat tanlang
               </h3>
-              <p className='max-w-xs text-sm text-slate-500'>
+              <p className='max-w-xs text-sm text-slate-500 dark:text-slate-400'>
                 Chap tomondagi ro'yxatdan guruhni tanlang va muloqotni boshlang.
               </p>
             </div>
