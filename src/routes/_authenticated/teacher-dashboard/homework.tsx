@@ -4,7 +4,6 @@ import type { Assignment } from '@/types/assignment.types'
 import {
   BookOpen,
   Plus,
-  Download,
   ChevronDown,
   PencilLine,
   Trash2,
@@ -200,10 +199,10 @@ function HomeworkPage() {
     <div>
       <div className='mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center md:mb-8'>
         <div>
-          <h1 className='text-2xl font-bold text-gray-800 md:text-3xl'>
+          <h1 className='text-2xl font-bold text-gray-800 dark:text-white md:text-3xl'>
             Homework
           </h1>
-          <p className='mt-1 text-sm text-gray-500 md:mt-2 md:text-base'>
+          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400 md:mt-2 md:text-base'>
             Create and manage homework assignments
           </p>
         </div>
@@ -243,12 +242,12 @@ function HomeworkPage() {
           }
         }}
       >
-        <DialogContent className='max-w-3xl rounded-2xl bg-white p-6 shadow-[0_30px_60px_-15px_rgba(25,28,30,0.20)]'>
+        <DialogContent className='max-w-3xl rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_30px_60px_-15px_rgba(25,28,30,0.20)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border-none'>
           <DialogHeader>
-            <DialogTitle className='text-xl font-bold text-gray-800'>
+            <DialogTitle className='text-xl font-bold text-gray-800 dark:text-white'>
               {detailsAssignment?.title ?? 'Topshiriq'}
               {detailsAssignment ? (
-                <span className='ms-2 text-sm font-semibold text-gray-500'>
+                <span className='ms-2 text-sm font-semibold text-gray-500 dark:text-gray-400'>
                   (Guruh ID: {detailsAssignment.group})
                 </span>
               ) : null}
@@ -256,7 +255,7 @@ function HomeworkPage() {
           </DialogHeader>
 
           {detailsLoading ? (
-            <div className='flex items-center justify-center gap-2 py-10 text-sm text-gray-600'>
+            <div className='flex items-center justify-center gap-2 py-10 text-sm text-gray-600 dark:text-gray-400'>
               <Loader2 size={18} className='animate-spin' />
               Yuklanmoqda...
             </div>
@@ -276,16 +275,16 @@ function HomeworkPage() {
 
               return (
                 <div className='space-y-5'>
-                  <div className='rounded-2xl bg-gray-50 p-4'>
+                  <div className='rounded-2xl bg-gray-50 dark:bg-slate-800/50 p-4'>
                     <div className='flex items-center justify-between gap-3'>
-                      <p className='text-sm font-semibold text-gray-800'>
+                      <p className='text-sm font-semibold text-gray-800 dark:text-white'>
                         {submitted} / {total} talaba topshirdi
                       </p>
-                      <p className='text-xs font-semibold text-gray-500'>
+                      <p className='text-xs font-semibold text-gray-500 dark:text-gray-400'>
                         {pct}%
                       </p>
                     </div>
-                    <div className='mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200'>
+                    <div className='mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700'>
                       <div
                         className='h-full bg-[#b80035]'
                         style={{ width: `${pct}%` }}
@@ -304,11 +303,11 @@ function HomeworkPage() {
                         setDetailsTab(v as 'topshirgan' | 'topshirmagan')
                       }
                     >
-                      <TabsList className='w-full rounded-2xl bg-gray-50 p-1'>
-                        <TabsTrigger value='topshirgan' className='flex-1'>
+                      <TabsList className='w-full rounded-2xl bg-gray-50 dark:bg-slate-800 p-1'>
+                        <TabsTrigger value='topshirgan' className='flex-1 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-white'>
                           Topshirgan ({submittedList.length})
                         </TabsTrigger>
-                        <TabsTrigger value='topshirmagan' className='flex-1'>
+                        <TabsTrigger value='topshirmagan' className='flex-1 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-white'>
                           Topshirmagan ({notSubmittedList.length})
                         </TabsTrigger>
                       </TabsList>
@@ -323,36 +322,36 @@ function HomeworkPage() {
                             {submittedList.map((s) => (
                               <div
                                 key={s.student_id}
-                                className='rounded-2xl bg-white p-4 shadow-[0_18px_35px_-14px_rgba(25,28,30,0.10)]'
+                                className='rounded-2xl bg-white dark:bg-slate-800 p-4 shadow-[0_18px_35px_-14px_rgba(25,28,30,0.10)] dark:shadow-none'
                               >
                                 <div className='flex items-start justify-between gap-3'>
                                   <div className='min-w-0'>
-                                    <p className='truncate text-sm font-bold text-gray-800'>
+                                    <p className='truncate text-sm font-bold text-gray-800 dark:text-white'>
                                       {s.full_name || s.username}
                                     </p>
-                                    <p className='mt-1 text-xs text-gray-500'>
+                                    <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
                                       Submitted:{' '}
                                       {formatSubmittedAt(s.submitted_at)}
                                     </p>
                                   </div>
-                                  <span className='shrink-0 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700'>
+                                  <span className='shrink-0 rounded-full bg-emerald-100 dark:bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400'>
                                     Topshirgan
                                   </span>
                                 </div>
                                 <div className='mt-3 grid grid-cols-2 gap-2 text-sm'>
-                                  <div className='rounded-xl bg-gray-50 px-3 py-2'>
-                                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase'>
+                                  <div className='rounded-xl bg-gray-50 dark:bg-slate-700/50 px-3 py-2'>
+                                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500 uppercase'>
                                       Ball
                                     </p>
-                                    <p className='mt-1 font-semibold text-gray-800'>
+                                    <p className='mt-1 font-semibold text-gray-800 dark:text-white'>
                                       {s.score ?? '—'}
                                     </p>
                                   </div>
-                                  <div className='rounded-xl bg-gray-50 px-3 py-2'>
-                                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase'>
+                                  <div className='rounded-xl bg-gray-50 dark:bg-slate-700/50 px-3 py-2'>
+                                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500 uppercase'>
                                       Javob
                                     </p>
-                                    <p className='mt-1 truncate font-semibold text-gray-800'>
+                                    <p className='mt-1 truncate font-semibold text-gray-800 dark:text-white'>
                                       {s.text_answer || s.file_answer
                                         ? 'Mavjud'
                                         : '—'}
@@ -375,18 +374,18 @@ function HomeworkPage() {
                             {notSubmittedList.map((s) => (
                               <div
                                 key={s.student_id}
-                                className='rounded-2xl bg-white p-4 shadow-[0_18px_35px_-14px_rgba(25,28,30,0.10)]'
+                                className='rounded-2xl bg-white dark:bg-slate-800 p-4 shadow-[0_18px_35px_-14px_rgba(25,28,30,0.10)] dark:shadow-none'
                               >
                                 <div className='flex items-start justify-between gap-3'>
                                   <div className='min-w-0'>
-                                    <p className='truncate text-sm font-bold text-gray-800'>
+                                    <p className='truncate text-sm font-bold text-gray-800 dark:text-white'>
                                       {s.full_name || s.username}
                                     </p>
-                                    <p className='mt-1 text-xs text-gray-500'>
+                                    <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
                                       Submitted: —
                                     </p>
                                   </div>
-                                  <span className='shrink-0 rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700'>
+                                  <span className='shrink-0 rounded-full bg-rose-100 dark:bg-rose-950 px-3 py-1 text-xs font-semibold text-rose-700 dark:text-rose-400'>
                                     Topshirmagan
                                   </span>
                                 </div>
@@ -412,48 +411,44 @@ function HomeworkPage() {
       <div className='mb-6 flex flex-wrap items-center gap-2 md:gap-4'>
         <button
           onClick={() => setFilter('all')}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold ${
+          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
             filter === 'all'
-              ? 'bg-[#fff0f3] text-[#b80035]'
-              : 'text-gray-600 hover:bg-gray-100'
+              ? 'bg-[#fff0f3] dark:bg-rose-950/50 text-[#b80035] dark:text-rose-400'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'
           }`}
         >
           Barchasi
         </button>
         <button
           onClick={() => setFilter('active')}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold ${
+          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
             filter === 'active'
-              ? 'bg-[#fff0f3] text-[#b80035]'
-              : 'text-gray-600 hover:bg-gray-100'
+              ? 'bg-[#fff0f3] dark:bg-rose-950/50 text-[#b80035] dark:text-rose-400'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'
           }`}
         >
           Faol
         </button>
         <button
           onClick={() => setFilter('completed')}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold ${
+          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
             filter === 'completed'
-              ? 'bg-[#fff0f3] text-[#b80035]'
-              : 'text-gray-600 hover:bg-gray-100'
+              ? 'bg-[#fff0f3] dark:bg-rose-950/50 text-[#b80035] dark:text-rose-400'
+              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'
           }`}
         >
           Tugatilgan
-        </button>
-        <button className='mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 sm:mt-0 sm:ml-auto sm:w-auto'>
-          <Download size={16} />
-          Eksport
         </button>
       </div>
 
       {/* Homework Cards */}
       <div className='grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2'>
         {isLoading ? (
-          <div className='rounded-2xl bg-white p-6 text-sm text-gray-500 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'>
+          <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 text-sm text-gray-500 dark:text-gray-400 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none'>
             Topshiriqlar yuklanmoqda...
           </div>
         ) : filteredAssignments.length === 0 ? (
-          <div className='rounded-2xl bg-white p-6 text-sm text-gray-500 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'>
+          <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 text-sm text-gray-500 dark:text-gray-400 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none'>
             Hozircha topshiriqlar mavjud emas.
           </div>
         ) : (
@@ -462,60 +457,60 @@ function HomeworkPage() {
             return (
               <div
                 key={hw.id}
-                className='rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)]'
+                className='rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none border border-transparent dark:border-slate-800'
               >
                 <div className='mb-4 flex items-start justify-between'>
-                  <div className='rounded-xl bg-[#fff0f3] p-3 text-[#b80035]'>
+                  <div className='rounded-xl bg-[#fff0f3] dark:bg-rose-950/50 p-3 text-[#b80035] dark:text-rose-400'>
                     <BookOpen size={24} />
                   </div>
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-semibold ${
                       status === 'active'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-700'
+                        ? 'bg-green-100 dark:bg-emerald-950 text-green-700 dark:text-emerald-400'
+                        : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-400'
                     }`}
                   >
                     {status === 'active' ? 'Faol' : 'Tugatilgan'}
                   </span>
                 </div>
-                <h3 className='text-lg font-bold text-gray-800'>{hw.title}</h3>
-                <p className='mt-1 text-sm text-gray-500'>
+                <h3 className='text-lg font-bold text-gray-800 dark:text-white'>{hw.title}</h3>
+                <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
                   Guruh ID: {hw.group}
                 </p>
                 <div className='mt-4 grid grid-cols-2 gap-2 text-sm'>
                   <div
-                    className={`rounded-xl px-3 py-2 text-gray-600 ${
-                      status === 'completed' ? 'bg-red-50' : 'bg-gray-50'
+                    className={`rounded-xl px-3 py-2 ${
+                      status === 'completed' ? 'bg-red-50 dark:bg-rose-950/20' : 'bg-gray-50 dark:bg-slate-800/50'
                     }`}
                   >
-                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase'>
+                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500 uppercase'>
                       Muddat
                     </p>
                     <p
                       className={`mt-1 font-medium ${
                         status === 'completed'
-                          ? 'text-red-700'
-                          : 'text-gray-700'
+                          ? 'text-red-700 dark:text-rose-400'
+                          : 'text-gray-700 dark:text-slate-200'
                       }`}
                     >
                       {formatDate(hw.deadline)}
                     </p>
                     {status === 'completed' && (
-                      <p className='mt-1 text-xs text-red-600'>
+                      <p className='mt-1 text-xs text-red-600 dark:text-rose-500'>
                         Deadline o'tgan
                       </p>
                     )}
                   </div>
-                  <div className='rounded-xl bg-gray-50 px-3 py-2 text-gray-600'>
-                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 uppercase'>
+                  <div className='rounded-xl bg-gray-50 dark:bg-slate-800/50 px-3 py-2'>
+                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500 uppercase'>
                       Maks ball
                     </p>
-                    <p className='mt-1 font-medium text-gray-700'>
+                    <p className='mt-1 font-medium text-gray-700 dark:text-slate-200'>
                       Maks ball: {hw.max_score}
                     </p>
                   </div>
                 </div>
-                <div className='mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-200'>
+                <div className='mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700'>
                   <div
                     className='h-full bg-[#b80035]'
                     style={{
@@ -526,7 +521,7 @@ function HomeworkPage() {
                 <div className='mt-5 flex flex-wrap items-center gap-2'>
                   <RoseButton
                     roseVariant='outline'
-                    className='h-10 rounded-xl border-gray-300 px-3 text-gray-700 hover:bg-gray-50'
+                    className='h-10 rounded-xl border-gray-300 dark:border-slate-700 px-3 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                     onClick={() => handleEdit(hw)}
                   >
                     <PencilLine size={16} />
@@ -536,7 +531,7 @@ function HomeworkPage() {
                     <DropdownMenuTrigger asChild>
                       <RoseButton
                         roseVariant='outline'
-                        className='h-10 rounded-xl border-red-200 px-3 text-red-600 hover:bg-red-50'
+                        className='h-10 rounded-xl border-red-200 dark:border-rose-900/50 px-3 text-red-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-950/30'
                       >
                         <Trash2 size={16} />
                         O&apos;chirish
@@ -559,7 +554,7 @@ function HomeworkPage() {
                   </DropdownMenu>
                   <RoseButton
                     roseVariant='outline'
-                    className='h-10 rounded-xl border-gray-300 px-3 text-gray-700 hover:bg-gray-50'
+                    className='h-10 rounded-xl border-gray-300 dark:border-slate-700 px-3 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
                     onClick={() => handleOpenDetails(hw)}
                     disabled={detailsLoadingId === hw.id}
                   >

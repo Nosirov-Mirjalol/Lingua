@@ -30,7 +30,7 @@ const studentSidebarData = {
         { title: 'Schedule', url: '/student/schedule', icon: CalendarDays },
         { title: 'Homework', url: '/student/homework', icon: ClipboardList },
         { title: 'Messages', url: '/student/messages', icon: MessageSquare },
-        { title: 'Courses', url: '/student/courses', icon: BookOpen },
+        { title: 'My Group', url: '/student/courses', icon: BookOpen },
         { title: 'Profile', url: '/student/profile', icon: User },
       ],
     },

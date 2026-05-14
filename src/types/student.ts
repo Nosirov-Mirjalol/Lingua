@@ -3,15 +3,15 @@ export interface StudentProfile {
   username: string
   full_name: string
   role: string
-  email: string
-  phone: string
   avatar: string
+  timezone: string
+  bio: string
+  learning_goal: string
   activeCourse: string
   nextLesson: string
   completion: number
   attendance: number
   streak: number
-  goal: string
 }
 
 export interface StudentDashboardStats {
@@ -59,12 +59,27 @@ export interface StudentConversation {
 
 export interface StudentCourse {
   id: number
+  name: string
+  description: string
+  objective: string
+  level: string
+  durationMonths: number | null
+  price: string
+  isActive: boolean
+  courseId?: number | null
+  studentCount?: number | null
+  startDate?: string
+  startTime?: string
+  endTime?: string
+}
+
+export interface StudentNotification {
+  id: number
   title: string
-  instructor: string
-  progress: number
-  duration: string
-  nextModule: string
-  badge: string
+  description: string
+  time: string
+  category: 'Reminder' | 'Announcement' | 'Update'
+  read: boolean
 }
 
 export interface StudentNotification {

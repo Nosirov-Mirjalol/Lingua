@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { BellRing, CheckCircle2, MessageCircle, Star } from 'lucide-react'
+import { BellRing, MessageCircle, Star } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useStudentNotifications } from '@/hooks/student/useStudentPortal'

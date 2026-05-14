@@ -133,10 +133,10 @@ function ProfilePage() {
   return (
     <div className='mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8'>
       <div className='mb-8'>
-        <h1 className='text-3xl font-bold tracking-tight text-gray-900'>
+        <h1 className='text-3xl font-bold tracking-tight text-gray-900 dark:text-white'>
           My Profile
         </h1>
-        <p className='mt-2 text-sm text-gray-500'>
+        <p className='mt-2 text-sm text-gray-500 dark:text-gray-400'>
           Update your personal details and public profile.
         </p>
       </div>
@@ -144,7 +144,7 @@ function ProfilePage() {
       <div className='flex flex-col gap-8 md:flex-row'>
         {/* Chap ustun: Avatar */}
         <div className='w-full md:w-1/3 lg:w-1/4'>
-          <div className='flex flex-col items-center rounded-xl border bg-card p-6 text-card-foreground shadow-sm'>
+          <div className='flex flex-col items-center rounded-xl border border-slate-200 dark:border-slate-800 bg-card dark:bg-slate-900 p-6 text-card-foreground shadow-sm'>
             <div className='group relative mb-4'>
               <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-muted'>
                 {previewUrl ? (
@@ -159,7 +159,7 @@ function ProfilePage() {
                   </div>
                 )}
               </div>
-              <label className='absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow-sm transition-transform hover:scale-105'>
+              <label className='absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-background dark:border-slate-800 bg-[#b80035] text-white shadow-sm transition-transform hover:scale-105'>
                 <Camera size={16} />
                 <input
                   type='file'
@@ -170,16 +170,16 @@ function ProfilePage() {
                 />
               </label>
             </div>
-            <h2 className='text-lg font-semibold text-foreground'>
+            <h2 className='text-lg font-semibold text-foreground dark:text-white'>
               {profile.full_name || profile.username || 'User'}
             </h2>
-            <span className='mt-1 text-sm text-muted-foreground'>Teacher</span>
+            <span className='mt-1 text-sm text-muted-foreground dark:text-slate-400'>Teacher</span>
           </div>
         </div>
 
         {/* O'ng ustun: Forma */}
         <div className='w-full md:w-2/3 lg:w-3/4'>
-          <div className='rounded-xl border bg-card text-card-foreground shadow-sm'>
+          <div className='rounded-xl border border-slate-200 dark:border-slate-800 bg-card dark:bg-slate-900 text-card-foreground shadow-sm'>
             <form
               id='profile-form'
               onSubmit={handleSubmit(onSubmit)}
@@ -187,7 +187,7 @@ function ProfilePage() {
             >
               <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
                 <div className='space-y-2'>
-                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
+                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                     Full name
                   </label>
                   <Input
@@ -205,7 +205,7 @@ function ProfilePage() {
                 </div>
 
                 <div className='space-y-2'>
-                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
+                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                     Username
                   </label>
                   <Input
@@ -223,7 +223,7 @@ function ProfilePage() {
                 </div>
 
                 <div className='space-y-2'>
-                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
+                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                     Timezone
                   </label>
 
@@ -250,7 +250,7 @@ function ProfilePage() {
               </div>
 
               <div className='space-y-2'>
-                <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
+                <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                   Bio
                 </label>
                 <Textarea
@@ -263,7 +263,7 @@ function ProfilePage() {
               </div>
 
               <div className='space-y-2'>
-                <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
+                <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                   Teaching / Learning Goal
                 </label>
                 <Textarea
@@ -275,7 +275,7 @@ function ProfilePage() {
                 />
               </div>
 
-              <div className='flex justify-end border-t pt-4'>
+              <div className='flex justify-end border-t border-slate-100 dark:border-slate-800 pt-4'>
                 <RoseButton
                   type='submit'
                   form='profile-form'

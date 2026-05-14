@@ -1,10 +1,14 @@
 import { useEffect } from 'react'
 import { format } from 'date-fns'
 import { Controller, useForm } from 'react-hook-form'
+import type { Assignment } from '@/types/assignment.types'
 import { X, Send } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTeacherGroups } from '@/hooks/teacher/groups/useTeacherGroups'
-import { useCreateAssignment, useUpdateAssignment } from '@/hooks/useAssignments'
+import {
+  useCreateAssignment,
+  useUpdateAssignment,
+} from '@/hooks/useAssignments'
 import { Calendar } from '@/components/ui/calendar'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import {
@@ -12,6 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { RoseButton } from '@/components/ui/rose-button'
 import {
   Select,
   SelectContent,
@@ -19,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { Assignment } from '@/types/assignment.types'
 
 type AssignTaskModalProps = {
   open: boolean
@@ -144,13 +148,15 @@ export function AssignTaskModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[85vh] w-[95vw] max-w-[720px] gap-0 overflow-y-auto rounded-[28px] border-0 bg-white p-0 shadow-[0_30px_90px_-50px_rgba(2,6,23,0.45)] [&>button.absolute]:hidden'>
+      <DialogContent className='max-h-[85vh] w-[95vw] max-w-180 gap-0 overflow-y-auto rounded-[28px] border-0 bg-white p-0 shadow-[0_30px_90px_-50px_rgba(2,6,23,0.45)] dark:bg-slate-900 dark:shadow-[0_30px_90px_-50px_rgba(0,0,0,0.45)] [&>button.absolute]:hidden'>
         <div className='flex items-start justify-between px-6 pt-5 md:px-8 md:pt-6'>
           <div>
-            <h2 className='text-xl font-extrabold text-slate-900'>
-              {editingAssignment ? 'Vazifani tahrirlash' : "Yangi vazifa qo'shish"}
+            <h2 className='text-xl font-extrabold text-slate-900 dark:text-slate-100'>
+              {editingAssignment
+                ? 'Vazifani tahrirlash'
+                : "Yangi vazifa qo'shish"}
             </h2>
-            <p className='mt-1 text-sm text-slate-500'>
+            <p className='mt-1 text-sm text-slate-500 dark:text-slate-400'>
               {editingAssignment
                 ? "Avvalgi ma'lumotlar asosida topshiriqni yangilang"
                 : "O'quvchilar uchun yangi topshiriq yarating"}
@@ -159,7 +165,7 @@ export function AssignTaskModal({
           <button
             type='button'
             onClick={handleClose}
-            className='grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200'
+            className='grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
           >
             <X size={18} />
           </button>
@@ -178,7 +184,7 @@ export function AssignTaskModal({
                 type='text'
                 placeholder='Masalan: Unit 5 Vocabulary Practice'
                 {...register('title', { required: true })}
-                className='h-11 w-full rounded-xl border-0 bg-slate-100 px-4 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-rose-600/20'
+                className='h-11 w-full rounded-xl border-0 bg-slate-100 px-4 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-rose-600/20 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500'
               />
             </div>
 
@@ -195,7 +201,7 @@ export function AssignTaskModal({
                       value={field.value ? String(field.value) : ''}
                       onValueChange={(value) => field.onChange(Number(value))}
                     >
-                      <SelectTrigger className='h-11 w-full rounded-xl border-0 bg-slate-100 px-4 py-5.5 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-rose-600/20'>
+                      <SelectTrigger className='h-11 w-full rounded-xl border-0 bg-slate-100 px-4 py-5.5 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-rose-600/20 dark:bg-slate-800 dark:text-slate-100'>
                         <SelectValue
                           placeholder={
                             groupsLoading
@@ -232,13 +238,15 @@ export function AssignTaskModal({
                           <PopoverTrigger asChild>
                             <button
                               type='button'
-                              className='h-11 flex-1 rounded-xl border-0 bg-slate-100 px-4 text-left text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-rose-600/20'
+                              className='h-11 flex-1 rounded-xl border-0 bg-slate-100 px-4 text-left text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-rose-600/20 dark:bg-slate-800 dark:text-slate-100'
                             >
                               {selectedDate &&
                               !Number.isNaN(selectedDate.getTime()) ? (
                                 format(selectedDate, 'dd.MM.yyyy')
                               ) : (
-                                <span className='text-slate-400'>Calendar</span>
+                                <span className='text-slate-400 dark:text-slate-500'>
+                                  Calendar
+                                </span>
                               )}
                             </button>
                           </PopoverTrigger>
@@ -260,7 +268,7 @@ export function AssignTaskModal({
                   <input
                     type='time'
                     {...register('deadline_time', { required: true })}
-                    className='h-11 w-28 shrink-0 rounded-xl border-0 bg-slate-100 px-4 text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-rose-600/20 [&::-webkit-calendar-picker-indicator]:hidden'
+                    className='h-11 w-28 shrink-0 rounded-xl border-0 bg-slate-100 px-4 text-sm font-medium text-slate-900 outline-none focus:ring-2 focus:ring-rose-600/20 dark:bg-slate-800 dark:text-slate-100 [&::-webkit-calendar-picker-indicator]:hidden'
                   />
                 </div>
               </div>
@@ -273,7 +281,7 @@ export function AssignTaskModal({
                 placeholder="Vazifa bo'yicha ko'rsatmalarni shu yerda yozing..."
                 rows={3}
                 {...register('description', { required: true })}
-                className='min-h-[88px] w-full resize-none rounded-xl border-0 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-rose-600/20'
+                className='min-h-22 w-full resize-none rounded-xl border-0 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-rose-600/20 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500'
               />
             </div>
 
@@ -287,7 +295,7 @@ export function AssignTaskModal({
                     required: true,
                     valueAsNumber: true,
                   })}
-                  className='h-11 w-full rounded-xl border-0 bg-slate-100 px-4 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-rose-600/20'
+                  className='h-11 w-full rounded-xl border-0 bg-slate-100 px-4 text-sm font-medium text-slate-900 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-rose-600/20 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500'
                 />
               </div>
               <div className='flex flex-col'>
@@ -302,7 +310,7 @@ export function AssignTaskModal({
                         field.onChange(value as 'text' | 'file')
                       }
                     >
-                      <SelectTrigger className='h-11 w-full rounded-xl border-0 bg-slate-100 px-4 py-5.5 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-rose-600/20'>
+                      <SelectTrigger className='h-11 w-full rounded-xl border-0 bg-slate-100 px-4 py-5.5 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-rose-600/20 dark:bg-slate-800 dark:text-slate-100'>
                         <SelectValue placeholder='Topshirish turini tanlang' />
                       </SelectTrigger>
                       <SelectContent>
@@ -319,18 +327,22 @@ export function AssignTaskModal({
 
         {/* BUTTONLAR */}
         <div className='flex flex-col-reverse items-stretch justify-end gap-3 px-6 pb-5 sm:flex-row sm:items-center md:px-8 md:pb-6'>
-          <button
+          <RoseButton
             type='button'
+            roseVariant='outline'
+            roseSize='md'
             onClick={handleClose}
-            className='h-11 rounded-full bg-slate-100 px-6 text-sm font-bold text-slate-600 hover:bg-slate-200'
+            className='h-11 rounded-2xl px-6'
           >
             Bekor qilish
-          </button>
-          <button
+          </RoseButton>
+          <RoseButton
             type='button'
+            roseVariant='gradient'
+            roseSize='md'
             onClick={handleSubmit(onSubmit)}
             disabled={createMutation.isPending || updateMutation.isPending}
-            className='primary-gradient inline-flex h-11 items-center gap-2 rounded-full px-7 text-sm font-bold text-white shadow-lg shadow-rose-900/15'
+            className='h-11 rounded-2xl px-7'
           >
             <Send size={16} />
             {createMutation.isPending || updateMutation.isPending
@@ -338,7 +350,7 @@ export function AssignTaskModal({
               : editingAssignment
                 ? 'Vazifani saqlash'
                 : 'Vazifani yuborish'}
-          </button>
+          </RoseButton>
         </div>
       </DialogContent>
     </Dialog>

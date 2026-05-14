@@ -39,14 +39,14 @@ function GroupsIndexPage() {
     <div className='mx-auto max-w-5xl px-3 py-5 sm:px-5 sm:py-6 md:px-6 md:py-8 lg:px-8 lg:py-10'>
       <div className='mb-6 sm:mb-7 md:mb-8'>
         <div className='flex items-center gap-2 sm:gap-3'>
-          <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 sm:h-10 sm:w-10'>
-            <BookOpen size={18} className='text-rose-600 sm:h-5 sm:w-5' />
+          <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/30 sm:h-10 sm:w-10'>
+            <BookOpen size={18} className='text-rose-600 dark:text-rose-400 sm:h-5 sm:w-5' />
           </div>
           <div>
-            <h1 className='text-xl font-bold text-slate-900 sm:text-2xl md:text-3xl'>
+            <h1 className='text-xl font-bold text-slate-900 dark:text-white sm:text-2xl md:text-3xl'>
               Groups
             </h1>
-            <p className='text-xs text-slate-500 sm:text-sm'>
+            <p className='text-xs text-slate-500 dark:text-slate-400 sm:text-sm'>
               Sizga biriktirilgan guruhlar
             </p>
           </div>
@@ -62,7 +62,7 @@ function GroupsIndexPage() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder='Search groups by name...'
-          className='h-9 rounded-xl border-slate-200 bg-white pl-9 text-xs shadow-sm sm:h-10 sm:text-sm'
+          className='h-9 rounded-xl border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 text-xs shadow-sm sm:h-10 sm:text-sm dark:text-white dark:placeholder-slate-500'
         />
       </div>
 
@@ -71,16 +71,16 @@ function GroupsIndexPage() {
           <Loader2 className='animate-spin' size={22} />
         </div>
       ) : isErrorGroups ? (
-        <div className='rounded-xl border border-rose-100 bg-rose-50 px-3 py-2.5 text-xs text-rose-700 sm:px-4 sm:py-3 sm:text-sm'>
+        <div className='rounded-xl border border-rose-100 dark:border-rose-900/30 bg-rose-50 dark:bg-rose-950/20 px-3 py-2.5 text-xs text-rose-700 dark:text-rose-400 sm:px-4 sm:py-3 sm:text-sm'>
           Failed to load groups. Please try again.
         </div>
       ) : filteredGroups.length === 0 ? (
-        <div className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-12 text-center sm:py-16'>
-          <div className='mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 sm:h-12 sm:w-12'>
+        <div className='flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 py-12 text-center sm:py-16'>
+          <div className='mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 sm:h-12 sm:w-12'>
             <Users size={20} className='sm:h-6 sm:w-6' />
           </div>
-          <p className='text-sm font-semibold text-slate-700'>No groups found</p>
-          <p className='mt-1 text-xs text-slate-400'>
+          <p className='text-sm font-semibold text-slate-700 dark:text-slate-300'>No groups found</p>
+          <p className='mt-1 text-xs text-slate-400 dark:text-slate-500'>
             Sizga tegishli guruh topilmadi
           </p>
         </div>
@@ -92,17 +92,17 @@ function GroupsIndexPage() {
               className={[
                 'flex items-center justify-between',
                 'gap-3 px-3 py-3 sm:gap-4 sm:px-4 sm:py-3.5 md:px-5 md:py-4',
-                'rounded-2xl border border-slate-100 bg-white shadow-sm',
-                'transition-shadow hover:shadow-md',
+                'rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm',
+                'transition-shadow hover:shadow-md dark:hover:shadow-rose-900/10',
               ].join(' ')}
             >
               <div className='flex min-w-0 items-center gap-3 sm:gap-4'>
-                <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 sm:h-10 sm:w-10 md:h-11 md:w-11'>
-                  <Users size={17} className='text-rose-500 sm:h-5 sm:w-5' />
+                <div className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/30 sm:h-10 sm:w-10 md:h-11 md:w-11'>
+                  <Users size={17} className='text-rose-500 dark:text-rose-400 sm:h-5 sm:w-5' />
                 </div>
 
                 <div className='min-w-0'>
-                  <p className='truncate text-sm font-semibold text-slate-900 sm:text-base'>
+                  <p className='truncate text-sm font-semibold text-slate-900 dark:text-white sm:text-base'>
                     {g.name}
                   </p>
 
@@ -110,16 +110,16 @@ function GroupsIndexPage() {
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold capitalize ${
                         g.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-slate-100 text-slate-500'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                       }`}
                     >
                       {g.status}
                     </span>
 
-                    <span className='text-slate-300'>·</span>
+                    <span className='text-slate-300 dark:text-slate-700'>·</span>
 
-                    <span className='flex items-center gap-1 text-xs text-slate-500'>
+                    <span className='flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400'>
                       <Users size={11} />
                       {g.students.length} students
                     </span>

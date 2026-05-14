@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   Users,
@@ -8,7 +8,9 @@ import {
   Loader,
   Eye,
   Loader2,
+  CalendarDays,
 } from 'lucide-react'
+import { useGroupSchedule } from '@/hooks/teacher/groups/useGroupSchedule'
 import { useTeacherGroups } from '@/hooks/teacher/groups/useTeacherGroups'
 import { useProfile } from '@/hooks/teacher/profile/useProfile'
 import { useGetAssignments } from '@/hooks/useAssignments'
@@ -18,26 +20,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { DashboardCard } from '@/components/dashboard-card'
 import { useUnreadCount } from '@/features/notifications/hooks'
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 
-const formatClock = (v?: string) => {
-  const p = v?.split(':')
-  return p && p.length >= 2
-    ? `${p[0].padStart(2, '0')}:${p[1].padStart(2, '0')}`
-    : null
-}
-
+const formatClock = (v?: string) =>
+  v ? v.split(':').slice(0, 2).join(':') : null
 const formatTimeRange = (start?: string, end?: string) =>
-  [formatClock(start), formatClock(end)].filter(Boolean).join(' - ')
+  [formatClock(start), formatClock(end)].filter(Boolean).join(' – ')
 
-const formatRelativeDate = (dateString: string, now: number) => {
-  const date = new Date(dateString)
-  const diffDays = Math.ceil((date.getTime() - now) / 86_400_000)
-  const hh = String(date.getHours()).padStart(2, '0')
-  const mm = String(date.getMinutes()).padStart(2, '0')
-  const time = `${hh}:${mm}`
+const formatRelativeDate = (dateStr: string, now: number) => {
+  const d = new Date(dateStr)
+  const diffDays = Math.ceil((d.getTime() - now) / 86_400_000)
+  const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
   const months = [
     'Yan',
     'Fev',
@@ -57,7 +53,7 @@ const formatRelativeDate = (dateString: string, now: number) => {
   if (diffDays === 1) return `Ertaga ${time}`
   if (diffDays < 0) return `${Math.abs(diffDays)} kun oldin`
   if (diffDays <= 7) return `${diffDays} kun qoldi • ${time}`
-  return `${date.getDate()} ${months[date.getMonth()]} ${time}`
+  return `${d.getDate()}-${months[d.getMonth()]} ${time}`
 }
 
 const getInitials = (name: string) =>
@@ -68,99 +64,203 @@ const getInitials = (name: string) =>
     .toUpperCase()
     .slice(0, 2)
 
+const urgencyConfig = (daysLeft: number) => ({
+  dot:
+    daysLeft <= 1
+      ? 'bg-red-500'
+      : daysLeft <= 3
+        ? 'bg-amber-400'
+        : 'bg-emerald-500',
+  badge:
+    daysLeft <= 1
+      ? 'bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-400'
+      : daysLeft <= 3
+        ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400'
+        : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400',
+  label: `${daysLeft} kun qoldi`,
+})
+
 // ─── Components ───────────────────────────────────────────────────────────────
 
-const StatCard = ({
-  icon,
-  value,
-  label,
-  badge,
+const SectionCard = ({
+  children,
+  className = '',
 }: {
-  icon: React.ReactNode
-  value: string
-  label: string
-  badge?: React.ReactNode
+  children: React.ReactNode
+  className?: string
 }) => (
-  <div className='group rounded-2xl bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] transition-all duration-300 hover:shadow-[0_25px_50px_-10px_rgba(184,0,53,0.1)]'>
-    <div className='flex items-start justify-between'>
-      <div className='rounded-xl bg-[#fff0f3] p-3 text-[#b80035] transition-transform duration-300 group-hover:scale-110'>
-        {icon}
-      </div>
-      {badge && <div className='shrink-0 animate-pulse'>{badge}</div>}
-    </div>
-    <p className='mt-4 text-3xl font-bold text-gray-800'>{value}</p>
-    <p className='mt-1 text-sm text-gray-500'>{label}</p>
+  <div
+    className={`rounded-2xl bg-white p-4 shadow-sm md:p-6 dark:bg-slate-900 dark:shadow-md ${className}`}
+  >
+    {children}
   </div>
 )
 
-const LinkBtn = ({
-  onClick,
-  loading = false,
-  variant = 'primary',
-  children,
-}: {
-  onClick: () => void
-  loading?: boolean
-  variant?: 'primary' | 'secondary'
-  children: React.ReactNode
-}) => (
+const LinkBtn = ({ onClick, loading, variant = 'primary', children }: any) => (
   <button
+    type='button'
     onClick={onClick}
     disabled={loading}
-    className={`flex items-center gap-2 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 ${
+    className={`flex items-center gap-1.5 text-sm font-semibold transition-all duration-200 disabled:opacity-50 ${
       variant === 'primary'
-        ? 'text-sm font-semibold text-[#b80035] hover:underline'
-        : 'rounded-lg px-4 py-2 text-sm font-semibold text-[#b80035] hover:bg-[#fff0f3] active:bg-[#ffe6ec]'
+        ? 'text-[#b80035] hover:underline dark:text-rose-400'
+        : 'rounded-lg px-3 py-1.5 text-[#b80035] hover:bg-rose-50 active:bg-rose-100 dark:text-rose-400 dark:hover:bg-rose-950/50'
     }`}
   >
     {loading ? (
       <>
-        <Loader size={16} className='animate-spin' /> Loading...
+        <Loader size={14} className='animate-spin' /> Yuklanmoqda...
       </>
     ) : (
-      <>
-        {children}
-        {variant === 'primary' && <ChevronRight size={16} />}
-      </>
+      children
     )}
+    {variant === 'primary' && !loading && <ChevronRight size={14} />}
   </button>
 )
 
-// ─── Route ────────────────────────────────────────────────────────────────────
+// ─── Assignment Row Component ─────────────────────────────────────────────────
+
+const AssignmentRow = ({ a, now }: { a: any; now: number }) => {
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [statusData, setStatusData] = useState<any[] | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const daysLeft = Math.ceil(
+    (new Date(a.deadline).getTime() - now) / 86_400_000
+  )
+  const urg = urgencyConfig(daysLeft)
+
+  const handleOpen = async (isOpen: boolean) => {
+    setOpen(isOpen)
+    if (isOpen && !statusData) {
+      setLoading(true)
+      try {
+        const token = localStorage.getItem('access_token')
+        const res = await fetch(
+          `http://185.190.143.64:8000/api/assignments/${a.id}/status/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+            },
+          }
+        )
+        if (res.ok) setStatusData(await res.json())
+      } finally {
+        setLoading(false)
+      }
+    }
+  }
+
+  const total = statusData?.length ?? 0
+  const submitted =
+    statusData?.filter((x) => x.status === 'topshirgan').length ?? 0
+  const pct = total ? Math.round((submitted / total) * 100) : 0
+
+  return (
+    <div className='flex items-center gap-4 py-3.5 first:pt-0 last:pb-0'>
+      <div className='relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#b80035]/10 text-xs font-bold text-[#b80035] dark:bg-rose-950/50 dark:text-rose-400'>
+        {getInitials(a.title)}
+        <span
+          className={`absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-slate-900 ${urg.dot}`}
+        />
+      </div>
+      <div className='min-w-0 flex-1'>
+        <p className='truncate text-sm font-semibold text-slate-800 dark:text-slate-100'>
+          {a.title}
+        </p>
+        <p className='truncate text-xs text-slate-400'>
+          Guruh {a.group} · {formatRelativeDate(a.deadline, now)}
+        </p>
+      </div>
+      <div className='flex shrink-0 items-center gap-2'>
+        <span
+          className={`hidden rounded-lg px-2 py-0.5 text-[11px] font-semibold sm:block ${urg.badge}`}
+        >
+          {urg.label}
+        </span>
+
+        <Popover open={open} onOpenChange={handleOpen}>
+          <PopoverTrigger asChild>
+            <button className='flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'>
+              {loading ? (
+                <Loader2 size={15} className='animate-spin' />
+              ) : (
+                <Eye size={15} />
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            align='end'
+            className='w-60 rounded-2xl p-4 shadow-xl dark:bg-slate-900'
+          >
+            {loading ? (
+              <div className='flex items-center gap-2 text-sm text-slate-500'>
+                <Loader2 size={14} className='animate-spin' /> Yuklanmoqda...
+              </div>
+            ) : statusData ? (
+              <div className='space-y-3'>
+                <p className='text-sm font-bold text-slate-800 dark:text-white'>
+                  Topshirish holati
+                </p>
+                <div className='grid grid-cols-2 gap-2'>
+                  <div className='rounded-xl bg-emerald-50 px-3 py-2.5 dark:bg-emerald-950/50'>
+                    <p className='text-[10px] font-semibold text-emerald-600 uppercase'>
+                      Topshirgan
+                    </p>
+                    <p className='mt-1 text-xl font-bold text-emerald-700 dark:text-emerald-300'>
+                      {submitted}
+                    </p>
+                  </div>
+                  <div className='rounded-xl bg-rose-50 px-3 py-2.5 dark:bg-rose-950/50'>
+                    <p className='text-[10px] font-semibold text-rose-600 uppercase'>
+                      Topshirmagan
+                    </p>
+                    <p className='mt-1 text-xl font-bold text-rose-700 dark:text-rose-300'>
+                      {total - submitted}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <div className='h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700'>
+                    <div
+                      className='h-full rounded-full bg-[#b80035] transition-all'
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className='mt-1.5 text-[11px] text-slate-400'>
+                    {submitted}/{total} talaba topshirdi · {pct}%
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className='text-sm text-slate-500'>Holat topilmadi</p>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        <LinkBtn
+          variant='secondary'
+          onClick={() =>
+            navigate({
+              to: '/teacher-dashboard/homework',
+              search: { assignmentId: a.id },
+            })
+          }
+        >
+          Ko'rish
+        </LinkBtn>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute('/_authenticated/teacher-dashboard/')({
   component: DashboardPage,
 })
-
-interface AssignmentStatus {
-  student_id: number
-  username: string
-  full_name: string
-  status: 'topshirgan' | 'topshirmagan'
-  submitted_at: string | null
-  score: number | null
-  text_answer: string | null
-  file_answer: string | null
-}
-
-const fetchAssignmentStatus = async (assignmentId: number) => {
-  const token = localStorage.getItem('access_token')
-  const res = await fetch(
-    `http://185.190.143.64:8000/api/assignments/${assignmentId}/status/`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    }
-  )
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch assignment status (${res.status})`)
-  }
-
-  return (await res.json()) as AssignmentStatus[]
-}
 
 function DashboardPage() {
   const navigate = useNavigate()
@@ -174,21 +274,20 @@ function DashboardPage() {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date())
 
-  const [statusOpenId, setStatusOpenId] = useState<number | null>(null)
-  const [statusLoadingId, setStatusLoadingId] = useState<number | null>(null)
-  const [statusByAssignmentId, setStatusByAssignmentId] = useState<
-    Record<number, AssignmentStatus[]>
-  >({})
-
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60_000)
     return () => clearInterval(t)
   }, [])
 
-  // ─── Derived ───────────────────────────────────────────────────────────────
+  const formattedDate = useMemo(() => {
+    if (!calendarDate) return undefined
+    return calendarDate.toLocaleDateString('en-CA') // YYYY-MM-DD format
+  }, [calendarDate])
+
+  const { data: scheduleItems = [], isLoading: loadingSchedule } =
+    useGroupSchedule(formattedDate)
 
   const groupIds = new Set(groups.map((g) => g.id))
-
   const pendingAssignments = assignments.filter(
     (a) =>
       groupIds.has(a.group) &&
@@ -196,312 +295,153 @@ function DashboardPage() {
       a.is_active
   )
 
-  const scheduleItems = groups
-    .slice(0, 4)
-    .map((g) => ({
-      time: formatTimeRange(g.start_time, g.end_time),
-      title: g.name,
-      detail: `${g.students.length} talaba • Guruh ID: ${g.id}`,
-    }))
-    .filter((x) => x.time)
-
   const activeGroupsCount = groups.filter((g) => g.status === 'active').length
   const studentsCount = new Set(
     groups.flatMap((g) => g.students.map((s) => s.student))
   ).size
-  const unreadCount = unreadData?.unread_count ?? 0
-
-  // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
     <>
-      {/* Welcome */}
-      <div className='mb-6 md:mb-8'>
-        <h1 className='text-2xl font-bold text-gray-800 md:text-3xl'>
-          Welcome back,{' '}
-          <span className='text-[#b80035]'>
-            {profile?.full_name || profile?.username || 'teacher'}
+      <div className='mb-7'>
+        <p className='mb-1 text-xs font-semibold tracking-widest text-[#b80035] uppercase dark:text-rose-400'>
+          O'qituvchi paneli
+        </p>
+        <h1 className='text-2xl font-bold text-slate-900 md:text-3xl dark:text-white'>
+          Xush kelibsiz,{' '}
+          <span className='text-[#b80035] dark:text-rose-400'>
+            {profile?.full_name || profile?.username || "O'qituvchi"}
           </span>
-          .
+          !
         </h1>
-        <p className='mt-2 text-gray-500'>
-          Here's what's happening with your classes today.
+        <p className='mt-1.5 text-sm text-slate-500 dark:text-slate-400'>
+          Bugungi darslar va topshiriqlaringiz quyida.
         </p>
       </div>
 
-      {/* Stats */}
-      <div className='mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mb-8 md:gap-5 lg:grid-cols-4'>
-        <StatCard
-          icon={<Users size={24} />}
-          value={loadingGroups ? '...' : String(activeGroupsCount)}
-          label='Active Groups'
+      {/* ── Stats ── */}
+      <div className='mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5'>
+        <DashboardCard
+          title='FAOL GURUHLAR'
+          value={loadingGroups ? '–' : String(activeGroupsCount)}
+          icon={Users}
         />
-        <StatCard
-          icon={<Users size={24} />}
-          value={loadingGroups ? '...' : String(studentsCount)}
-          label='Students'
+        <DashboardCard
+          title="O'QUVCHILAR"
+          value={loadingGroups ? '–' : String(studentsCount)}
+          icon={Users}
         />
-        <StatCard
-          icon={<ClipboardCheck size={24} />}
-          value={loadingAssignments ? '...' : String(pendingAssignments.length)}
-          label='Tasks Pending'
-          badge={
-            pendingAssignments.length > 0 && (
-              <span className='rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-600'>
-                Active
-              </span>
-            )
-          }
+        <DashboardCard
+          title='TOPSHIRIQLAR'
+          value={loadingAssignments ? '–' : String(pendingAssignments.length)}
+          status={pendingAssignments.length > 0 ? 'Faol' : undefined}
+          statusVariant='warning'
+          icon={ClipboardCheck}
         />
-        <StatCard
-          icon={<MessageSquare size={24} />}
-          value={loadingUnread ? '...' : String(unreadCount)}
-          label='Unread Msg'
-          badge={
-            unreadCount > 0 && (
-              <span className='relative flex h-3 w-3'>
-                <span className='absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75' />
-                <span className='relative inline-flex h-3 w-3 rounded-full bg-red-500' />
-              </span>
-            )
-          }
+        <DashboardCard
+          title="O'QILMAGAN"
+          value={loadingUnread ? '–' : String(unreadData?.unread_count ?? 0)}
+          status={(unreadData?.unread_count ?? 0) > 0 ? 'Yangi' : undefined}
+          statusVariant='info'
+          icon={MessageSquare}
         />
       </div>
 
-      {/* Main */}
-      <div className='mb-6 grid grid-cols-1 gap-6 md:mb-8 lg:grid-cols-5'>
-        {/* Assignments */}
-        <div className='col-span-1 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] md:p-6 lg:col-span-3'>
-          <div className='mb-6 flex items-center justify-between'>
-            <h2 className='text-lg font-bold text-gray-800'>
-              Pending Assignments
+      <div className='grid grid-cols-1 gap-5 lg:grid-cols-5'>
+        <SectionCard className='lg:col-span-3'>
+          <div className='mb-5 flex items-center justify-between'>
+            <h2 className='text-base font-bold text-slate-800 dark:text-slate-100'>
+              Kutilayotgan topshiriqlar
             </h2>
             <LinkBtn
               onClick={() => navigate({ to: '/teacher-dashboard/homework' })}
             >
-              View All
+              Barchasi
             </LinkBtn>
           </div>
 
           {loadingAssignments ? (
-            <p className='py-8 text-center text-sm text-gray-500'>
-              Yuklanmoqda...
-            </p>
+            <div className='flex items-center justify-center gap-2 py-10 text-sm text-slate-400'>
+              <Loader2 size={16} className='animate-spin' /> Yuklanmoqda...
+            </div>
           ) : pendingAssignments.length === 0 ? (
-            <p className='py-8 text-center text-sm text-gray-500'>
-              Hozircha pending topshiriqlar yo'q
-            </p>
+            <div className='py-10 text-center text-slate-500'>
+              Hozircha topshiriqlar yo'q
+            </div>
           ) : (
-            pendingAssignments.slice(0, 3).map((a) => {
-              const daysLeft = Math.ceil(
-                (new Date(a.deadline).getTime() - now) / 86_400_000
-              )
-              const statusColor =
-                daysLeft <= 1
-                  ? 'bg-red-100 text-red-700'
-                  : daysLeft <= 3
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-green-100 text-green-700'
-
-              const statusData = statusByAssignmentId[a.id]
-              const total = statusData?.length ?? 0
-              const submitted = statusData
-                ? statusData.filter((x) => x.status === 'topshirgan').length
-                : 0
-              const pct = total ? Math.round((submitted / total) * 100) : 0
-
-              const handleOpenStatus = async () => {
-                setStatusOpenId(a.id)
-                if (statusByAssignmentId[a.id]) return
-                setStatusLoadingId(a.id)
-                try {
-                  const data = await fetchAssignmentStatus(a.id)
-                  setStatusByAssignmentId((prev) => ({ ...prev, [a.id]: data }))
-                } finally {
-                  setStatusLoadingId((current) =>
-                    current === a.id ? null : current
-                  )
-                }
-              }
-
-              return (
-                <div
-                  key={a.id}
-                  className='flex flex-col items-start justify-between gap-3 border-b border-gray-100 py-4 last:border-0 sm:flex-row sm:items-center sm:gap-4'
-                >
-                  <div className='flex w-full items-center gap-4 sm:w-auto'>
-                    <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white'>
-                      {getInitials(a.title)}
-                    </div>
-                    <div className='min-w-0 flex-1'>
-                      <p className='truncate font-semibold text-gray-800'>
-                        {a.title}
-                      </p>
-                      <p className='truncate text-xs text-gray-500'>
-                        Guruh ID: {a.group} • Muddat:{' '}
-                        {formatRelativeDate(a.deadline, now)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className='flex w-full items-center justify-between gap-4 pl-14 sm:w-auto sm:justify-end sm:pl-0'>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColor}`}
-                    >
-                      {daysLeft} kun qoldi
-                    </span>
-
-                    <Popover
-                      open={statusOpenId === a.id}
-                      onOpenChange={(open) =>
-                        setStatusOpenId(open ? a.id : null)
-                      }
-                    >
-                      <PopoverTrigger asChild>
-                        <button
-                          type='button'
-                          onClick={handleOpenStatus}
-                          className='inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#b80035] hover:bg-[#fff0f3] active:bg-[#ffe6ec] disabled:opacity-50'
-                          disabled={statusLoadingId === a.id}
-                          aria-label='Holati'
-                        >
-                          {statusLoadingId === a.id ? (
-                            <Loader2 size={16} className='animate-spin' />
-                          ) : (
-                            <Eye size={16} />
-                          )}
-                          Holati
-                          {statusData ? (
-                            <span className='text-xs font-semibold text-gray-500'>
-                              {submitted}/{total} topshirgan
-                            </span>
-                          ) : null}
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        align='end'
-                        className='w-64 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.12)]'
-                      >
-                        {statusLoadingId === a.id ? (
-                          <div className='flex items-center gap-2 text-sm text-gray-600'>
-                            <Loader2 size={16} className='animate-spin' />
-                            Yuklanmoqda...
-                          </div>
-                        ) : statusData ? (
-                          <div className='space-y-3'>
-                            <div>
-                              <p className='text-sm font-bold text-gray-800'>
-                                Topshirish holati
-                              </p>
-                              <p className='mt-1 text-xs text-gray-500'>
-                                Jami talabalar: {total}
-                              </p>
-                            </div>
-
-                            <div className='grid grid-cols-2 gap-2 text-sm'>
-                              <div className='rounded-xl bg-emerald-50 px-3 py-2'>
-                                <p className='text-xs font-semibold text-emerald-700'>
-                                  Topshirgan
-                                </p>
-                                <p className='mt-1 text-base font-bold text-emerald-700'>
-                                  {submitted}
-                                </p>
-                              </div>
-                              <div className='rounded-xl bg-rose-50 px-3 py-2'>
-                                <p className='text-xs font-semibold text-rose-700'>
-                                  Topshirmagan
-                                </p>
-                                <p className='mt-1 text-base font-bold text-rose-700'>
-                                  {total - submitted}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className='h-2 w-full overflow-hidden rounded-full bg-gray-200'>
-                              <div
-                                className='h-full bg-[#b80035]'
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                            <p className='text-xs text-gray-500'>
-                              {submitted} / {total} talaba topshirdi
-                            </p>
-                          </div>
-                        ) : (
-                          <p className='text-sm text-gray-600'>
-                            Holat topilmadi
-                          </p>
-                        )}
-                      </PopoverContent>
-                    </Popover>
-
-                    {/* homework.$assignmentId.tsx mavjud bo'lsa params ishlatish mumkin,
-                        hozir faqat homework.tsx bor — search param orqali filter qilamiz */}
-                    <LinkBtn
-                      variant='secondary'
-                      onClick={() =>
-                        navigate({
-                          to: '/teacher-dashboard/homework',
-                          search: { assignmentId: a.id },
-                        })
-                      }
-                    >
-                      Ko'rish
-                    </LinkBtn>
-                  </div>
-                </div>
-              )
-            })
+            <div className='divide-y divide-slate-100 dark:divide-slate-800'>
+              {pendingAssignments.slice(0, 4).map((a) => (
+                <AssignmentRow key={a.id} a={a} now={now} />
+              ))}
+            </div>
           )}
-        </div>
+        </SectionCard>
 
-        {/* Schedule */}
-        <div className='col-span-1 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] md:p-6 lg:col-span-2'>
-          <div className='mb-6 flex items-center justify-between'>
-            <h2 className='text-lg font-bold text-gray-800'>Class Schedule</h2>
+        <SectionCard className='lg:col-span-2'>
+          <div className='mb-5 flex items-center justify-between'>
+            <h2 className='text-base font-bold text-slate-800 dark:text-slate-100'>
+              Dars jadvali
+            </h2>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
-                <span>
-                  <LinkBtn onClick={() => setCalendarOpen((v) => !v)}>
-                    View Calendar
-                  </LinkBtn>
-                </span>
+                <button className='flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-[#b80035] hover:bg-rose-50 dark:text-rose-400'>
+                  <CalendarDays size={14} />
+                  {calendarDate
+                    ? calendarDate.toLocaleDateString('uz-UZ', {
+                        day: 'numeric',
+                        month: 'short',
+                      })
+                    : 'Sana'}
+                </button>
               </PopoverTrigger>
-              <PopoverContent className='w-auto p-0' align='end'>
+              <PopoverContent className='w-auto border-0 p-0' align='end'>
                 <Calendar
                   mode='single'
                   selected={calendarDate}
-                  onSelect={(d) => setCalendarDate(d ?? calendarDate)}
+                  onSelect={(d) => {
+                    setCalendarDate(d ?? calendarDate)
+                    setCalendarOpen(false)
+                  }}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          {loadingGroups ? (
-            <p className='py-8 text-center text-sm text-gray-500'>
-              Yuklanmoqda...
-            </p>
+          {loadingSchedule ? (
+            <div className='flex items-center justify-center gap-2 py-10 text-sm text-slate-400'>
+              <Loader2 size={16} className='animate-spin' /> Yuklanmoqda...
+            </div>
           ) : scheduleItems.length === 0 ? (
-            <p className='py-8 text-center text-sm text-gray-500'>
-              Bugun darslar yo'q
-            </p>
+            <div className='py-10 text-center text-slate-500'>Darslar yo'q</div>
           ) : (
-            scheduleItems.map((item, i) => (
-              <div key={i} className='flex gap-4 py-3'>
-                <div className='w-1 rounded-full bg-[#b80035]' />
-                <div className='flex-1'>
-                  <p className='text-sm font-semibold text-gray-800'>
-                    {item.time}
-                  </p>
-                  <p className='mt-1 text-base font-medium text-gray-800'>
-                    {item.title}
-                  </p>
-                  <p className='mt-1 text-sm text-gray-500'>{item.detail}</p>
+            <div className='space-y-1'>
+              {scheduleItems.map((item, i) => (
+                <div
+                  key={item.id}
+                  className='flex gap-3 rounded-xl p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                >
+                  <div
+                    className={`mt-1 h-full w-0.5 rounded-full ${['bg-[#b80035]', 'bg-blue-500', 'bg-violet-500', 'bg-amber-500', 'bg-emerald-500'][i % 5]}`}
+                  />
+                  <div className='min-w-0 flex-1'>
+                    <p className='text-xs font-semibold text-slate-400'>
+                      {formatTimeRange(item.start_time, item.end_time)}
+                    </p>
+                    <p className='mt-0.5 truncate text-sm font-semibold text-slate-800 dark:text-slate-100'>
+                      {item.name}
+                    </p>
+                    <p className='mt-0.5 truncate text-xs text-slate-400'>
+                      {item.course_name} · {item.student_count} talaba
+                    </p>
+                  </div>
+                  <span className='mt-0.5 text-[10px] font-semibold text-slate-400'>
+                    {item.lesson_status}
+                  </span>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
-        </div>
+        </SectionCard>
       </div>
     </>
   )

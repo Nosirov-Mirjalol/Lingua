@@ -63,6 +63,7 @@ import { Route as AuthenticatedStudentScheduleRouteImport } from './routes/_auth
 import { Route as AuthenticatedStudentProfileRouteImport } from './routes/_authenticated/student/profile'
 import { Route as AuthenticatedStudentMessagesRouteImport } from './routes/_authenticated/student/messages'
 import { Route as AuthenticatedStudentHomeworkRouteImport } from './routes/_authenticated/student/homework'
+import { Route as AuthenticatedStudentGroupsRouteImport } from './routes/_authenticated/student/groups'
 import { Route as AuthenticatedStudentCoursesRouteImport } from './routes/_authenticated/student/courses'
 import { Route as AuthenticatedStudentChatsRouteImport } from './routes/_authenticated/student/chats'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
@@ -374,6 +375,12 @@ const AuthenticatedStudentHomeworkRoute =
     path: '/homework',
     getParentRoute: () => AuthenticatedStudentRouteRoute,
   } as any)
+const AuthenticatedStudentGroupsRoute =
+  AuthenticatedStudentGroupsRouteImport.update({
+    id: '/groups',
+    path: '/groups',
+    getParentRoute: () => AuthenticatedStudentRouteRoute,
+  } as any)
 const AuthenticatedStudentCoursesRoute =
   AuthenticatedStudentCoursesRouteImport.update({
     id: '/courses',
@@ -461,6 +468,7 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/student/chats': typeof AuthenticatedStudentChatsRoute
   '/student/courses': typeof AuthenticatedStudentCoursesRoute
+  '/student/groups': typeof AuthenticatedStudentGroupsRoute
   '/student/homework': typeof AuthenticatedStudentHomeworkRoute
   '/student/messages': typeof AuthenticatedStudentMessagesRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -521,6 +529,7 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/student/chats': typeof AuthenticatedStudentChatsRoute
   '/student/courses': typeof AuthenticatedStudentCoursesRoute
+  '/student/groups': typeof AuthenticatedStudentGroupsRoute
   '/student/homework': typeof AuthenticatedStudentHomeworkRoute
   '/student/messages': typeof AuthenticatedStudentMessagesRoute
   '/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -587,6 +596,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/_authenticated/student/chats': typeof AuthenticatedStudentChatsRoute
   '/_authenticated/student/courses': typeof AuthenticatedStudentCoursesRoute
+  '/_authenticated/student/groups': typeof AuthenticatedStudentGroupsRoute
   '/_authenticated/student/homework': typeof AuthenticatedStudentHomeworkRoute
   '/_authenticated/student/messages': typeof AuthenticatedStudentMessagesRoute
   '/_authenticated/student/profile': typeof AuthenticatedStudentProfileRoute
@@ -652,6 +662,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/student/chats'
     | '/student/courses'
+    | '/student/groups'
     | '/student/homework'
     | '/student/messages'
     | '/student/profile'
@@ -712,6 +723,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/student/chats'
     | '/student/courses'
+    | '/student/groups'
     | '/student/homework'
     | '/student/messages'
     | '/student/profile'
@@ -777,6 +789,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/notifications'
     | '/_authenticated/student/chats'
     | '/_authenticated/student/courses'
+    | '/_authenticated/student/groups'
     | '/_authenticated/student/homework'
     | '/_authenticated/student/messages'
     | '/_authenticated/student/profile'
@@ -1210,6 +1223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudentHomeworkRouteImport
       parentRoute: typeof AuthenticatedStudentRouteRoute
     }
+    '/_authenticated/student/groups': {
+      id: '/_authenticated/student/groups'
+      path: '/groups'
+      fullPath: '/student/groups'
+      preLoaderRoute: typeof AuthenticatedStudentGroupsRouteImport
+      parentRoute: typeof AuthenticatedStudentRouteRoute
+    }
     '/_authenticated/student/courses': {
       id: '/_authenticated/student/courses'
       path: '/courses'
@@ -1309,6 +1329,7 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedStudentRouteRouteChildren {
   AuthenticatedStudentChatsRoute: typeof AuthenticatedStudentChatsRoute
   AuthenticatedStudentCoursesRoute: typeof AuthenticatedStudentCoursesRoute
+  AuthenticatedStudentGroupsRoute: typeof AuthenticatedStudentGroupsRoute
   AuthenticatedStudentHomeworkRoute: typeof AuthenticatedStudentHomeworkRoute
   AuthenticatedStudentMessagesRoute: typeof AuthenticatedStudentMessagesRoute
   AuthenticatedStudentProfileRoute: typeof AuthenticatedStudentProfileRoute
@@ -1320,6 +1341,7 @@ const AuthenticatedStudentRouteRouteChildren: AuthenticatedStudentRouteRouteChil
   {
     AuthenticatedStudentChatsRoute: AuthenticatedStudentChatsRoute,
     AuthenticatedStudentCoursesRoute: AuthenticatedStudentCoursesRoute,
+    AuthenticatedStudentGroupsRoute: AuthenticatedStudentGroupsRoute,
     AuthenticatedStudentHomeworkRoute: AuthenticatedStudentHomeworkRoute,
     AuthenticatedStudentMessagesRoute: AuthenticatedStudentMessagesRoute,
     AuthenticatedStudentProfileRoute: AuthenticatedStudentProfileRoute,

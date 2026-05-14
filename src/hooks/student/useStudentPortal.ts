@@ -1,13 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
+<<<<<<< HEAD
+=======
+import { getMyGroups } from '@/api/service/student/group.service'
+>>>>>>> c8601919414cff32eb110164f7ac4aca75ccb2bf
 import type {
   StudentAssignment,
   StudentConversation,
-  StudentCourse,
   StudentDashboardStats,
   StudentNotification,
   StudentProfile,
   StudentScheduleItem,
 } from '@/types/student'
+import type { StudentGroup } from '@/api/service/student/group.service'
 
 const getStoredUser = (): Partial<StudentProfile> | null => {
   if (typeof window === 'undefined') return null
@@ -23,24 +27,22 @@ const getStoredUser = (): Partial<StudentProfile> | null => {
 
 const buildProfile = (): StudentProfile => {
   const stored = getStoredUser()
-  const username = stored?.username || stored?.full_name || 'Lingua Learner'
-  const email = stored?.email || 'student@example.com'
-  const phone = stored?.phone || '+998 90 123 45 67'
-
+  
+  // Return stored data if available, otherwise return empty strings for a clean state
   return {
-    id: stored?.id ?? 100,
-    username,
-    full_name: stored?.full_name || username,
+    id: stored?.id ?? 0,
+    username: stored?.username || '',
+    full_name: stored?.full_name || '',
     role: stored?.role ?? 'user',
-    email,
-    phone,
-    avatar: '/avatars/student1.jpg',
-    activeCourse: 'Advanced English Communication',
-    nextLesson: 'Pronunciation lab with Ms. Ziya at 11:00 AM',
-    completion: 82,
-    attendance: 93,
-    streak: 14,
-    goal: 'Reach B2 fluency in 90 days',
+    avatar: stored?.avatar || '/avatars/student1.jpg',
+    timezone: stored?.timezone || '',
+    bio: stored?.bio || '',
+    learning_goal: stored?.learning_goal || '',
+    activeCourse: stored?.activeCourse || '',
+    nextLesson: stored?.nextLesson || '',
+    completion: stored?.completion ?? 0,
+    attendance: stored?.attendance ?? 0,
+    streak: stored?.streak ?? 0,
   }
 }
 
@@ -212,38 +214,10 @@ export const useStudentMessages = () => {
   })
 }
 
-export const useStudentCourses = () => {
+export const useStudentGroups = () => {
   return useQuery({
-    queryKey: ['student', 'courses'],
-    queryFn: async (): Promise<StudentCourse[]> => [
-      {
-        id: 1,
-        title: 'Advanced English Communication',
-        instructor: 'Ms. Ziya',
-        progress: 82,
-        duration: '24 lessons',
-        nextModule: 'Pronunciation practice',
-        badge: 'Core course',
-      },
-      {
-        id: 2,
-        title: 'Grammar Workshop',
-        instructor: 'Mr. Eldor',
-        progress: 68,
-        duration: '18 lessons',
-        nextModule: 'Conditional sentences',
-        badge: 'Elective',
-      },
-      {
-        id: 3,
-        title: 'Conversation Practice',
-        instructor: 'Mrs. Nilufar',
-        progress: 90,
-        duration: '12 lessons',
-        nextModule: 'Role play session',
-        badge: 'Live cohort',
-      },
-    ],
+    queryKey: ['student', 'groups'],
+    queryFn: (): Promise<StudentGroup[]> => getMyGroups(),
     staleTime: 60_000,
   })
 }

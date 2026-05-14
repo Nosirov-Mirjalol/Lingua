@@ -21,12 +21,51 @@ interface AuthState {
   }
 }
 
+// Initialize user from sessionStorage (set by useLogin hook)
+const getInitialUser = (): AuthUser | null => {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const storedUser = sessionStorage.getItem('linguapro_user')
+    if (storedUser) {
+      const user = JSON.parse(storedUser)
+      return {
+        accountNo: String(user.id),
+        email: user.username,
+        role: user.role || 'user',
+        exp: Math.floor(Date.now() / 1000) + 3600,
+      }
+    }
+  } catch (error) {
+    console.error('Error parsing stored user:', error)
+  }
+
+  return null
+}
+
+// Initialize token from sessionStorage or cookie
+const getInitialToken = (): string => {
+  if (typeof window === 'undefined') return ''
+
+  try {
+    const sessionToken = sessionStorage.getItem('linguapro_access_token')
+    if (sessionToken) return sessionToken
+
+    const cookieState = getCookie(ACCESS_TOKEN)
+    return cookieState ? JSON.parse(cookieState) : ''
+  } catch (error) {
+    console.error('Error getting initial token:', error)
+    return ''
+  }
+}
+
 export const useAuthStore = create<AuthState>()((set) => {
-  const cookieState = getCookie(ACCESS_TOKEN)
-  const initToken = cookieState ? JSON.parse(cookieState) : ''
+  const initToken = getInitialToken()
+  const initUser = getInitialUser()
+
   return {
     auth: {
-      user: null,
+      user: initUser,
       setUser: (user) =>
         set((state) => ({ ...state, auth: { ...state.auth, user } })),
       accessToken: initToken,
@@ -43,6 +82,8 @@ export const useAuthStore = create<AuthState>()((set) => {
       reset: () =>
         set((state) => {
           removeCookie(ACCESS_TOKEN)
+          sessionStorage.removeItem('linguapro_user')
+          sessionStorage.removeItem('linguapro_access_token')
           return {
             ...state,
             auth: { ...state.auth, user: null, accessToken: '' },

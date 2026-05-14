@@ -61,7 +61,7 @@ const pickStudentDisplayName = (studentId: number, studentName?: string) => {
 const STATUS_STYLES: Record<AttendanceStatus, string> = {
   present: 'bg-emerald-500 text-white',
   absent: 'bg-rose-500 text-white',
-  late: 'bg-slate-800 text-white',
+  late: 'bg-slate-800 dark:bg-slate-700 text-white',
 }
 
 const STATUSES: AttendanceStatus[] = ['present', 'absent', 'late']
@@ -224,12 +224,12 @@ function AttendancePage() {
   // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <div className='mx-auto max-w-7xl space-y-4 p-4 text-slate-900'>
+    <div className='mx-auto max-w-7xl space-y-4 p-4 text-slate-900 dark:text-slate-100'>
       {/* Header */}
       <div className='flex flex-wrap items-center justify-between gap-4'>
         <div>
           <h1 className='text-2xl font-bold'>Attendance</h1>
-          <p className='text-sm text-slate-500'>
+          <p className='text-sm text-slate-500 dark:text-slate-400'>
             Manage student presence and notes
           </p>
         </div>
@@ -243,13 +243,13 @@ function AttendancePage() {
             placeholder='Search student...'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className='h-10 w-full rounded-lg border-none bg-slate-100 pr-4 pl-9 text-base transition-all focus:ring-1 focus:ring-rose-500'
+            className='h-10 w-full rounded-lg border-none bg-slate-100 dark:bg-slate-800 pr-4 pl-9 text-base transition-all focus:ring-1 focus:ring-rose-500 dark:text-white'
           />
         </div>
       </div>
 
       {/* Stats Panel */}
-      <div className='grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-12'>
+      <div className='grid grid-cols-1 gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 md:grid-cols-12'>
         <div className='flex items-center justify-center border-r border-slate-100 pr-4 md:col-span-3'>
           <div className='relative flex items-center justify-center'>
             <svg width='110' height='110' className='-rotate-90'>
@@ -258,8 +258,9 @@ function AttendancePage() {
                 cy='55'
                 r={radius}
                 fill='none'
-                stroke='#f1f5f9'
+                stroke='currentColor'
                 strokeWidth={stroke}
+                className='text-slate-100 dark:text-slate-800'
               />
               <circle
                 cx='55'
@@ -275,8 +276,8 @@ function AttendancePage() {
               />
             </svg>
             <div className='absolute flex flex-col items-center'>
-              <span className='text-2xl font-bold'>{stats.pct}%</span>
-              <span className='text-xs font-bold tracking-widest text-slate-400 uppercase'>
+              <span className='text-2xl font-bold dark:text-white'>{stats.pct}%</span>
+              <span className='text-xs font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase'>
                 Present
               </span>
             </div>
@@ -297,7 +298,7 @@ function AttendancePage() {
             ] as const
           ).map(({ label, val, color }) => (
             <div key={label}>
-              <p className='text-xs font-bold tracking-widest text-slate-400 uppercase'>
+              <p className='text-xs font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase'>
                 {label}
               </p>
               <p className={`text-3xl font-bold ${color}`}>{val}</p>
@@ -307,10 +308,10 @@ function AttendancePage() {
       </div>
 
       {/* Controls */}
-      <div className='flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-3'>
+      <div className='flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3'>
         {/* Group Selector */}
         <div className='min-w-52 flex-1'>
-          <label className='mb-1 block text-xs font-bold text-slate-400 uppercase'>
+          <label className='mb-1 block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase'>
             Group
           </label>
           <div className='relative'>
@@ -318,7 +319,7 @@ function AttendancePage() {
               type='button'
               onClick={() => setGroupOpen(!groupOpen)}
               disabled={groupsLoading}
-              className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 px-3 text-base transition-colors hover:bg-slate-50 disabled:opacity-50'
+              className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 text-base transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 dark:text-white'
             >
               <span className='truncate'>
                 {groupsLoading
@@ -331,7 +332,7 @@ function AttendancePage() {
               />
             </button>
             {groupOpen && (
-              <div className='absolute top-full left-0 z-20 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-xl'>
+              <div className='absolute top-full left-0 z-20 mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl'>
                 {filteredGroups.map((g) => (
                   <button
                     key={g.id}
@@ -340,10 +341,10 @@ function AttendancePage() {
                       setSelectedGroupId(g.id)
                       setGroupOpen(false)
                     }}
-                    className='flex w-full justify-between px-3 py-2 text-left text-base hover:bg-slate-50'
+                    className='flex w-full justify-between px-3 py-2 text-left text-base hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-white'
                   >
                     <span>{g.name}</span>
-                    <span className='text-sm text-slate-400'>
+                    <span className='text-sm text-slate-400 dark:text-slate-500'>
                       {g.students.length} students
                     </span>
                   </button>
@@ -355,14 +356,14 @@ function AttendancePage() {
 
         {/* Date Picker */}
         <div className='min-w-52 flex-1'>
-          <label className='mb-1 block text-xs font-bold text-slate-400 uppercase'>
+          <label className='mb-1 block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase'>
             Session Date
           </label>
           <Popover>
             <PopoverTrigger asChild>
-              <button
+            <button
                 type='button'
-                className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 px-3 text-base hover:bg-slate-50'
+                className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 text-base hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-white'
               >
                 <span className='flex items-center gap-2'>
                   <Calendar size={16} /> {formatDate(date)}
@@ -398,27 +399,27 @@ function AttendancePage() {
       </div>
 
       {/* Table */}
-      <div className='overflow-hidden rounded-xl border border-slate-200 bg-white'>
+      <div className='overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900'>
         <div className='overflow-x-auto'>
           <table className='w-full border-collapse text-left text-sm'>
-            <thead className='border-b border-slate-200 bg-slate-50'>
+            <thead className='border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50'>
               <tr>
                 {['#', 'Student Name', 'Attendance', 'Note'].map((h) => (
                   <th
                     key={h}
-                    className='px-4 py-3 text-xs font-bold text-slate-500 uppercase'
+                    className='px-4 py-3 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase'
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className='divide-y divide-slate-100'>
+            <tbody className='divide-y divide-slate-100 dark:divide-slate-800'>
               {filteredStudents.length === 0 ? (
                 <tr>
                   <td
                     colSpan={4}
-                    className='px-4 py-10 text-center text-slate-400'
+                    className='px-4 py-10 text-center text-slate-400 dark:text-slate-500'
                   >
                     {groupsLoading
                       ? 'Loading groups...'
@@ -431,17 +432,17 @@ function AttendancePage() {
                 filteredStudents.map((s, idx) => (
                   <tr
                     key={s.studentId}
-                    className='transition-colors hover:bg-slate-50/50'
+                    className='transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/50'
                   >
-                    <td className='px-4 py-3 font-medium text-slate-400'>
+                    <td className='px-4 py-3 font-medium text-slate-400 dark:text-slate-500'>
                       {idx + 1}
                     </td>
                     <td className='px-4 py-3'>
                       <div className='flex items-center gap-3'>
-                        <div className='flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700'>
+                        <div className='flex h-8 w-8 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950 text-xs font-bold text-rose-700 dark:text-rose-300'>
                           {getInitials(s.name)}
                         </div>
-                        <span className='text-base font-semibold text-slate-800'>
+                        <span className='text-base font-semibold text-slate-800 dark:text-slate-200'>
                           {s.name}
                         </span>
                       </div>
@@ -456,7 +457,7 @@ function AttendancePage() {
                             className={`rounded px-3 py-1.5 text-xs font-bold uppercase transition-all ${
                               s.status === st
                                 ? STATUS_STYLES[st]
-                                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                           >
                             {st}
@@ -471,7 +472,7 @@ function AttendancePage() {
                         placeholder='Add note...'
                         onChange={(e) => setNote(s.studentId, e.target.value)}
                         disabled={s.status !== 'late'}
-                        className='h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-30'
+                        className='h-9 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2 text-sm outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-30 dark:text-white dark:placeholder-slate-600'
                       />
                     </td>
                   </tr>

@@ -1,21 +1,24 @@
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Card, CardContent } from '@/components/ui/card'
 
 interface DashboardCardProps {
   title: string
   value: string
-  status: string
-  statusVariant?: 'success' | 'neutral' | 'warning'
+  status?: string
+  statusVariant?: 'success' | 'neutral' | 'warning' | 'info'
+  size?: 'sm' | 'md'
   icon: LucideIcon
   className?: string
 }
 
 const statusVariants = {
   success:
-    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  neutral: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
-  warning: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400',
+  neutral:
+    'bg-slate-100 text-slate-500 dark:bg-slate-700/60 dark:text-slate-400',
+  warning:
+    'bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400',
+  info: 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400',
 }
 
 export function DashboardCard({
@@ -23,43 +26,67 @@ export function DashboardCard({
   value,
   status,
   statusVariant = 'neutral',
+  size = 'md',
   icon: Icon,
   className,
 }: DashboardCardProps) {
   return (
-    <Card
+    <div
       className={cn(
-        'rounded-[25px] border border-l-4 border-gray-200/50 border-l-red-500 bg-transparent shadow-lg shadow-gray-200/50 dark:border-gray-700/50 dark:border-l-red-600 dark:bg-transparent dark:shadow-lg dark:shadow-gray-800/30',
+        'group relative overflow-hidden rounded-2xl bg-white p-5 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] dark:bg-slate-900 dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]',
+        size === 'sm' ? 'p-4' : 'p-5',
         className
       )}
     >
-      <CardContent className='p-4'>
-        <div className='flex items-start justify-between'>
-          <div className='space-y-2'>
-            <div className='flex items-center space-x-2'>
-              <div className='rounded-full bg-red-50 p-2 dark:bg-red-900/20'>
-                <Icon className='h-5 w-5 text-red-600 dark:text-red-400' />
-              </div>
-              <h3 className='text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400'>
-                {title}
-              </h3>
-            </div>
-            <div className='space-y-1'>
-              <p className='text-xl font-bold text-gray-900 dark:text-white'>
-                {value}
-              </p>
-            </div>
-          </div>
-          <span
+      {/* Subtle background glow */}
+      <div className='pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-rose-500/5 blur-2xl transition-all duration-500 group-hover:scale-150 group-hover:bg-rose-500/8 dark:bg-rose-500/8 dark:group-hover:bg-rose-500/12' />
+
+      <div className='relative'>
+        <div className='mb-4 flex items-start justify-between'>
+          <p
             className={cn(
-              'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-              statusVariants[statusVariant]
+              'font-semibold tracking-[0.08em] text-slate-400 uppercase dark:text-slate-500',
+              size === 'sm' ? 'text-[10px]' : 'text-xs'
             )}
           >
-            {status}
-          </span>
+            {title}
+          </p>
+          <div
+            className={cn(
+              'flex items-center justify-center rounded-xl bg-rose-50 transition-colors duration-300 group-hover:bg-rose-100 dark:bg-rose-950/40 dark:group-hover:bg-rose-950/60',
+              size === 'sm' ? 'h-8 w-8' : 'h-9 w-9'
+            )}
+          >
+            <Icon
+              className={cn(
+                'text-[#b80035] dark:text-rose-400',
+                size === 'sm' ? 'h-4 w-4' : 'h-4.5 w-4.5'
+              )}
+            />
+          </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className='flex items-end justify-between gap-2'>
+          <p
+            className={cn(
+              'font-bold leading-none tracking-tight text-slate-900 dark:text-slate-50',
+              size === 'sm' ? 'text-2xl' : 'text-3xl'
+            )}
+          >
+            {value}
+          </p>
+          {status && (
+            <span
+              className={cn(
+                'mb-0.5 inline-flex shrink-0 items-center rounded-lg px-2 py-0.5 text-[11px] font-semibold',
+                statusVariants[statusVariant]
+              )}
+            >
+              {status}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
