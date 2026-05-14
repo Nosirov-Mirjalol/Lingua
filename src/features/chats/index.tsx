@@ -26,10 +26,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { NewChat } from './components/new-chat'
 import { type ChatUser, type Convo } from './data/chat-types'
 import {
@@ -166,22 +164,7 @@ export function Chats() {
 
   return (
     <>
-      <Header>
-        <div className='flex flex-1 items-center gap-4'>
-           <div className='relative hidden w-full max-w-md md:block'>
-            <SearchIcon className='absolute top-1/2 left-3 -translate-y-1/2 text-slate-400' size={16} />
-            <input
-              type='search'
-              placeholder='Search globally...'
-              className='h-9 w-full rounded-lg border border-slate-200 bg-slate-50/50 py-2 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all duration-200 focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-50'
-            />
-          </div>
-        </div>
-        <div className='flex items-center gap-1'>
-          <ThemeSwitch />
-          <ConfigDrawer />
-        </div>
-      </Header>
+      <Header />
 
       <Main fixed>
         <section className='flex h-full gap-0 md:gap-6'>

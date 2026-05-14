@@ -10,11 +10,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { apps } from './data/apps'
 
 const route = getRouteApi('/_authenticated/apps/')
@@ -82,12 +79,7 @@ export function Apps() {
   return (
     <>
       {/* Top Heading */}
-      <Header>
-        <h1 className='text-lg font-semibold'>O&apos;qituvchilar</h1>
-        <Search className='me-auto' />
-        <ThemeSwitch />
-        <ConfigDrawer />
-      </Header>
+      <Header />
 
       <Main>
         {/* Filter / Search toolbar */}

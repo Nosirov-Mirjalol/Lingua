@@ -1,10 +1,8 @@
 import { Outlet } from '@tanstack/react-router'
 import { Palette } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { SidebarNav } from './components/sidebar-nav'
 
 const sidebarNavItems = [
@@ -19,10 +17,7 @@ export function Settings() {
   return (
     <>
       {/* ===== Top Heading ===== */}
-      <Header>
-        <Search className='me-auto' />
-        <ConfigDrawer />
-      </Header>
+      <Header />
 
       <Main fixed>
         <div className='space-y-0.5'>

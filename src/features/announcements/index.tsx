@@ -13,11 +13,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RoseButton } from '@/components/ui/rose-button'
 import { Textarea } from '@/components/ui/textarea'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 
 type Priority = 'normal' | 'high'
 
@@ -154,11 +151,7 @@ export default function AnnouncementsPage() {
 
   return (
     <>
-      <Header>
-        <Search className='me-auto' />
-        <ThemeSwitch />
-        <ConfigDrawer />
-      </Header>
+      <Header />
 
       <Main fixed>
         <div className='flex items-start justify-between gap-4'>

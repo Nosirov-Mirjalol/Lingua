@@ -1,8 +1,6 @@
 import { useAdminUsers } from '@/hooks/admin/users/useAdminUsers'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { UsersDialogs } from './components/users-dialogs'
 import { UsersProvider } from './components/users-provider'
 import { UsersTable } from './components/users-table'
@@ -25,10 +23,7 @@ export function Users() {
 
   return (
     <UsersProvider>
-      <Header>
-        <Search className='me-auto' />
-        <ConfigDrawer />
-      </Header>
+      <Header />
 
       <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
         <div className='flex flex-wrap items-end justify-between gap-2'>
