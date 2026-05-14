@@ -2,10 +2,9 @@ import { useState } from 'react'
 import { useRouterState, useNavigate } from '@tanstack/react-router'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { StudentNotificationModal } from '@/components/student/notifications/StudentNotificationModal'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
-import { Search } from '@/components/search'
+import { StudentNotificationModal } from '@/components/student/notifications/StudentNotificationModal'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { 
   useStudentUnreadCount, 
@@ -40,7 +39,6 @@ export function StudentNavbar() {
     <>
       <Header fixed>
         <div className='ms-auto flex items-center gap-2 sm:gap-3'>
-          <Search placeholder='Search...' />
           <ThemeSwitch />
 
           <Button

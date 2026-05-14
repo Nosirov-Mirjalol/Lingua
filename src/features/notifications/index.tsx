@@ -14,6 +14,7 @@ import {
   Filter,
   Info,
   Plus,
+  Search,
   Trash2,
 } from 'lucide-react'
 import {
@@ -49,11 +50,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] =
@@ -308,11 +306,7 @@ export default function NotificationsPage() {
 
   return (
     <>
-      <Header>
-        <Search className='me-auto' />
-        <ThemeSwitch />
-        <ConfigDrawer />
-      </Header>
+      <Header />
 
       <Main fixed>
         <div className='flex items-start justify-between gap-4'>

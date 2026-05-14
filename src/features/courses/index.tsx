@@ -3,11 +3,8 @@ import { coursesData, type Course } from '@/data/courses-data'
 import { Calendar, Plus, Users, Wallet } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
 import { CourseModal } from '@/components/CourseModal'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 
 export default function CoursesPage() {
   const [selectedFilter, setSelectedFilter] = useState('all')
@@ -81,13 +78,7 @@ export default function CoursesPage() {
 
   return (
     <>
-      <Header>
-        <div className='ms-auto flex items-center space-x-2'>
-          <Search />
-          <ThemeSwitch />
-          <ConfigDrawer />
-        </div>
-      </Header>
+      <Header />
       <Main className='bg-background'>
         {/* Breadcrumb & Header */}
         <div className='px-8 pt-6'>
