@@ -26,6 +26,8 @@ const API_ENDPOINTS = {
     ADD_STUDENT: (groupId: number) => `/api/groups/${groupId}/add-student/`,
     REMOVE_STUDENT: (groupId: number, studentId: number) =>
       `/api/groups/${groupId}/remove-student/${studentId}/`,
+    SCHEDULE: '/api/groups/schedule/',
+    TODAY_SCHEDULE: '/api/groups/today-schedule/',
   },
   COURSE: {
     CREATE: '/api/courses/create/',
@@ -50,9 +52,18 @@ const API_ENDPOINTS = {
   USER: {
     USER_ME: '/user',
   },
-    STUDENT: {
+  STUDENT: {
     ASSIGNED_GROUPS: '/api/groups/my/',
   },
 }
 
-export const {  AUTH,ATTENDANCE, GROUP,COURSE,NOTIFICATIONS,MESSAGES,USER,STUDENT} = API_ENDPOINTS
+export const {
+  AUTH,
+  ATTENDANCE,
+  GROUP,
+  COURSE,
+  NOTIFICATIONS,
+  MESSAGES,
+  USER,
+  STUDENT,
+} = API_ENDPOINTS

@@ -39,10 +39,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useToast } from '@/components/ui/toast'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { StudentModal } from './components/StudentModal'
 
 export interface Student {
@@ -296,11 +294,7 @@ export default function StudentsPage() {
   return (
     <SearchProvider>
       <div className='min-h-screen bg-background'>
-        <Header>
-          <Search className='me-auto' />
-          <ThemeSwitch />
-          <ConfigDrawer />
-        </Header>
+        <Header />
 
         <Main>
           <div
