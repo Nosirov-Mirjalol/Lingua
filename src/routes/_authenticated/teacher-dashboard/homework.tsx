@@ -4,7 +4,6 @@ import type { Assignment } from '@/types/assignment.types'
 import {
   BookOpen,
   Plus,
-  Download,
   ChevronDown,
   PencilLine,
   Trash2,
@@ -439,10 +438,6 @@ function HomeworkPage() {
           }`}
         >
           Tugatilgan
-        </button>
-        <button className='mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 dark:border-slate-800 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 sm:mt-0 sm:ml-auto sm:w-auto'>
-          <Download size={16} />
-          Eksport
         </button>
       </div>
 
