@@ -15,7 +15,10 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { AdminCourseCreateModal } from '@/features/admin-courses/components/admin-course-create-modal'
 
 export default function AdminCoursesPage() {
@@ -91,7 +94,13 @@ export default function AdminCoursesPage() {
 
   return (
     <>
-      <Header />
+      <Header>
+        <div className='ms-auto flex items-center space-x-2'>
+          <Search />
+          <ThemeSwitch />
+          <ConfigDrawer />
+        </div>
+      </Header>
       <div className='container mx-auto max-w-6xl space-y-6 p-4'>
         <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
           <div>

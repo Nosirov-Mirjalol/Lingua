@@ -45,8 +45,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { ThemeSwitch } from '@/components/theme-switch'
 
 interface StudentFormData {
   username: string
@@ -297,7 +299,11 @@ export default function AdminStudentsPage() {
   return (
     <SearchProvider>
       <div className='min-h-screen bg-[#F8FAFC] dark:bg-[#020617]'>
-        <Header />
+        <Header>
+          <Search className='me-auto' />
+          <ThemeSwitch />
+          <ConfigDrawer />
+        </Header>
 
         <Main>
           <div
