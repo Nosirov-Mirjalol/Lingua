@@ -1,21 +1,33 @@
 import { useQuery } from '@tanstack/react-query'
 import { getMyGroups } from '@/api/service/student/group.service'
+import { useStudentUnreadCount } from './useStudentNotifications'
+import { apiClient } from '@/api/client'
+import { MESSAGES } from '@/constants/apiEndPoints'
 import type {
   StudentAssignment,
   StudentConversation,
   StudentDashboardStats,
-  StudentNotification,
   StudentProfile,
   StudentScheduleItem,
 } from '@/types/student'
 import type { StudentGroup } from '@/api/service/student/group.service'
+
+function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60_000)
+  const h = Math.floor(m / 60)
+  const d = Math.floor(h / 24)
+  if (m < 1) return 'Hozirgina'
+  if (m < 60) return `${m} daqiqa oldin`
+  if (h < 24) return `${h} soat oldin`
+  return `${d} kun oldin`
+}
 
 const getStoredUser = () => {
   if (typeof window === 'undefined') return null
 
   const raw = sessionStorage.getItem('linguapro_user')
   if (!raw) return null
-
   try {
     return JSON.parse(raw) as Partial<StudentProfile>
   } catch {
@@ -25,8 +37,7 @@ const getStoredUser = () => {
 
 const buildProfile = (): StudentProfile => {
   const stored = getStoredUser()
-  
-  // Return stored data if available, otherwise return empty strings for a clean state
+
   return {
     id: stored?.id ?? 0,
     username: stored?.username || '',
@@ -53,8 +64,11 @@ export const useStudentProfile = () => {
 }
 
 export const useStudentDashboard = () => {
+  const { data: unreadRes } = useStudentUnreadCount()
+  const unreadCount = unreadRes?.unread_count ?? 0
+
   return useQuery({
-    queryKey: ['student', 'dashboard'],
+    queryKey: ['student', 'dashboard', unreadCount],
     queryFn: async () => {
       const profile = buildProfile()
       const completedHours = `${Math.max(40, Math.round(profile.completion * 0.8))}h`
@@ -64,7 +78,7 @@ export const useStudentDashboard = () => {
           upcomingLessons: 3,
           completedHours,
           progress: profile.completion,
-          unreadMessages: 5,
+          unreadMessages: unreadCount,
         } as StudentDashboardStats,
         highlights: [
           {
@@ -168,46 +182,18 @@ export const useStudentHomework = () => {
 export const useStudentMessages = () => {
   return useQuery({
     queryKey: ['student', 'messages'],
-    queryFn: async (): Promise<StudentConversation[]> => [
-      {
-        id: 1,
-        participant: 'Ms. Ziya',
-        subject: 'Pronunciation practice',
-        lastMessage: 'I reviewed your homework and left feedback.',
-        time: '2m ago',
-        unread: 2,
-        messages: [
-          {
-            id: 1,
-            sender: 'teacher',
-            body: 'Great progress today! Please review the new pronunciation set.',
-            time: '2m ago',
-          },
-          {
-            id: 2,
-            sender: 'student',
-            body: 'Thank you! I will complete it tonight.',
-            time: '1m ago',
-          },
-        ],
-      },
-      {
-        id: 2,
-        participant: 'Support Bot',
-        subject: 'Course resources',
-        lastMessage: 'Your next lesson note is ready.',
-        time: '1h ago',
-        unread: 0,
-        messages: [
-          {
-            id: 3,
-            sender: 'teacher',
-            body: 'Your lesson notes are ready in the portal.',
-            time: '1h ago',
-          },
-        ],
-      },
-    ],
+    queryFn: async (): Promise<StudentConversation[]> => {
+      const res = await apiClient.get<any[]>(MESSAGES.GROUPS)
+      return (res || []).map((c: any) => ({
+        id: c.id,
+        participant: c.group_name || 'Guruh',
+        subject: 'Guruh xabari',
+        lastMessage: c.last_message?.text || 'Xabarlar yo\'q',
+        time: c.last_message?.created_at ? formatRelativeTime(c.last_message.created_at) : '',
+        unread: c.unread_count || 0,
+        messages: []
+      }))
+    },
     staleTime: 60_000,
   })
 }
@@ -216,39 +202,6 @@ export const useStudentGroups = () => {
   return useQuery({
     queryKey: ['student', 'groups'],
     queryFn: (): Promise<StudentGroup[]> => getMyGroups(),
-    staleTime: 60_000,
-  })
-}
-
-export const useStudentNotifications = () => {
-  return useQuery({
-    queryKey: ['student', 'notifications'],
-    queryFn: async (): Promise<StudentNotification[]> => [
-      {
-        id: 1,
-        title: 'Lesson reminder',
-        description: 'Your Pronunciation Lab starts in 45 minutes.',
-        time: '10 min ago',
-        category: 'Reminder',
-        read: false,
-      },
-      {
-        id: 2,
-        title: 'Feedback available',
-        description: 'Your instructor has left comments on your assignment.',
-        time: '1h ago',
-        category: 'Update',
-        read: false,
-      },
-      {
-        id: 3,
-        title: 'New course module',
-        description: 'A new speaking module is waiting for you.',
-        time: 'Yesterday',
-        category: 'Announcement',
-        read: true,
-      },
-    ],
     staleTime: 60_000,
   })
 }
