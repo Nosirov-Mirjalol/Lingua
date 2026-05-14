@@ -1,7 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
   CreditCard,
   LogOut,

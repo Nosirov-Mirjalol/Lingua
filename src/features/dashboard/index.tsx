@@ -9,62 +9,63 @@ import { StudentGrowth } from './components/student-growth'
 
 export default function Dashboard() {
   return (
-    <div className='min-h-screen bg-[#F8FAFC] dark:bg-[#020617]'>
+    <div className='min-h-screen bg-slate-50 dark:bg-slate-950'>
       <Header>
         <div className='ms-auto flex items-center space-x-2'>
-          <Search />
           <ConfigDrawer />
         </div>
       </Header>
 
       <Main>
-        <div className='mb-8'>
-          <h1 className='text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white'>
-            Welcome, Admin!
+        {/* ── Welcome ── */}
+        <div className='mb-7'>
+          <p className='mb-1 text-xs font-semibold tracking-widest text-[#b80035] uppercase dark:text-rose-400'>
+            Admin paneli
+          </p>
+          <h1 className='text-2xl font-bold text-slate-900 md:text-3xl dark:text-white'>
+            Xush kelibsiz, Admin!
           </h1>
-          <p className='mt-1 text-sm font-medium text-[#E11D48]'>
-            Current status and key indicators of the training center.
+          <p className='mt-1.5 text-sm text-slate-500 dark:text-slate-400'>
+            O&apos;quv markaz holati va asosiy ko&apos;rsatkichlar.
           </p>
         </div>
 
         <Tabs defaultValue='overview' className='space-y-6'>
-          <TabsContent value='overview' className='space-y-6 outline-none'>
-            <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
+          <TabsContent value='overview' className='space-y-5 outline-none'>
+            {/* ── Stats ── */}
+            <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4'>
               <DashboardCard
-                title='TOTAL STUDENTS'
+                title="JAMI O'QUVCHILAR"
                 value='248'
                 status='+12%'
                 statusVariant='success'
                 icon={Users}
               />
-
               <DashboardCard
-                title='ACTIVE GROUPS'
+                title='FAOL GURUHLAR'
                 value='12'
-                status='Stable'
+                status='Barqaror'
                 statusVariant='neutral'
                 icon={Network}
               />
-
               <DashboardCard
-                title='MONTHLY REVENUE'
-                value='48.5M UZS'
+                title='OYLIK DAROMAD'
+                value='48.5M'
                 status='+4.2M'
                 statusVariant='success'
                 icon={DollarSign}
               />
-
               <DashboardCard
-                title='PENDING PAYMENTS'
+                title="TO'LOV KUTMOQDA"
                 value='23'
-                status='Attention'
+                status='Diqqat'
                 statusVariant='warning'
                 icon={ClipboardCheck}
               />
             </div>
 
-            {/* Pastki grafik va ro'yxat */}
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-7'>
+            {/* ── Charts ── */}
+            <div className='grid grid-cols-1 gap-5 lg:grid-cols-7'>
               <StudentGrowth />
               <GroupCapacity />
             </div>
