@@ -25,7 +25,6 @@ function formatRelativeTime(iso: string): string {
 
 const getStoredUser = () => {
   if (typeof window === 'undefined') return null
-
   const raw = sessionStorage.getItem('linguapro_user')
   if (!raw) return null
   try {
@@ -37,7 +36,6 @@ const getStoredUser = () => {
 
 const buildProfile = (): StudentProfile => {
   const stored = getStoredUser()
-
   return {
     id: stored?.id ?? 0,
     username: stored?.username || '',

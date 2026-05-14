@@ -14,7 +14,6 @@ export const useStudentConversations = () => {
       try {
         return await getStudentConversations()
       } catch (_error) {
-        // Return mock data as fallback when API fails
         return [
           {
             id: 1,
@@ -72,7 +71,6 @@ export const useStudentConversationMessages = (
       try {
         return await getStudentConversationMessages(conversationId)
       } catch (_error) {
-        // Return fallback conversation data when API fails
         const fallbackConversations = [
           {
             id: 1,
@@ -129,7 +127,6 @@ export const useStudentConversationMessages = (
 
 export const useSendStudentMessage = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: ({
       conversationId,
@@ -153,7 +150,6 @@ export const useSendStudentMessage = () => {
 
 export const useMarkConversationAsRead = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: markStudentConversationAsRead,
     onSuccess: (_, _conversationId) => {

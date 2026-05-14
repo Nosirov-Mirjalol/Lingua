@@ -3,8 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 import { NOTIFICATIONS } from '@/constants/apiEndPoints'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export interface StudentNotificationAPI {
   id: number
   title: string
@@ -13,36 +11,27 @@ export interface StudentNotificationAPI {
   created_at: string
 }
 
-// ─── REST Hooks ───────────────────────────────────────────────────────────────
-
-/** Barcha bildirishnomalarni olish */
 export const useStudentNotificationsList = () => {
   return useQuery({
     queryKey: ['student', 'notifications'],
-    queryFn: () =>
-      apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
+    queryFn: () => apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
     staleTime: 2_000,
-    refetchInterval: 2_000, // 2 soniya - ultra tezkor polling
+    refetchInterval: 2_000,
   })
 }
 
-/** O'qilmagan xabarlar sonini olish */
 export const useStudentUnreadCount = () => {
   return useQuery({
     queryKey: ['student', 'notifications', 'unread-count'],
-    queryFn: () =>
-      apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
-    refetchInterval: 2_000, // Dashboard ham 2 soniyada yangilanadi
+    queryFn: () => apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
+    refetchInterval: 2_000,
   })
 }
 
-/** Bitta bildirishnomani o'qilgan deb belgilash */
 export const useStudentMarkAsRead = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: (id: number) =>
-      apiClient.patch<{ detail: string }>(NOTIFICATIONS.MARK_READ(id)),
+    mutationFn: (id: number) => apiClient.patch<{ detail: string }>(NOTIFICATIONS.MARK_READ(id)),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
       await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
@@ -50,21 +39,16 @@ export const useStudentMarkAsRead = () => {
   })
 }
 
-/** Barcha bildirishnomalarni o'qilgan deb belgilash */
 export const useStudentMarkAllRead = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: () =>
-      apiClient.post<{ updated: number }>(NOTIFICATIONS.MARK_ALL_READ),
+    mutationFn: () => apiClient.post<{ updated: number }>(NOTIFICATIONS.MARK_ALL_READ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
       await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
     },
   })
 }
-
-// ─── WebSocket Hook ───────────────────────────────────────────────────────────
 
 function getWsBaseUrl(): string {
   const httpBase = import.meta.env.VITE_API_BASE_URL || ''
@@ -87,10 +71,6 @@ function getAccessToken(): string {
   )
 }
 
-/**
- * WebSocket orqali real-time notification olish.
- * Yangi xabar kelganda query cache invalidate qilinadi.
- */
 export const useNotificationWebSocket = () => {
   const queryClient = useQueryClient()
   const wsRef = useRef<WebSocket | null>(null)
@@ -107,15 +87,12 @@ export const useNotificationWebSocket = () => {
     const token = getAccessToken()
     if (!token) return
 
-    // Oldingi ulanishni yopish
     if (wsRef.current) {
       wsRef.current.onclose = null
       wsRef.current.close()
     }
 
     const wsBase = getWsBaseUrl()
-    // Ba'zi serverlarda /ws/ siz, ba'zilarida /ws/ bilan ishlaydi. 
-    // Ikkala holatni ham tekshirib ko'rish uchun path'ni o'zgartirdik.
     const wsUrl = `${wsBase}/ws/notifications/?token=${token}`
 
     try {
@@ -125,25 +102,12 @@ export const useNotificationWebSocket = () => {
         reconnectAttemptRef.current = 0
       }
 
-      ws.onmessage = (event) => {
-        // Har qanday xabar kelganda ma'lumotlarni yangilaymiz (xavfsizlik uchun)
+      ws.onmessage = () => {
         invalidateNotifications()
-
-        try {
-          const data = JSON.parse(event.data)
-          console.log('WS Notification received:', data)
-        } catch {
-          // JSON bo'lmasa ham invalidateNotifications() tepadagi qatorda chaqirildi
-        }
       }
 
-      ws.onclose = (event) => {
+      ws.onclose = () => {
         wsRef.current = null
-
-        // Serverdan 4000+ code bilan yopilsa qayta ulanmaymiz (auth xato)
-        if (event.code >= 4000) return
-
-        // Exponential backoff bilan qayta ulanish
         if (reconnectAttemptRef.current < MAX_RECONNECT_ATTEMPTS) {
           const delay = Math.min(
             1000 * Math.pow(2, reconnectAttemptRef.current),
@@ -154,19 +118,13 @@ export const useNotificationWebSocket = () => {
         }
       }
 
-      ws.onerror = () => {
-        // onerror dan keyin onclose avtomatik chaqiriladi
-      }
-
+      ws.onerror = () => {}
       wsRef.current = ws
-    } catch {
-      // WebSocket yaratishda xatolik (invalid URL, etc.)
-    }
+    } catch {}
   }, [invalidateNotifications])
 
   useEffect(() => {
     connect()
-
     return () => {
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current)

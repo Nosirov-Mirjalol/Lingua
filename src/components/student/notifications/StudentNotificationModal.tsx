@@ -189,7 +189,6 @@ export function StudentNotificationModal({
             </div>
           )}
         </div>
-
         <div className='flex items-center justify-end border-t bg-slate-50/50 px-8 py-5 dark:bg-slate-900/50'>
           <Button
             onClick={() => onOpenChange(false)}
