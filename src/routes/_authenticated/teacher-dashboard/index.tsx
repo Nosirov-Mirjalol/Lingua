@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
   Users,
@@ -9,6 +9,7 @@ import {
   Eye,
   Loader2,
 } from 'lucide-react'
+import { useGroupSchedule } from '@/hooks/teacher/groups/useGroupSchedule'
 import { useTeacherGroups } from '@/hooks/teacher/groups/useTeacherGroups'
 import { useProfile } from '@/hooks/teacher/profile/useProfile'
 import { useGetAssignments } from '@/hooks/useAssignments'
@@ -81,14 +82,16 @@ const StatCard = ({
   label: string
   badge?: React.ReactNode
 }) => (
-  <div className='group rounded-2xl bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none transition-all duration-300 hover:shadow-[0_25px_50px_-10px_rgba(184,0,53,0.1)] dark:hover:border-rose-900/50'>
+  <div className='group rounded-2xl border border-transparent bg-white p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] transition-all duration-300 hover:shadow-[0_25px_50px_-10px_rgba(184,0,53,0.1)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none dark:hover:border-rose-900/50'>
     <div className='flex items-start justify-between'>
-      <div className='rounded-xl bg-[#fff0f3] dark:bg-rose-950 p-3 text-[#b80035] dark:text-rose-400 transition-transform duration-300 group-hover:scale-110'>
+      <div className='rounded-xl bg-[#fff0f3] p-3 text-[#b80035] transition-transform duration-300 group-hover:scale-110 dark:bg-rose-950 dark:text-rose-400'>
         {icon}
       </div>
       {badge && <div className='shrink-0 animate-pulse'>{badge}</div>}
     </div>
-    <p className='mt-4 text-3xl font-bold text-gray-800 dark:text-white'>{value}</p>
+    <p className='mt-4 text-3xl font-bold text-gray-800 dark:text-white'>
+      {value}
+    </p>
     <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>{label}</p>
   </div>
 )
@@ -109,8 +112,8 @@ const LinkBtn = ({
     disabled={loading}
     className={`flex items-center gap-2 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 ${
       variant === 'primary'
-        ? 'text-sm font-semibold text-[#b80035] dark:text-rose-400 hover:underline'
-        : 'rounded-lg px-4 py-2 text-sm font-semibold text-[#b80035] dark:text-rose-400 hover:bg-[#fff0f3] dark:hover:bg-rose-950 active:bg-[#ffe6ec] dark:active:bg-rose-900'
+        ? 'text-sm font-semibold text-[#b80035] hover:underline dark:text-rose-400'
+        : 'rounded-lg px-4 py-2 text-sm font-semibold text-[#b80035] hover:bg-[#fff0f3] active:bg-[#ffe6ec] dark:text-rose-400 dark:hover:bg-rose-950 dark:active:bg-rose-900'
     }`}
   >
     {loading ? (
@@ -174,6 +177,19 @@ function DashboardPage() {
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date())
 
+  // Format calendar date to YYYY-MM-DD for API
+  const formattedDate = useMemo(() => {
+    if (!calendarDate) return undefined
+    const year = calendarDate.getFullYear()
+    const month = String(calendarDate.getMonth() + 1).padStart(2, '0')
+    const day = String(calendarDate.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }, [calendarDate])
+
+  // Fetch schedule for selected date
+  const { data: scheduleItems = [], isLoading: loadingSchedule } =
+    useGroupSchedule(formattedDate)
+
   const [statusOpenId, setStatusOpenId] = useState<number | null>(null)
   const [statusLoadingId, setStatusLoadingId] = useState<number | null>(null)
   const [statusByAssignmentId, setStatusByAssignmentId] = useState<
@@ -196,15 +212,6 @@ function DashboardPage() {
       a.is_active
   )
 
-  const scheduleItems = groups
-    .slice(0, 4)
-    .map((g) => ({
-      time: formatTimeRange(g.start_time, g.end_time),
-      title: g.name,
-      detail: `${g.students.length} talaba • Guruh ID: ${g.id}`,
-    }))
-    .filter((x) => x.time)
-
   const activeGroupsCount = groups.filter((g) => g.status === 'active').length
   const studentsCount = new Set(
     groups.flatMap((g) => g.students.map((s) => s.student))
@@ -217,7 +224,7 @@ function DashboardPage() {
     <>
       {/* Welcome */}
       <div className='mb-6 md:mb-8'>
-        <h1 className='text-2xl font-bold text-gray-800 dark:text-white md:text-3xl'>
+        <h1 className='text-2xl font-bold text-gray-800 md:text-3xl dark:text-white'>
           Welcome back,{' '}
           <span className='text-[#b80035] dark:text-rose-400'>
             {profile?.full_name || profile?.username || 'teacher'}
@@ -247,7 +254,7 @@ function DashboardPage() {
           label='Tasks Pending'
           badge={
             pendingAssignments.length > 0 && (
-              <span className='rounded-full bg-red-100 dark:bg-red-950 px-2 py-1 text-xs font-semibold text-red-600 dark:text-red-400'>
+              <span className='rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-600 dark:bg-red-950 dark:text-red-400'>
                 Active
               </span>
             )
@@ -271,7 +278,7 @@ function DashboardPage() {
       {/* Main */}
       <div className='mb-6 grid grid-cols-1 gap-6 md:mb-8 lg:grid-cols-5'>
         {/* Assignments */}
-        <div className='col-span-1 rounded-2xl bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none md:p-6 lg:col-span-3'>
+        <div className='col-span-1 rounded-2xl border border-transparent bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] md:p-6 lg:col-span-3 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none'>
           <div className='mb-6 flex items-center justify-between'>
             <h2 className='text-lg font-bold text-gray-800 dark:text-white'>
               Pending Assignments
@@ -327,10 +334,10 @@ function DashboardPage() {
               return (
                 <div
                   key={a.id}
-                  className='flex flex-col items-start justify-between gap-3 border-b border-gray-100 dark:border-slate-700 py-4 last:border-0 sm:flex-row sm:items-center sm:gap-4'
+                  className='flex flex-col items-start justify-between gap-3 border-b border-gray-100 py-4 last:border-0 sm:flex-row sm:items-center sm:gap-4 dark:border-slate-700'
                 >
                   <div className='flex w-full items-center gap-4 sm:w-auto'>
-                    <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500 dark:bg-blue-600 text-sm font-semibold text-white'>
+                    <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500 text-sm font-semibold text-white dark:bg-blue-600'>
                       {getInitials(a.title)}
                     </div>
                     <div className='min-w-0 flex-1'>
@@ -360,7 +367,7 @@ function DashboardPage() {
                         <button
                           type='button'
                           onClick={handleOpenStatus}
-                          className='inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#b80035] dark:text-rose-400 hover:bg-[#fff0f3] dark:hover:bg-rose-950 active:bg-[#ffe6ec] dark:active:bg-rose-900 disabled:opacity-50'
+                          className='inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#b80035] hover:bg-[#fff0f3] active:bg-[#ffe6ec] disabled:opacity-50 dark:text-rose-400 dark:hover:bg-rose-950 dark:active:bg-rose-900'
                           disabled={statusLoadingId === a.id}
                           aria-label='Holati'
                         >
@@ -379,7 +386,7 @@ function DashboardPage() {
                       </PopoverTrigger>
                       <PopoverContent
                         align='end'
-                        className='w-64 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.12)] dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)]'
+                        className='w-64 rounded-2xl bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.12)] dark:bg-slate-900 dark:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.3)]'
                       >
                         {statusLoadingId === a.id ? (
                           <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
@@ -398,7 +405,7 @@ function DashboardPage() {
                             </div>
 
                             <div className='grid grid-cols-2 gap-2 text-sm'>
-                              <div className='rounded-xl bg-emerald-50 dark:bg-emerald-950 px-3 py-2'>
+                              <div className='rounded-xl bg-emerald-50 px-3 py-2 dark:bg-emerald-950'>
                                 <p className='text-xs font-semibold text-emerald-700 dark:text-emerald-400'>
                                   Topshirgan
                                 </p>
@@ -406,7 +413,7 @@ function DashboardPage() {
                                   {submitted}
                                 </p>
                               </div>
-                              <div className='rounded-xl bg-rose-50 dark:bg-rose-950 px-3 py-2'>
+                              <div className='rounded-xl bg-rose-50 px-3 py-2 dark:bg-rose-950'>
                                 <p className='text-xs font-semibold text-rose-700 dark:text-rose-400'>
                                   Topshirmagan
                                 </p>
@@ -455,9 +462,11 @@ function DashboardPage() {
         </div>
 
         {/* Schedule */}
-        <div className='col-span-1 rounded-2xl bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none md:p-6 lg:col-span-2'>
+        <div className='col-span-1 rounded-2xl border border-transparent bg-white p-4 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] md:p-6 lg:col-span-2 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none'>
           <div className='mb-6 flex items-center justify-between'>
-            <h2 className='text-lg font-bold text-gray-800 dark:text-white'>Class Schedule</h2>
+            <h2 className='text-lg font-bold text-gray-800 dark:text-white'>
+              Class Schedule
+            </h2>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <span>
@@ -477,26 +486,33 @@ function DashboardPage() {
             </Popover>
           </div>
 
-          {loadingGroups ? (
+          {loadingSchedule ? (
             <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
               Yuklanmoqda...
             </p>
           ) : scheduleItems.length === 0 ? (
             <p className='py-8 text-center text-sm text-gray-500 dark:text-gray-400'>
-              Bugun darslar yo'q
+              {calendarDate &&
+              new Date(calendarDate).toDateString() !==
+                new Date().toDateString()
+                ? "O'sha kungi darslar yo'q"
+                : "Bugun darslar yo'q"}
             </p>
           ) : (
-            scheduleItems.map((item, i) => (
-              <div key={i} className='flex gap-4 py-3'>
+            scheduleItems.map((item) => (
+              <div key={item.id} className='flex gap-4 py-3'>
                 <div className='w-1 rounded-full bg-[#b80035] dark:bg-rose-500' />
                 <div className='flex-1'>
                   <p className='text-sm font-semibold text-gray-800 dark:text-white'>
-                    {item.time}
+                    {formatTimeRange(item.start_time, item.end_time)}
                   </p>
                   <p className='mt-1 text-base font-medium text-gray-800 dark:text-white'>
-                    {item.title}
+                    {item.name}
                   </p>
-                  <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>{item.detail}</p>
+                  <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
+                    {item.course_name} • {item.student_count} talaba •{' '}
+                    {item.lesson_status}
+                  </p>
                 </div>
               </div>
             ))

@@ -2,7 +2,6 @@ import { useAdminUsers } from '@/hooks/admin/users/useAdminUsers'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { UsersDialogs } from './components/users-dialogs'
 import { UsersProvider } from './components/users-provider'
@@ -28,7 +27,6 @@ export function Users() {
     <UsersProvider>
       <Header>
         <Search className='me-auto' />
-        <ThemeSwitch />
         <ConfigDrawer />
       </Header>
 
