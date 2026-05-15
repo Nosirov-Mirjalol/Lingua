@@ -1,8 +1,8 @@
-import { useMemo } from 'react'
-import { BellRing, MessageCircle, Star, CheckCheck, Loader2, LucideIcon } from 'lucide-react'
+import { BellRing, CheckCheck, Loader2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { NotificationCard } from '@/components/shared/NotificationCard'
 import {
   useStudentNotificationsList,
   useStudentUnreadCount,
@@ -14,22 +14,6 @@ import {
 interface StudentNotificationModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-type CategoryKey = 'Reminder' | 'Announcement' | 'Update'
-
-function deriveCategory(title: string): CategoryKey {
-  const t = title.toLowerCase()
-  if (t.includes('eslatma') || t.includes('reminder') || t.includes('dars'))
-    return 'Reminder'
-  if (
-    t.includes("e'lon") ||
-    t.includes('yangi') ||
-    t.includes('announcement') ||
-    t.includes('kurs')
-  )
-    return 'Announcement'
-  return 'Update'
 }
 
 function formatRelativeTime(iso: string): string {
@@ -54,15 +38,6 @@ export function StudentNotificationModal({
 
   const notifications = notificationsRes || []
   const unreadCount = unreadRes?.unread_count ?? notifications.filter(n => !n.is_read).length
-
-  const iconMap = useMemo<Record<CategoryKey, LucideIcon>>(
-    () => ({
-      Reminder: BellRing,
-      Announcement: Star,
-      Update: MessageCircle,
-    }),
-    []
-  )
 
   const handleNotificationClick = (n: StudentNotificationAPI) => {
     if (!n.is_read && !markAsRead.isPending) {
@@ -130,59 +105,20 @@ export function StudentNotificationModal({
           ) : (
             <div className='flex flex-col gap-3 pb-4'>
               {notifications.map((notification) => {
-                const category = deriveCategory(notification.title)
-                const Icon = iconMap[category]
                 const isPendingThis = markAsRead.isPending && markAsRead.variables === notification.id
 
                 return (
                   <div
                     key={notification.id}
-                    onClick={() => handleNotificationClick(notification)}
-                    className={cn(
-                      'group relative cursor-pointer rounded-2xl border p-4 transition-all duration-300',
-                      notification.is_read
-                        ? 'bg-transparent border-transparent opacity-60'
-                        : 'bg-white border-slate-100 shadow-sm hover:shadow-md hover:border-primary/20 dark:bg-slate-900 dark:border-slate-800'
-                    )}
+                    className={cn(notification.is_read && 'opacity-60')}
                   >
-                    <div className='flex items-start gap-4'>
-                      <div className={cn(
-                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors',
-                        notification.is_read
-                          ? 'bg-muted text-muted-foreground/50'
-                          : 'bg-primary/5 text-primary'
-                      )}>
-                        {isPendingThis ? (
-                          <Loader2 size={18} className='animate-spin' />
-                        ) : (
-                          <Icon size={18} />
-                        )}
-                      </div>
-
-                      <div className='min-w-0 flex-1'>
-                        <div className='flex items-center justify-between gap-2'>
-                          <p className={cn(
-                            'text-sm transition-colors',
-                            notification.is_read ? 'font-medium text-slate-500' : 'font-bold text-slate-900 dark:text-white'
-                          )}>
-                            {notification.title}
-                          </p>
-                          <span className='whitespace-nowrap text-[10px] font-bold text-slate-400'>
-                            {formatRelativeTime(notification.created_at)}
-                          </span>
-                        </div>
-                        <p className={cn(
-                          'mt-1 text-sm leading-relaxed transition-colors',
-                          notification.is_read ? 'text-slate-400' : 'text-slate-600 dark:text-slate-400'
-                        )}>
-                          {notification.message}
-                        </p>
-                      </div>
-
-                      {!notification.is_read && (
-                        <div className='absolute right-2 top-1/2 -translate-y-1/2 h-1.5 w-1.5 rounded-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity' />
-                      )}
-                    </div>
+                    <NotificationCard
+                      title={notification.title}
+                      message={notification.message}
+                      time={isPendingThis ? 'Yuklanmoqda...' : formatRelativeTime(notification.created_at)}
+                      isRead={notification.is_read}
+                      onClick={() => handleNotificationClick(notification)}
+                    />
                   </div>
                 )
               })}

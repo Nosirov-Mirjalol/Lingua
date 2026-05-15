@@ -9,6 +9,7 @@ import {
   Search,
   BellRing,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RoseButton } from '@/components/ui/rose-button'
@@ -35,6 +36,7 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
+import { NotificationCard } from '@/components/shared/NotificationCard'
 import { useBroadcastList, useSendBroadcast } from './hooks'
 import { cn } from '@/lib/utils'
 
@@ -174,21 +176,28 @@ export default function NotificationsPage() {
                 ) : (
                   <div className="divide-y divide-slate-50">
                     {filtered.map((n) => (
-                      <div key={n.id} className={cn("group flex items-start gap-4 p-5 transition-colors hover:bg-slate-50", !n.read && "bg-rose-50/20")}>
-                        <div className={cn("mt-1.5 h-2 w-2 rounded-full", !n.read ? "bg-rose-500" : "bg-transparent")} />
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-bold text-slate-900">{n.title}</h4>
-                            <span className="text-[10px] text-slate-400">{format(n.timestamp, 'dd.MM.yyyy HH:mm')}</span>
-                          </div>
-                          <p className="mt-1 text-sm text-slate-600 leading-snug">{n.message}</p>
-                          <div className="mt-2 flex items-center gap-2">
-                             <Badge variant="outline" className="text-[9px] h-4 border-slate-100 text-slate-400 font-bold">{n.type.toUpperCase()}</Badge>
+                      <div key={n.id} className="group relative">
+                        <NotificationCard
+                          title={n.title}
+                          message={n.message}
+                          time={format(n.timestamp, 'dd.MM.yyyy HH:mm')}
+                          isRead={n.read}
+                        />
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4">
+                          <div className="pointer-events-auto flex items-center gap-2">
+                            <Badge variant="outline" className="text-[9px] h-4 border-slate-100 text-slate-400 font-bold">
+                              {n.type.toUpperCase()}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 rounded-lg"
+                              onClick={() => setDeleteId(n.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-500 rounded-lg" onClick={() => setDeleteId(n.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
                     ))}
                   </div>

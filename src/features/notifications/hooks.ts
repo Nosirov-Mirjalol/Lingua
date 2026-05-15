@@ -14,8 +14,11 @@ export const useMyNotifications = () => {
 export const useUnreadCount = () => {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
-    queryFn: () => apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
+    queryFn: () =>
+      apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
+    staleTime: 30_000,
     refetchInterval: 60_000,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -23,11 +26,13 @@ export const useMarkAsRead = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => 
+    mutationFn: (id: number) =>
       apiClient.patch<{ detail: string }>(NOTIFICATIONS.MARK_READ(id)),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['notifications', 'my'] })
-      await queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] })
+      await queryClient.invalidateQueries({
+        queryKey: ['notifications', 'unread-count'],
+      })
     },
   })
 }
