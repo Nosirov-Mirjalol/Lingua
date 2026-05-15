@@ -9,6 +9,7 @@ export interface AdminGroupCreatePayload {
   start_time: string;
   end_time: string;
   week_days: string;
+  week_days_type: 'ODD' | 'EVEN' | 'CUSTOM';
   status: 'active' | 'completed';
 }
 
@@ -28,6 +29,7 @@ export const createAdminGroup = async (payload: AdminGroupCreatePayload): Promis
     start_time: ensureSeconds(payload.start_time),
     end_time: ensureSeconds(payload.end_time),
     week_days: payload.week_days,
+    week_days_type: payload.week_days_type,
     status: payload.status
   };
 
