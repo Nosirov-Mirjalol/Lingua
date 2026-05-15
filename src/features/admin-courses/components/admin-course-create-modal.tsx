@@ -8,6 +8,7 @@ import {
 } from '@/api/service/admin/course.service'
 import { useCreateAdminCourse } from '@/hooks/admin/courses/useCreateAdminCourse'
 import { Button } from '@/components/ui/button'
+import { RoseButton } from '@/components/ui/rose-button'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 
 const OBJECTIVES: { value: AdminCourseObjective; label: string }[] = [
   { value: 'general', label: 'General English' },
@@ -108,54 +110,50 @@ export function AdminCourseCreateModal({
         onOpenChange(false)
         return 'Kurs yaratildi'
       },
-      error: (err: unknown) =>
-        err && typeof err === 'object' && 'message' in err
-          ? String((err as { message: unknown }).message)
-          : 'Xato yuz berdi',
+      error: (err: any) => err?.message || 'Xato yuz berdi',
     })
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto border-t-4 border-slate-900 p-5 sm:max-w-md'>
-        <DialogHeader>
-          <DialogTitle className='text-lg font-bold text-slate-900'>
-            Yangi kurs
+      <DialogContent className='rounded-[32px] sm:max-w-[440px] p-8 border-none shadow-2xl'>
+        <DialogHeader className="mb-6">
+          <DialogTitle className='text-2xl font-bold text-slate-900'>
+            Yangi kurs qo'shish
           </DialogTitle>
+          <p className="text-sm text-slate-400 font-medium">O'quv dasturi uchun asosiy parametrlarni kiriting.</p>
         </DialogHeader>
 
-        <div className='grid gap-4 py-2'>
-          <div className='space-y-1.5'>
-            <Label htmlFor='course-name' className='text-xs font-semibold'>
-              Kurs nomi *
+        <div className='space-y-6'>
+          <div className='space-y-2'>
+            <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+              Kurs nomi
             </Label>
             <Input
-              id='course-name'
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-              placeholder='Masalan: IELTS Foundation'
-              className='h-10 rounded-xl'
+              placeholder='IELTS Foundation'
+              className='h-12 rounded-2xl bg-slate-50 border-none px-4 text-sm font-bold'
             />
           </div>
 
-          <div className='space-y-1.5'>
-            <Label htmlFor='course-desc' className='text-xs font-semibold'>
+          <div className='space-y-2'>
+            <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
               Tavsif
             </Label>
-            <Input
-              id='course-desc'
+            <Textarea
               value={form.description}
               onChange={(e) =>
                 setForm((p) => ({ ...p, description: e.target.value }))
               }
-              placeholder='Qisqa izoh (ixtiyoriy)'
-              className='h-10 rounded-xl'
+              placeholder='Kurs haqida qisqacha...'
+              className='rounded-2xl bg-slate-50 border-none px-4 text-sm font-medium min-h-[100px]'
             />
           </div>
 
-          <div className='grid grid-cols-2 gap-3'>
-            <div className='space-y-1.5'>
-              <Label className='text-xs font-semibold'>Yo&apos;nalish</Label>
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Yo'nalish</Label>
               <Select
                 value={form.couser_objective}
                 onValueChange={(v) =>
@@ -165,8 +163,8 @@ export function AdminCourseCreateModal({
                   }))
                 }
               >
-                <SelectTrigger className='h-10 rounded-xl'>
-                  <SelectValue placeholder='Tanlang' />
+                <SelectTrigger className='h-12 rounded-2xl bg-slate-50 border-none px-4 font-bold text-slate-700'>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {OBJECTIVES.map((o) => (
@@ -177,16 +175,16 @@ export function AdminCourseCreateModal({
                 </SelectContent>
               </Select>
             </div>
-            <div className='space-y-1.5'>
-              <Label className='text-xs font-semibold'>Daraja</Label>
+            <div className='space-y-2'>
+              <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Daraja</Label>
               <Select
                 value={form.level}
                 onValueChange={(v) =>
                   setForm((p) => ({ ...p, level: v as AdminCourseLevel }))
                 }
               >
-                <SelectTrigger className='h-10 rounded-xl'>
-                  <SelectValue placeholder='Tanlang' />
+                <SelectTrigger className='h-12 rounded-2xl bg-slate-50 border-none px-4 font-bold text-slate-700'>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {LEVELS.map((l) => (
@@ -199,68 +197,56 @@ export function AdminCourseCreateModal({
             </div>
           </div>
 
-          <div className='grid grid-cols-2 gap-3'>
-            <div className='space-y-1.5'>
-              <Label htmlFor='course-months' className='text-xs font-semibold'>
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='space-y-2'>
+              <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
                 Davomiyligi (oy)
               </Label>
               <Input
-                id='course-months'
                 type='number'
-                min={0}
-                step={1}
                 value={form.duration_months}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, duration_months: e.target.value }))
                 }
-                className='h-10 rounded-xl'
+                className='h-12 rounded-2xl bg-slate-50 border-none px-4 font-bold'
               />
             </div>
-            <div className='space-y-1.5'>
-              <Label htmlFor='course-price' className='text-xs font-semibold'>
-                Narxi
+            <div className='space-y-2'>
+              <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+                Narxi (so'm)
               </Label>
               <Input
-                id='course-price'
-                inputMode='decimal'
                 value={form.price}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, price: e.target.value }))
                 }
                 placeholder='0'
-                className='h-10 rounded-xl'
+                className='h-12 rounded-2xl bg-slate-50 border-none px-4 font-bold'
               />
             </div>
           </div>
         </div>
 
-        <DialogFooter className='gap-2 sm:gap-0'>
+        <DialogFooter className='mt-8 gap-3 sm:gap-0'>
           <Button
-            type='button'
-            variant='outline'
-            size='sm'
-            className='rounded-xl'
+            variant='ghost'
+            className='flex-1 h-12 rounded-full font-bold text-slate-400 hover:bg-slate-50'
             onClick={() => onOpenChange(false)}
             disabled={createMutation.isPending}
           >
             Bekor qilish
           </Button>
-          <Button
-            type='button'
-            size='sm'
-            className='rounded-xl bg-slate-900 font-bold hover:bg-slate-800'
+          <RoseButton
             onClick={submit}
             disabled={createMutation.isPending}
+            className="flex-[2] h-12 rounded-full"
           >
             {createMutation.isPending ? (
               <Loader2 className='h-4 w-4 animate-spin' />
             ) : (
-              <>
-                <Plus className='mr-2 h-4 w-4' />
-                Saqlash
-              </>
+              'Saqlash'
             )}
-          </Button>
+          </RoseButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
