@@ -37,11 +37,12 @@ import { Main } from '@/components/layout/main'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { useBroadcastList, useSendBroadcast } from './hooks'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
 export default function NotificationsPage() {
   const { data: apiNotifications, isLoading } = useBroadcastList()
   const sendBroadcastMutation = useSendBroadcast()
-  
+
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -159,8 +160,8 @@ export default function NotificationsPage() {
               <div className="border-b border-slate-100 p-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <Input 
-                    placeholder="Qidirish..." 
+                  <Input
+                    placeholder="Qidirish..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="h-10 w-full rounded-lg border-slate-200 bg-slate-50/50 pl-10 focus:bg-white"
@@ -198,9 +199,9 @@ export default function NotificationsPage() {
           </div>
         </div>
 
-        <DeleteConfirmDialog 
-          open={deleteId !== null} 
-          onOpenChange={(v) => !v && setDeleteId(null)} 
+        <DeleteConfirmDialog
+          open={deleteId !== null}
+          onOpenChange={(v) => !v && setDeleteId(null)}
           onConfirm={() => {
             // API delete call here
             toast.success("O'chirildi")

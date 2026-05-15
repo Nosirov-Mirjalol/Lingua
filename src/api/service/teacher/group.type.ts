@@ -28,6 +28,8 @@ export interface Group {
   start_date: string
   start_time?: string
   end_time?: string
+  week_days?: string | string[]
+  week_days_type?: 'ODD' | 'EVEN' | 'CUSTOM'
   students: GroupStudent[]
 }
 
