@@ -102,7 +102,7 @@ export const adminSidebarData: SidebarData = {
           icon: Book,
         },
         {
-          title: 'Reports',
+          title: 'Reports & Notifications',
           url: '/notifications',
           icon: ScrollText,
         },

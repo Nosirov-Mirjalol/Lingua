@@ -36,11 +36,35 @@ export const useMarkAllRead = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: () => 
+    mutationFn: () =>
       apiClient.post<{ updated: number }>(NOTIFICATIONS.MARK_ALL_READ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['notifications', 'my'] })
-      await queryClient.invalidateQueries({ queryKey: ['notifications', 'unread-count'] })
+      await queryClient.invalidateQueries({
+        queryKey: ['notifications', 'unread-count'],
+      })
+    },
+  })
+}
+
+export const useBroadcastList = () => {
+  return useQuery({
+    queryKey: ['notifications', 'broadcast', 'list'],
+    queryFn: () => apiClient.get<Notification[]>(NOTIFICATIONS.BROADCAST_LIST),
+    staleTime: 60_000,
+  })
+}
+
+export const useSendBroadcast = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: { title: string; message: string; type?: string }) =>
+      apiClient.post<Notification>(NOTIFICATIONS.BROADCAST_SEND, payload),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ['notifications', 'broadcast', 'list'],
+      })
     },
   })
 }

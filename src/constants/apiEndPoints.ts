@@ -40,6 +40,8 @@ const API_ENDPOINTS = {
     MARK_READ: (id: number) => `/api/notifications/${id}/read/`,
     MARK_ALL_READ: '/api/notifications/read-all/',
     UNREAD_COUNT: '/api/notifications/unread-count/',
+    BROADCAST_LIST: '/api/notifications/broadcast/list/',
+    BROADCAST_SEND: '/api/notifications/broadcast/',
   },
   MESSAGES: {
     GROUPS: '/api/messages/',

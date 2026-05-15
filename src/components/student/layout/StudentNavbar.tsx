@@ -6,7 +6,10 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { StudentNotificationModal } from '@/components/student/notifications/StudentNotificationModal'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { useUnreadCount } from '@/features/notifications/hooks'
+import { 
+  useStudentUnreadCount, 
+  useNotificationWebSocket 
+} from '@/hooks/student/useStudentNotifications'
 
 export function StudentNavbar() {
   const [openNotifications, setOpenNotifications] = useState(false)
@@ -14,10 +17,12 @@ export function StudentNavbar() {
   const pathname = useRouterState({
     select: (s) => s.location.pathname,
   })
-  const { data: unreadData } = useUnreadCount()
-  const unreadCount = unreadData?.unread_count || 0
   const isStudentArea = pathname.startsWith('/student')
   const isTeacherArea = pathname.startsWith('/teacher-dashboard')
+
+  useNotificationWebSocket()
+  const { data: unreadData } = useStudentUnreadCount()
+  const unreadCount = unreadData?.unread_count ?? 0
 
   const handleNotificationClick = () => {
     if (isTeacherArea) {
@@ -32,22 +37,21 @@ export function StudentNavbar() {
       <Header fixed>
         <div className='ms-auto flex items-center gap-2 sm:gap-3'>
           <ThemeSwitch />
-
-          <div className='relative'>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='h-9 w-9 rounded-full text-foreground hover:bg-primary/10'
-              onClick={handleNotificationClick}
-              aria-label='Open notifications'
-            >
-              <Bell size={18} />
-            </Button>
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon'
+            className='relative h-9 w-9 rounded-full text-foreground hover:bg-primary/10'
+            onClick={handleNotificationClick}
+            aria-label='Open notifications'
+          >
+            <Bell size={18} />
             {unreadCount > 0 && (
-              <div className='absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500' />
+              <span className='absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white ring-2 ring-background'>
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
             )}
-          </div>
-
+          </Button>
           <ConfigDrawer />
         </div>
       </Header>
