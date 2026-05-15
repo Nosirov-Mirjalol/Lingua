@@ -20,10 +20,7 @@ export function StudentNavbar() {
   const isStudentArea = pathname.startsWith('/student')
   const isTeacherArea = pathname.startsWith('/teacher-dashboard')
 
-  // Real-time notification websocketini ulaymiz
   useNotificationWebSocket()
-  
-  // O'qilmagan xabarlar sonini olamiz
   const { data: unreadData } = useStudentUnreadCount()
   const unreadCount = unreadData?.unread_count ?? 0
 
@@ -40,8 +37,8 @@ export function StudentNavbar() {
       <Header fixed>
         <div className='ms-auto flex items-center gap-2 sm:gap-3'>
           <ThemeSwitch />
-
           <Button
+            type='button'
             variant='ghost'
             size='icon'
             className='relative h-9 w-9 rounded-full text-foreground hover:bg-primary/10'
@@ -55,7 +52,6 @@ export function StudentNavbar() {
               </span>
             )}
           </Button>
-
           <ConfigDrawer />
         </div>
       </Header>
