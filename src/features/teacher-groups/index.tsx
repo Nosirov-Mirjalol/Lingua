@@ -11,8 +11,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
 
 // Mock groups data with detailed info
 const detailedGroupsData = [
@@ -119,7 +122,13 @@ export default function TeacherGroupsPage() {
   if (!selectedTeacher) {
     return (
       <>
-        <Header />
+        <Header>
+          <div className='ms-auto flex items-center space-x-2'>
+            <Search />
+            <ThemeSwitch />
+            <ConfigDrawer />
+          </div>
+        </Header>
         <Main>
           <div
             style={{
@@ -199,7 +208,13 @@ export default function TeacherGroupsPage() {
   if (teacherGroups.length === 0) {
     return (
       <>
-        <Header />
+        <Header>
+          <div className='ms-auto flex items-center space-x-2'>
+            <Search />
+            <ThemeSwitch />
+            <ConfigDrawer />
+          </div>
+        </Header>
         <Main>
           <div
             style={{
@@ -266,7 +281,13 @@ export default function TeacherGroupsPage() {
 
   return (
     <>
-      <Header />
+      <Header>
+        <div className='ms-auto flex items-center space-x-2'>
+          <Search />
+          <ThemeSwitch />
+          <ConfigDrawer />
+        </div>
+      </Header>
       <Main>
         <div
           style={{

@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { teacherGroupsData, type Student } from '@/data/groups-data'
 import { teachersData } from '@/data/teachers-data'
 import {
   Calendar,
   Edit,
+  Loader2,
   MapPin,
   SearchIcon,
   Trash2,
@@ -24,8 +25,13 @@ import {
 } from '@/components/ui/table'
 import { useToast } from '@/components/ui/toast'
 import { GroupModal } from '@/components/GroupModal'
-import { Header } from '@/components/layout/header'
+import { ConfigDrawer } from '@/components/config-drawer'
+import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
+import { useAdminTeachers } from '@/hooks/admin/teachers/useAdminTeachers'
+import { useUpdateAdminTeacher } from '@/hooks/admin/teachers/useUpdateAdminTeacher'
+import { useDeleteAdminTeacher } from '@/hooks/admin/teachers/useDeleteAdminTeacher'
+import { useCreateAdminTeacher } from '@/hooks/admin/teachers/useCreateAdminTeacher'
 
 // --- Interfaces ---
 interface Teacher {
@@ -440,10 +446,34 @@ function TeacherCard({
 
 // --- Main Page ---
 export default function TeachersPage() {
-  const [teachers, setTeachers] = useState<Teacher[]>(() => {
-    const savedTeachers = localStorage.getItem('teachers')
-    return savedTeachers ? JSON.parse(savedTeachers) : mockTeachers
-  })
+  const { data: apiTeachers, isLoading, isError } = useAdminTeachers()
+  const [teachers, setTeachers] = useState<Teacher[]>([])
+
+  useEffect(() => {
+    if (apiTeachers) {
+      const mapped = apiTeachers.map((t) => ({
+        id: t.id,
+        name: `${t.first_name} ${t.last_name}`,
+        initials: (t.first_name?.[0] || '') + (t.last_name?.[0] || ''),
+        subject: 'Teacher',
+        email: t.email,
+        phone: t.phone || '',
+        groups: 0,
+        experience: 0,
+        rating: 5.0,
+        badgeColor: {
+          bg: '#fff1f2',
+          text: '#e11d48',
+          border: '#fda4af',
+          avatarBg: '#fff1f2',
+          avatarFill: '#fb7185',
+        },
+        avatar: undefined,
+      }))
+      setTeachers(mapped)
+    }
+  }, [apiTeachers])
+
   const { addToast, ToastContainer } = useToast()
 
   // Groups functionality states
@@ -1036,7 +1066,9 @@ export default function TeachersPage() {
 
   return (
     <>
-      <Header />
+      <AdminHeader fixed>
+        <ConfigDrawer />
+      </AdminHeader>
       <Main>
         <div
           style={{
@@ -1055,8 +1087,19 @@ export default function TeachersPage() {
           </span>
         </div>
 
-        {/* Teachers View */}
-        {viewState === 'teachers' && (
+        {isLoading ? (
+          <div className='flex h-96 items-center justify-center'>
+            <Loader2 className='h-8 w-8 animate-spin text-rose-500' />
+          </div>
+        ) : isError ? (
+          <div className='flex h-96 flex-col items-center justify-center gap-4'>
+            <p className='text-rose-500 font-semibold'>Xatolik yuz berdi. Ma'lumotlarni yuklab bo'lmadi.</p>
+            <Button onClick={() => window.location.reload()} variant='outline'>Qayta urinish</Button>
+          </div>
+        ) : (
+          <>
+            {/* Teachers View */}
+            {viewState === 'teachers' && (
           <>
             <div style={{ padding: '12px 32px 24px' }}>
               <div
@@ -1750,6 +1793,8 @@ export default function TeachersPage() {
             </div>
           </>
         )}
+        </>
+      )}
       </Main>
 
       {/* Group Modal */}

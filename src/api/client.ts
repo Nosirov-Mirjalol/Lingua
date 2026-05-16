@@ -83,13 +83,13 @@ function formatDrfErrorDetail(data: unknown): string | null {
 class ApiClient {
   private client: AxiosInstance
   constructor() {
-    const envBaseUrl = import.meta.env.VITE_API_BASE_URL|| ''
-    const fallbackDevBaseUrl = import.meta.env.DEV
-      ? 'http://localhost:8000'
-      : ''
+    const envBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim()
+
+    // If VITE_API_BASE_URL is empty, use '' so vite proxy handles /api/* requests
+    const baseURL = envBaseUrl || ''
 
     this.client = axios.create({
-      baseURL: envBaseUrl || fallbackDevBaseUrl,
+      baseURL,
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
@@ -246,3 +246,4 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient()
+export default apiClient

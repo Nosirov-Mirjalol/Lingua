@@ -7,6 +7,10 @@ import {
   MessageSquare,
   User,
 } from 'lucide-react'
+import { CustomLogo } from '@/assets/custom-logo'
+import { NavGroup } from '@/components/layout/nav-group'
+import { NavUser } from '@/components/layout/nav-user'
+import { TeamSwitcher } from '@/components/layout/team-switcher'
 import {
   Sidebar,
   SidebarContent,
@@ -14,10 +18,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { NavGroup } from '@/components/layout/nav-group'
-import { NavUser } from '@/components/layout/nav-user'
-import { TeamSwitcher } from '@/components/layout/team-switcher'
-import { CustomLogo } from '@/assets/custom-logo'
 import { useLayout } from '@/context/layout-provider'
 import { useStudentProfile } from '@/hooks/student/useStudentPortal'
 
@@ -30,7 +30,7 @@ const studentSidebarData = {
         { title: 'Schedule', url: '/student/schedule', icon: CalendarDays },
         { title: 'Homework', url: '/student/homework', icon: ClipboardList },
         { title: 'Messages', url: '/student/messages', icon: MessageSquare },
-        { title: 'My Group', url: '/student/courses', icon: BookOpen },
+        { title: 'My Groups', url: '/student/groups', icon: BookOpen },
         { title: 'Profile', url: '/student/profile', icon: User },
       ],
     },
@@ -40,20 +40,26 @@ const studentSidebarData = {
 export function StudentSidebar() {
   const { collapsible, variant } = useLayout()
   const { data: profile } = useStudentProfile()
-  
-  const user = useMemo(() => ({
-    name: profile?.full_name || 'Student',
-    email: profile?.username || 'student@linguapro.com',
-    avatar: '/avatars/student1.jpg',
-  }), [profile])
 
-  const teams = useMemo(() => [
-    {
-      name: 'LinguaPro Student',
-      logo: CustomLogo,
-      plan: 'LEARNING PORTAL',
-    },
-  ], [])
+  const user = useMemo(
+    () => ({
+      name: profile?.full_name || 'Student',
+      email: profile?.username || 'student@linguapro.com',
+      avatar: '/avatars/student1.jpg',
+    }),
+    [profile]
+  )
+
+  const teams = useMemo(
+    () => [
+      {
+        name: 'LinguaPro Student',
+        logo: CustomLogo,
+        plan: 'LEARNING PORTAL',
+      },
+    ],
+    []
+  )
 
   const groups = useMemo(() => studentSidebarData.navGroups, [])
 

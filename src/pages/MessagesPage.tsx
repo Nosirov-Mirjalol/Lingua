@@ -1,8 +1,14 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { format } from 'date-fns'
-import { ArrowLeft, Trash2, Send, MessagesSquare } from 'lucide-react'
+import { ArrowLeft, Plus, Search as SearchIcon, Trash2, Send } from 'lucide-react'
 import { toast } from 'sonner'
 import { apiClient } from '@/api/client'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { ChatEmptyState } from '@/components/shared/chat/chat-empty-state'
+import { ChatListHeader } from '@/components/shared/chat/chat-list-header'
+import { ChatListItem } from '@/components/shared/chat/chat-list-item'
+import { NewChat } from '@/features/chats/components/new-chat'
+import type { ChatUser } from '@/features/chats/data/chat-types'
 import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import {
@@ -65,9 +71,14 @@ export function MessagesPage() {
     : null
 
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null)
+  const [createConversationDialogOpened, setCreateConversationDialog] =
+    useState(false)
+  const [search, setSearch] = useState('')
+  const [chatSearch, setChatSearch] = useState('')
+  const [showChatSearch, setShowChatSearch] = useState(false)
   const [messageText, setMessageText] = useState('')
   const [currentUsername, setCurrentUsername] = useState<string | null>(null)
-  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const fetchCurrentProfile = async () => {
@@ -101,6 +112,24 @@ export function MessagesPage() {
     () => groups.find((g) => g.id === selectedGroupId) ?? null,
     [groups, selectedGroupId]
   )
+  const filteredGroups = useMemo(
+    () =>
+      groups.filter((group) =>
+        group.name.toLowerCase().includes(search.trim().toLowerCase())
+      ),
+    [groups, search]
+  )
+  const chatUsers = useMemo(
+    () =>
+      groups.map((group) => ({
+        id: String(group.id),
+        username: group.name.toLowerCase().replace(/\s+/g, '.'),
+        fullName: group.name,
+        profile: '/placeholder.svg',
+        status: group.status.toLowerCase() === 'active' ? 'online' : 'offline',
+      })) as Omit<ChatUser, 'messages'>[],
+    [groups]
+  )
 
   const { data: messagesResp, isLoading: messagesLoading } = useGroupMessages(
     selectedGroupId ?? 0
@@ -114,6 +143,13 @@ export function MessagesPage() {
       ),
     [messagesResp]
   )
+  const filteredMessages = useMemo(() => {
+    if (!showChatSearch || !chatSearch.trim()) return messages
+
+    return messages.filter((message) =>
+      message.content.toLowerCase().includes(chatSearch.trim().toLowerCase())
+    )
+  }, [chatSearch, messages, showChatSearch])
 
   const sendMutation = useSendMessage(selectedGroupId ?? 0)
   const deleteMutation = useDeleteMessage(selectedGroupId ?? 0)
@@ -184,18 +220,25 @@ export function MessagesPage() {
             selectedGroupId && 'hidden sm:flex'
           )}
         >
-          <div className='flex items-center justify-between px-4 py-3 sm:py-4'>
-            <h2 className='text-sm font-bold text-slate-900 dark:text-white sm:text-base'>
-              Xabarlar
-            </h2>
-            <span className='rounded-lg bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-semibold text-slate-500 dark:text-slate-400'>
-              {groups.length}
-            </span>
-          </div>
-
-          <hr className='dark:border-slate-800' />
-
           <div className='flex-1 overflow-y-auto p-2 sm:p-3'>
+            <ChatListHeader
+              title='Student Chat'
+              count={groups.length}
+              searchValue={search}
+              onSearchChange={setSearch}
+              searchPlaceholder='Search people or messages...'
+              action={
+                <Button
+                  size='icon'
+                  variant='ghost'
+                  onClick={() => setCreateConversationDialog(true)}
+                  className='h-10 w-10 rounded-full bg-slate-100 hover:bg-rose-100 hover:text-rose-600'
+                >
+                  <Plus size={20} />
+                </Button>
+              }
+            />
+
             {groupsLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className='flex items-center gap-3 p-3'>
@@ -206,55 +249,28 @@ export function MessagesPage() {
                   </div>
                 </div>
               ))
-            ) : groups.length > 0 ? (
+            ) : filteredGroups.length > 0 ? (
               <div className='space-y-1'>
-                {groups.map((group) => {
+                {filteredGroups.map((group) => {
                   const isActive = selectedGroupId === group.id
+                  const lastPreview = group.last_message
+                    ? `${group.last_message.sender}: ${group.last_message.content}`
+                    : "Hali xabar yo'q"
                   return (
-                    <button
+                    <ChatListItem
                       key={group.id}
-                      type='button'
-                      aria-label={group.name}
+                      active={isActive}
+                      fallback={group.name[0]?.toUpperCase() ?? 'G'}
+                      title={group.name}
+                      preview={lastPreview}
+                      time={
+                        group.last_message
+                          ? format(new Date(group.last_message.created_at), 'HH:mm')
+                          : null
+                      }
+                      online={group.status.toLowerCase() === 'active'}
                       onClick={() => setSelectedGroupId(group.id)}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm sm:gap-4 sm:p-4',
-                        isActive && 'bg-white dark:bg-slate-800 shadow-md ring-1 ring-slate-100 dark:ring-slate-700'
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 sm:h-12 sm:w-12',
-                          isActive && 'border-rose-100 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
-                        )}
-                      >
-                        <span className='text-sm font-bold sm:text-base'>
-                          {group.name[0]?.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className='min-w-0 flex-1'>
-                        <div className='flex items-center justify-between'>
-                          <span
-                            className={cn(
-                              'truncate text-sm font-bold text-slate-900 dark:text-white sm:text-base',
-                              isActive && 'text-rose-600 dark:text-rose-400'
-                            )}
-                          >
-                            {group.name}
-                          </span>
-                          {group.last_message && (
-                            <span className='text-[10px] font-bold text-slate-400 dark:text-slate-500'>
-                              {format(
-                                new Date(group.last_message.created_at),
-                                'HH:mm'
-                              )}
-                            </span>
-                          )}
-                        </div>
-                        <p className='mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400'>
-                          {group.last_message?.content || "Hali xabar yo'q"}
-                        </p>
-                      </div>
-                    </button>
+                    />
                   )
                 })}
               </div>
@@ -276,33 +292,73 @@ export function MessagesPage() {
           {selectedGroup ? (
             <>
               {/* Header */}
-              <div className='flex h-16 shrink-0 items-center gap-3 border-b border-slate-50 dark:border-slate-800 px-4 sm:h-20 sm:gap-4 sm:px-6'>
-                <Button
-                  type='button'
-                  variant='ghost'
-                  size='icon'
-                  aria-label='Orqaga'
-                  className='-ml-2 rounded-xl sm:hidden'
-                  onClick={() => setSelectedGroupId(null)}
-                >
-                  <ArrowLeft size={18} />
-                </Button>
-                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-rose-100 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 sm:h-12 sm:w-12'>
-                  <span className='text-sm font-bold sm:text-base'>
-                    {selectedGroup.name[0]?.toUpperCase()}
-                  </span>
-                </div>
-                <div>
-                  <h3 className='text-sm leading-none font-bold text-slate-900 dark:text-white sm:text-base'>
-                    {selectedGroup.name}
-                  </h3>
-                  <div className='mt-1 flex items-center gap-1.5'>
-                    <span className='h-2 w-2 rounded-full bg-emerald-500' />
-                    <span className='text-[10px] font-bold tracking-wider text-emerald-600 uppercase sm:text-[11px] dark:text-emerald-400'>
-                      {selectedGroup.status}
-                    </span>
+              <div className='flex flex-col border-b border-slate-100'>
+                <div className='flex items-center justify-between px-6 py-4'>
+                  <div className='flex items-center gap-4'>
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      size='icon'
+                      aria-label='Orqaga'
+                      className='-ml-2 rounded-xl md:hidden'
+                      onClick={() => setSelectedGroupId(null)}
+                    >
+                      <ArrowLeft className='h-5 w-5' />
+                    </Button>
+
+                    <div className='relative'>
+                      <Avatar className='h-10 w-10 border border-slate-100'>
+                        <AvatarFallback className='bg-rose-100 text-rose-700'>
+                          {selectedGroup.name[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      {selectedGroup.status.toLowerCase() === 'active' ? (
+                        <span className='absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-white bg-green-500' />
+                      ) : null}
+                    </div>
+
+                    <div className='flex flex-col'>
+                      <h2 className='text-base font-bold text-slate-900'>
+                        {selectedGroup.name}
+                      </h2>
+                      <span className='text-xs font-medium text-green-500'>
+                        {selectedGroup.status.toLowerCase() === 'active'
+                          ? 'Online'
+                          : selectedGroup.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      size='icon'
+                      variant='ghost'
+                      className='h-9 w-9 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+                      onClick={() => setShowChatSearch((prev) => !prev)}
+                    >
+                      <SearchIcon size={20} />
+                    </Button>
                   </div>
                 </div>
+
+                {showChatSearch ? (
+                  <div className='px-6 pb-4'>
+                    <div className='relative'>
+                      <SearchIcon
+                        size={14}
+                        className='absolute top-1/2 left-3 -translate-y-1/2 text-slate-400'
+                      />
+                      <input
+                        type='text'
+                        autoFocus
+                        placeholder='Search in this chat...'
+                        className='h-9 w-full rounded-lg bg-slate-100 pl-9 pr-4 text-sm outline-none'
+                        value={chatSearch}
+                        onChange={(event) => setChatSearch(event.target.value)}
+                      />
+                    </div>
+                  </div>
+                ) : null}
               </div>
 
               {/* Messages */}
@@ -324,12 +380,13 @@ export function MessagesPage() {
                         <Skeleton className='h-3 w-10' />
                       </div>
                     ))
-                  ) : messages.length > 0 ? (
-                    messages.map((msg, index) => {
+                  ) : filteredMessages.length > 0 ? (
+                    filteredMessages.map((msg, index) => {
                       const isOwn = isOwnMessage(msg)
+                      const previousMessage = filteredMessages[index - 1]
                       const showSender =
                         !isOwn &&
-                        messages[index - 1]?.sender?.id !== msg.sender.id
+                        previousMessage?.sender?.id !== msg.sender.id
 
                       return (
                         <div
@@ -439,20 +496,27 @@ export function MessagesPage() {
               </div>
             </>
           ) : (
-            <div className='flex flex-1 flex-col items-center justify-center p-8 text-center sm:p-12'>
-              <div className='mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/30 text-rose-200 dark:text-rose-800 sm:mb-8 sm:h-28 sm:w-28'>
-                <MessagesSquare size={40} className='sm:h-14 sm:w-14' />
-              </div>
-              <h3 className='mb-3 text-xl font-black text-slate-900 dark:text-white sm:text-2xl'>
-                Chat tanlang
-              </h3>
-              <p className='max-w-xs text-sm text-slate-500 dark:text-slate-400'>
-                Chap tomondagi ro'yxatdan guruhni tanlang va muloqotni boshlang.
-              </p>
-            </div>
+            <ChatEmptyState
+              title='Your messages'
+              description='Select a chat to start messaging or create a new one.'
+              action={
+                <Button
+                  onClick={() => setCreateConversationDialog(true)}
+                  className='mt-8 rounded-xl bg-rose-600 px-8 py-6 text-base font-semibold shadow-lg shadow-rose-200 hover:bg-rose-700'
+                >
+                  Send Message
+                </Button>
+              }
+            />
           )}
         </div>
       </div>
+
+      <NewChat
+        users={chatUsers}
+        open={createConversationDialogOpened}
+        onOpenChange={setCreateConversationDialog}
+      />
     </div>
   )
 }

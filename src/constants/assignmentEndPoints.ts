@@ -1,13 +1,6 @@
-const ASSIGNMENT_ENDPOINTS = {
-  ASSIGNMENTS: '/api/assignments/',
-  ASSIGNMENT_BY_ID: (id: number) => `/api/assignments/${id}/`,
-  ASSIGNMENT_SUBMIT: (id: number) => `/api/assignments/${id}/submit/`,
-  ASSIGNMENT_GRADE: (id: number) => `/api/assignments/${id}/grade/`,
-}
+import { ASSIGNMENTS as API_ASSIGNMENTS } from './apiEndPoints'
 
-export const {
-  ASSIGNMENTS,
-  ASSIGNMENT_BY_ID,
-  ASSIGNMENT_SUBMIT,
-  ASSIGNMENT_GRADE,
-} = ASSIGNMENT_ENDPOINTS
+export const ASSIGNMENT_BY_ID = API_ASSIGNMENTS.BY_ID
+export const ASSIGNMENT_SUBMIT = API_ASSIGNMENTS.SUBMIT
+export const ASSIGNMENT_GRADE = API_ASSIGNMENTS.GRADE
+export const ASSIGNMENTS = API_ASSIGNMENTS.LIST

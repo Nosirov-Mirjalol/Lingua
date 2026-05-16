@@ -48,8 +48,24 @@ function normalizeTeacherListResponse(raw: unknown): AdminTeacher[] {
 
 export const getAdminTeachers = (): Promise<AdminTeacher[]> => {
   return apiClient
-    .get<unknown>('/api/teachers/')
-    .then(normalizeTeacherListResponse)
+    .get<unknown>('/api/auth/user-list/')
+    .then((res) => {
+      const list = normalizeTeacherListResponse(res)
+      if (list.length > 0) return list
+      return apiClient.get<unknown>('/api/teachers/').then(normalizeTeacherListResponse)
+    })
+    .then((list) => {
+      if (list.length > 0) return list
+      return apiClient.get<unknown>('/api/groups/teachers-list/').then(normalizeTeacherListResponse)
+    })
+    .catch(() =>
+      apiClient
+        .get<unknown>('/api/teachers/')
+        .then(normalizeTeacherListResponse)
+        .catch(() =>
+          apiClient.get<unknown>('/api/groups/teachers-list/').then(normalizeTeacherListResponse)
+        )
+    )
 }
 
 export const createAdminTeacher = (

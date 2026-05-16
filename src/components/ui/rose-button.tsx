@@ -4,11 +4,9 @@ import { Button } from '@/components/ui/button'
 
 type RoseButtonVariant =
   | 'solid'
-  | 'pill'
   | 'outline'
   | 'ghost'
   | 'link'
-  | 'gradient'
 
 type RoseButtonSize = 'sm' | 'md' | 'lg'
 
@@ -19,20 +17,17 @@ type RoseButtonProps = Omit<React.ComponentProps<typeof Button>, 'variant'> & {
 
 const variantClassNames: Record<RoseButtonVariant, string> = {
   solid:
-    'bg-[#b80035] hover:bg-[#a8002e] text-white shadow-sm transition-colors',
-  pill: 'bg-[#d0083a] hover:bg-[#b0062f] text-white rounded-full shadow-[0_2px_8px_rgba(208,8,58,0.28)] transition-colors',
+    'bg-gradient-to-br from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-600 text-white shadow-md shadow-rose-200 transition-all active:scale-95',
   outline:
-    'bg-transparent text-[#b80035] border border-[#b80035] hover:bg-[#b80035]/10 rounded-full transition-colors',
-  ghost: 'bg-[#fff0f3] text-[#b80035] hover:bg-[#ffe5eb] transition-colors',
-  link: 'text-[#b80035] hover:text-[#a8002e] hover:underline p-0 h-auto transition-colors',
-  gradient:
-    'primary-gradient text-white shadow-md shadow-rose-900/20 transition-transform active:scale-95',
+    'bg-transparent text-rose-600 border border-rose-100 hover:bg-rose-50 rounded-xl transition-all',
+  ghost: 'bg-rose-50/50 text-rose-600 hover:bg-rose-100 transition-all',
+  link: 'text-rose-600 hover:text-rose-700 hover:underline p-0 h-auto transition-all',
 }
 
 const sizeClassNames: Record<RoseButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs',
-  md: 'h-10 px-4 text-sm',
-  lg: 'h-12 px-6 text-base',
+  sm: 'h-8 px-4 text-xs',
+  md: 'h-10 px-6 text-sm',
+  lg: 'h-12 px-8 text-base',
 }
 
 function RoseButton({
@@ -45,8 +40,7 @@ function RoseButton({
   return (
     <Button
       className={cn(
-        'font-semibold tracking-tight',
-        roseVariant !== 'link' && 'rounded-xl',
+        'font-bold tracking-tight rounded-lg border-none',
         variantClassNames[roseVariant],
         sizeClassNames[roseSize],
         className

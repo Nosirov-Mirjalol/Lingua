@@ -40,6 +40,8 @@ const API_ENDPOINTS = {
     MARK_READ: (id: number) => `/api/notifications/${id}/read/`,
     MARK_ALL_READ: '/api/notifications/read-all/',
     UNREAD_COUNT: '/api/notifications/unread-count/',
+    BROADCAST_LIST: '/api/notifications/broadcast/list/',
+    BROADCAST_SEND: '/api/notifications/broadcast/',
   },
   MESSAGES: {
     GROUPS: '/api/messages/',
@@ -55,6 +57,12 @@ const API_ENDPOINTS = {
   STUDENT: {
     ASSIGNED_GROUPS: '/api/groups/my/',
   },
+  ASSIGNMENTS: {
+    LIST: '/api/assignments/',
+    BY_ID: (id: number) => `/api/assignments/${id}/`,
+    SUBMIT: (id: number) => `/api/assignments/${id}/submit/`,
+    GRADE: (id: number) => `/api/assignments/${id}/grade/`,
+  }
 }
 
 export const {
@@ -66,4 +74,5 @@ export const {
   MESSAGES,
   USER,
   STUDENT,
+  ASSIGNMENTS,
 } = API_ENDPOINTS

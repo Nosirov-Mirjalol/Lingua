@@ -1,13 +1,6 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
-import { ConfigDrawer } from '@/components/config-drawer'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { Bell } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Link } from '@tanstack/react-router'
 
 type HeaderProps = React.HTMLAttributes<HTMLElement> & {
   fixed?: boolean
@@ -49,18 +42,6 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
       >
         <SidebarTrigger variant='outline' className='max-md:scale-125' />
         {children}
-        <div className='ms-auto flex items-center space-x-2'>
-          <Search />
-          <ThemeSwitch />
-          <Button variant='ghost' size='icon' className='relative' asChild>
-            <Link to='/notifications'>
-              <Bell className='h-5 w-5' />
-              <span className='absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500' />
-            </Link>
-          </Button>
-          <ProfileDropdown />
-          <ConfigDrawer />
-        </div>
       </div>
     </header>
   )

@@ -1,19 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { StudentChat } from '@/features/students/components/student-chat'
+import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/student/messages')({
-  component: StudentMessagesPage,
+  component: lazyRouteComponent(() => import('@/pages/MessagesPage'), 'MessagesPage'),
 })
-
-function StudentMessagesPage() {
-  return (
-    <div className='flex flex-col gap-4 h-full'>
-      <div className='flex flex-col gap-1'>
-        <p className='text-xs font-bold uppercase tracking-widest text-rose-600'>Messages</p>
-        <h1 className='text-2xl font-bold text-foreground'>Teacher Support</h1>
-      </div>
-      
-      <StudentChat />
-    </div>
-  )
-}

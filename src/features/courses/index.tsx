@@ -3,7 +3,8 @@ import { coursesData, type Course } from '@/data/courses-data'
 import { Calendar, Plus, Users, Wallet } from 'lucide-react'
 import { useToast } from '@/components/ui/toast'
 import { CourseModal } from '@/components/CourseModal'
-import { Header } from '@/components/layout/header'
+import { ConfigDrawer } from '@/components/config-drawer'
+import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 
 export default function CoursesPage() {
@@ -78,7 +79,9 @@ export default function CoursesPage() {
 
   return (
     <>
-      <Header />
+      <AdminHeader fixed>
+        <ConfigDrawer />
+      </AdminHeader>
       <Main className='bg-background'>
         {/* Breadcrumb & Header */}
         <div className='px-8 pt-6'>
