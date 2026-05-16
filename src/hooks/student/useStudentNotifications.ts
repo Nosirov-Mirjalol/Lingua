@@ -11,20 +11,104 @@ export interface StudentNotificationAPI {
   created_at: string
 }
 
-export const useStudentNotificationsList = () => {
+type NotificationQueryOptions = {
+  enabled?: boolean
+}
+
+type StudentUnreadCountOptions = NotificationQueryOptions & {
+  refetchInterval?: number | false
+}
+
+type NotificationSocketOptions = {
+  enabled?: boolean
+}
+
+type NotificationSocketPayload = {
+  action?: string
+  event?: string
+  id?: number
+  is_read?: boolean
+  message?: string
+  notification?: unknown
+  type?: string
+  unread_count?: number
+}
+
+function shouldInvalidateNotifications(data: unknown): boolean {
+  if (typeof data !== 'string') return false
+
+  const raw = data.trim()
+  if (!raw) return false
+
+  const normalized = raw.toLowerCase()
+  if (['ping', 'pong', 'heartbeat', 'keepalive'].includes(normalized)) {
+    return false
+  }
+
+  try {
+    const payload = JSON.parse(raw) as NotificationSocketPayload
+    const markers = [payload.type, payload.event, payload.action]
+      .filter(Boolean)
+      .map((value) => String(value).toLowerCase())
+    const stringValues = Object.values(payload)
+      .filter((value): value is string => typeof value === 'string')
+      .map((value) => value.toLowerCase())
+
+    if (
+      [...markers, ...stringValues].some((marker) =>
+        ['ping', 'pong', 'heartbeat', 'keepalive'].includes(marker)
+      )
+    ) {
+      return false
+    }
+
+    if (typeof payload.unread_count === 'number') return true
+    if ('notification' in payload || 'is_read' in payload || 'id' in payload) {
+      return true
+    }
+
+    return markers.some(
+      (marker) =>
+        marker.includes('notification') ||
+        marker.includes('unread') ||
+        marker === 'mark_read' ||
+        marker === 'read_all'
+    ) || stringValues.some(
+      (value) =>
+        value.includes('notification') ||
+        value.includes('unread_count') ||
+        value === 'mark_read' ||
+        value === 'read_all'
+    )
+  } catch {
+    return (
+      normalized.includes('notification') || normalized.includes('unread_count')
+    )
+  }
+}
+
+export const useStudentNotificationsList = (
+  { enabled = true }: NotificationQueryOptions = {}
+) => {
   return useQuery({
     queryKey: ['student', 'notifications'],
     queryFn: () => apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
-    staleTime: 2_000,
-    refetchInterval: 2_000,
+    enabled,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 }
 
-export const useStudentUnreadCount = () => {
+export const useStudentUnreadCount = (
+  { enabled = true, refetchInterval = false }: StudentUnreadCountOptions = {}
+) => {
   return useQuery({
     queryKey: ['student', 'notifications', 'unread-count'],
+    enabled,
     queryFn: () => apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
-    refetchInterval: 2_000,
+    staleTime: 30_000,
+    refetchInterval,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -71,7 +155,9 @@ function getAccessToken(): string {
   )
 }
 
-export const useNotificationWebSocket = () => {
+export const useNotificationWebSocket = (
+  { enabled = true }: NotificationSocketOptions = {}
+) => {
   const queryClient = useQueryClient()
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -84,6 +170,8 @@ export const useNotificationWebSocket = () => {
   }, [queryClient])
 
   const connect = useCallback(() => {
+    if (!enabled) return
+
     const token = getAccessToken()
     if (!token) return
 
@@ -102,8 +190,10 @@ export const useNotificationWebSocket = () => {
         reconnectAttemptRef.current = 0
       }
 
-      ws.onmessage = () => {
-        invalidateNotifications()
+      ws.onmessage = (event) => {
+        if (shouldInvalidateNotifications(event.data)) {
+          invalidateNotifications()
+        }
       }
 
       ws.onclose = () => {
@@ -121,18 +211,21 @@ export const useNotificationWebSocket = () => {
       ws.onerror = () => {}
       wsRef.current = ws
     } catch {}
-  }, [invalidateNotifications])
+  }, [enabled, invalidateNotifications])
 
   useEffect(() => {
+    if (!enabled) return
+
     connect()
     return () => {
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current)
+        reconnectTimerRef.current = null
       }
       if (wsRef.current) {
         wsRef.current.onclose = null
         wsRef.current.close()
       }
     }
-  }, [connect])
+  }, [connect, enabled])
 }

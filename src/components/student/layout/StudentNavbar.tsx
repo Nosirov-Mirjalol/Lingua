@@ -6,6 +6,7 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { StudentNotificationModal } from '@/components/student/notifications/StudentNotificationModal'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { useUnreadCount } from '@/features/notifications/hooks'
 import { 
   useStudentUnreadCount, 
   useNotificationWebSocket 
@@ -20,9 +21,18 @@ export function StudentNavbar() {
   const isStudentArea = pathname.startsWith('/student')
   const isTeacherArea = pathname.startsWith('/teacher-dashboard')
 
-  useNotificationWebSocket()
-  const { data: unreadData } = useStudentUnreadCount()
-  const unreadCount = unreadData?.unread_count ?? 0
+  useNotificationWebSocket({ enabled: isStudentArea })
+
+  const { data: studentUnreadData } = useStudentUnreadCount({
+    enabled: isStudentArea,
+  })
+  const { data: teacherUnreadData } = useUnreadCount({
+    enabled: isTeacherArea,
+  })
+
+  const unreadCount = isTeacherArea
+    ? teacherUnreadData?.unread_count ?? 0
+    : studentUnreadData?.unread_count ?? 0
 
   const handleNotificationClick = () => {
     if (isTeacherArea) {

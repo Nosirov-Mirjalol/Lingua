@@ -3,6 +3,10 @@ import { apiClient } from '@/api/client'
 import { NOTIFICATIONS } from '@/constants/apiEndPoints'
 import type { Notification } from './types'
 
+type NotificationQueryOptions = {
+  enabled?: boolean
+}
+
 export const useMyNotifications = () => {
   return useQuery({
     queryKey: ['notifications', 'my'],
@@ -11,11 +15,14 @@ export const useMyNotifications = () => {
   })
 }
 
-export const useUnreadCount = () => {
+export const useUnreadCount = (
+  { enabled = true }: NotificationQueryOptions = {}
+) => {
   return useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
+    enabled,
     staleTime: 30_000,
     refetchInterval: 60_000,
     refetchOnWindowFocus: false,

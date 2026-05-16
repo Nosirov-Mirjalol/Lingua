@@ -57,6 +57,12 @@ const API_ENDPOINTS = {
   STUDENT: {
     ASSIGNED_GROUPS: '/api/groups/my/',
   },
+  ASSIGNMENTS: {
+    LIST: '/api/assignments/',
+    BY_ID: (id: number) => `/api/assignments/${id}/`,
+    SUBMIT: (id: number) => `/api/assignments/${id}/submit/`,
+    GRADE: (id: number) => `/api/assignments/${id}/grade/`,
+  }
 }
 
 export const {
@@ -68,4 +74,5 @@ export const {
   MESSAGES,
   USER,
   STUDENT,
+  ASSIGNMENTS,
 } = API_ENDPOINTS
