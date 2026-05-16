@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router'
 import {
   ArrowRight,
   BookOpen,
@@ -8,7 +7,6 @@ import {
 } from 'lucide-react'
 import { useStudentDashboard, useStudentProfile } from '@/hooks/student/useStudentPortal'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -24,23 +22,15 @@ import { StudentStatCard } from '@/components/student/common/student-stat-card'
 export function StudentOverviewPage() {
   const { data: profile } = useStudentProfile()
   const { data: dashboard } = useStudentDashboard()
+  const highlights = dashboard?.highlights ?? []
+  const quickActions = dashboard?.quickActions ?? []
 
   return (
     <div className='max-w-7xl space-y-6'>
-      <section className='rounded-3xl border bg-card p-6 shadow-sm'>
+      <section className='mb-7'>
         <StudentPageHeader
           title={`Welcome back, ${profile?.username ?? 'Learner'}`}
           description='Your personal student portal is ready. Keep the momentum going.'
-          actions={
-            <>
-              <Link to='/student/schedule'>
-                <Button variant='outline'>View schedule</Button>
-              </Link>
-              <Link to='/student/homework'>
-                <Button>Open assignments</Button>
-              </Link>
-            </>
-          }
         />
       </section>
 
@@ -85,7 +75,7 @@ export function StudentOverviewPage() {
               </div>
             </div>
             <div className='grid gap-3 md:grid-cols-2'>
-              {dashboard?.highlights.map((highlight) => (
+              {highlights.map((highlight) => (
                 <div
                   key={highlight.title}
                   className='rounded-3xl border bg-card p-4'
@@ -108,7 +98,7 @@ export function StudentOverviewPage() {
             <CardDescription>Jump into the most important next steps.</CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
-            {dashboard?.quickActions.map((action) => (
+            {quickActions.map((action) => (
               <div
                 key={action.label}
                 className='flex items-center justify-between rounded-3xl border bg-card p-4'

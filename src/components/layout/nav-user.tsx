@@ -1,16 +1,10 @@
-import { Link, useRouterState } from '@tanstack/react-router'
-import {
-  BadgeCheck,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-} from 'lucide-react'
+import { useRouterState } from '@tanstack/react-router'
+import { ChevronsUpDown, LogOut } from 'lucide-react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -38,18 +32,10 @@ export function NavUser({ user }: NavUserProps) {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
-  const isTeacherArea = pathname.startsWith('/teacher-dashboard')
-  const accountPath = isTeacherArea
-    ? '/teacher-dashboard/profile'
-    : '/settings/account'
-  const settingsPath = isTeacherArea ? null : '/settings'
-  const notificationsPath = isTeacherArea
-    ? '/teacher-dashboard/notifications'
-    : '/settings/notifications'
 
   return (
     <>
-      <SidebarMenu>
+      <SidebarMenu className='-mt-5'>
         <SidebarMenuItem>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -88,23 +74,6 @@ export function NavUser({ user }: NavUserProps) {
                   </div>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <Link to={accountPath}>
-                    <BadgeCheck />
-                    Profile
-                  </Link>
-                </DropdownMenuItem>
-                {settingsPath && (
-                  <DropdownMenuItem asChild>
-                    <Link to={settingsPath}>
-                      <CreditCard />
-                      Billing
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant='destructive'
