@@ -39,7 +39,6 @@ import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { NotificationCard } from '@/components/shared/NotificationCard'
 import { useBroadcastList, useSendBroadcast } from './hooks'
 import { cn } from '@/lib/utils'
-import { toast } from 'sonner'
 
 export default function NotificationsPage() {
   const { data: apiNotifications, isLoading } = useBroadcastList()

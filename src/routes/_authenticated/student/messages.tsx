@@ -1,12 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { MessagesPage } from '@/pages/MessagesPage'
+import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/student/messages')({
-  component: StudentMessagesPage,
+  component: lazyRouteComponent(() => import('@/pages/MessagesPage'), 'MessagesPage'),
 })
-
-function StudentMessagesPage() {
-  return (
-    <MessagesPage />
-  )
-}

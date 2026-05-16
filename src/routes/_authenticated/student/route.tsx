@@ -1,13 +1,20 @@
+import { Suspense, lazy } from 'react'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { getSessionUserRole } from '@/lib/auth-role'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
 import { SearchProvider } from '@/context/search-provider'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { StudentSidebar } from '@/components/student/layout/StudentSidebar'
-import { StudentNavbar } from '@/components/student/layout/StudentNavbar'
+import { DashboardNavbar } from '@/components/layout/dashboard-navbar'
 import { StudentGuard } from '@/components/student/layout/StudentGuard'
+import { StudentRouteFallback } from '@/components/student/layout/StudentRouteFallback'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+
+const StudentSidebar = lazy(() =>
+  import('@/components/student/layout/StudentSidebar').then((module) => ({
+    default: module.StudentSidebar,
+  }))
+)
 
 export const Route = createFileRoute('/_authenticated/student')({
   beforeLoad: () => {
@@ -33,7 +40,9 @@ function StudentLayout() {
     <SearchProvider>
       <LayoutProvider>
         <SidebarProvider defaultOpen={defaultOpen} className='student-portal'>
-          <StudentSidebar />
+          <Suspense fallback={null}>
+            <StudentSidebar />
+          </Suspense>
           <SidebarInset
             className={cn(
               '@container/content bg-background',
@@ -41,10 +50,12 @@ function StudentLayout() {
               'peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]'
             )}
           >
-            <StudentNavbar />
+            <DashboardNavbar />
             <StudentGuard>
               <main className='min-w-0 flex-1 px-4 py-4 md:px-8 md:py-6 md:pb-6'>
-                <Outlet />
+                <Suspense fallback={<StudentRouteFallback />}>
+                  <Outlet />
+                </Suspense>
               </main>
             </StudentGuard>
           </SidebarInset>

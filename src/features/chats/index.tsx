@@ -29,6 +29,9 @@ import { Separator } from '@/components/ui/separator'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { ChatEmptyState } from '@/components/shared/chat/chat-empty-state'
+import { ChatListHeader } from '@/components/shared/chat/chat-list-header'
+import { ChatListItem } from '@/components/shared/chat/chat-list-item'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { NewChat } from './components/new-chat'
 import { type ChatUser, type Convo } from './data/chat-types'
@@ -187,15 +190,13 @@ export function Chats() {
         <section className='flex h-full gap-0 md:gap-6'>
           {/* Left Side - Chat List */}
           <div className='flex w-full flex-col gap-4 border-r border-border/50 pr-0 md:w-80 md:pr-2 lg:w-96'>
-            <div className='flex flex-col gap-4 px-4 pt-4 md:px-0'>
-              <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-2'>
-                  <h1 className='text-2xl font-bold tracking-tight'>Lingua Chat</h1>
-                  <div className='flex h-6 w-6 items-center justify-center rounded-full bg-rose-100 text-[10px] font-bold text-rose-600'>
-                    {chatList.length}
-                  </div>
-                </div>
-
+            <ChatListHeader
+              title='Lingua Chat'
+              count={chatList.length}
+              searchValue={search}
+              onSearchChange={setSearch}
+              searchPlaceholder='Search people or messages...'
+              action={
                 <Button
                   size='icon'
                   variant='ghost'
@@ -204,19 +205,8 @@ export function Chats() {
                 >
                   <Plus size={20} />
                 </Button>
-              </div>
-
-              <div className='relative'>
-                <SearchIcon size={16} className='absolute top-1/2 left-3 -translate-y-1/2 text-slate-400' />
-                <input
-                  type='text'
-                  className='h-11 w-full rounded-xl border-none bg-slate-100 pl-10 pr-4 text-sm outline-none transition-all focus:bg-slate-200/50 focus:ring-2 focus:ring-rose-500/10'
-                  placeholder='Search people or messages...'
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-            </div>
+              }
+            />
 
             <ScrollArea className='flex-1 px-4 md:px-0'>
               <div className='flex flex-col gap-1 py-2'>
@@ -227,53 +217,20 @@ export function Chats() {
                   const lastMsg = lastConvo.sender === 'You' ? `You: ${lastConvo.message}` : lastConvo.message
 
                   return (
-                    <button
+                    <ChatListItem
                       key={id}
-                      type='button'
-                      className={cn(
-                        'group relative flex w-full items-center gap-3 rounded-2xl p-3 text-start transition-all duration-200',
-                        isSelected
-                          ? 'bg-rose-50 shadow-sm ring-1 ring-rose-100'
-                          : 'hover:bg-slate-50'
-                      )}
+                      active={isSelected}
+                      avatar={profile}
+                      fallback={fullName.split(' ').map((n) => n[0]).join('')}
+                      title={fullName}
+                      preview={lastMsg}
+                      time={format(new Date(lastConvo.timestamp), 'HH:mm')}
+                      online={status === 'online'}
                       onClick={() => {
                         setSelectedUserId(id)
                         setMobileSelectedUser(chatUsr)
                       }}
-                    >
-                      <div className='relative flex-shrink-0'>
-                        <Avatar className='h-12 w-12 border-2 border-background shadow-sm'>
-                          <AvatarImage src={profile} alt={username} />
-                          <AvatarFallback className='bg-rose-100 text-rose-700 font-semibold'>
-                            {fullName.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        {status === 'online' && (
-                          <span className='absolute right-0 bottom-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500' />
-                        )}
-                      </div>
-
-                      <div className='flex flex-1 flex-col overflow-hidden'>
-                        <div className='flex items-center justify-between gap-2'>
-                          <span className={cn('truncate font-semibold text-slate-900', isSelected && 'text-rose-900')}>
-                            {fullName}
-                          </span>
-                          <span className='text-[11px] text-slate-400'>
-                            {format(new Date(lastConvo.timestamp), 'HH:mm')}
-                          </span>
-                        </div>
-                        <span className={cn(
-                          'line-clamp-1 text-sm text-slate-500 transition-colors',
-                          isSelected ? 'text-rose-600/70' : 'group-hover:text-slate-600'
-                        )}>
-                          {lastMsg}
-                        </span>
-                      </div>
-
-                      {isSelected && (
-                        <div className='absolute right-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-l-full bg-rose-500' />
-                      )}
-                    </button>
+                    />
                   )
                 })}
               </div>
@@ -524,19 +481,18 @@ export function Chats() {
             </div>
           ) : (
             /* No Chat Selected State */
-            <div className='hidden flex-1 flex-col items-center justify-center rounded-3xl border border-slate-100 bg-white shadow-xl shadow-slate-200/50 md:flex'>
-              <div className='flex h-24 w-24 items-center justify-center rounded-full bg-rose-50 text-rose-500'>
-                <MessagesSquare className='h-12 w-12' />
-              </div>
-              <h2 className='mt-6 text-xl font-bold text-slate-900'>Your messages</h2>
-              <p className='mt-2 text-slate-500'>Select a chat to start messaging or create a new one.</p>
-              <Button
-                onClick={() => setCreateConversationDialog(true)}
-                className='mt-8 rounded-xl bg-rose-600 px-8 py-6 text-base font-semibold shadow-lg shadow-rose-200 hover:bg-rose-700'
-              >
-                Send Message
-              </Button>
-            </div>
+            <ChatEmptyState
+              title='Your messages'
+              description='Select a chat to start messaging or create a new one.'
+              action={
+                <Button
+                  onClick={() => setCreateConversationDialog(true)}
+                  className='mt-8 rounded-xl bg-rose-600 px-8 py-6 text-base font-semibold shadow-lg shadow-rose-200 hover:bg-rose-700'
+                >
+                  Send Message
+                </Button>
+              }
+            />
           )}
         </section>
 

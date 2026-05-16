@@ -1,5 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Chats } from '@/features/chats'
+import { createFileRoute, lazyRouteComponent, redirect } from '@tanstack/react-router'
 import { getSessionUserRole } from '@/lib/auth-role'
 
 export const Route = createFileRoute('/_authenticated/student/chats')({
@@ -10,5 +9,5 @@ export const Route = createFileRoute('/_authenticated/student/chats')({
     if (role === 'teacher') throw redirect({ to: '/teacher-dashboard' })
     if (role !== 'student') throw redirect({ to: '/sign-in' })
   },
-  component: Chats,
+  component: lazyRouteComponent(() => import('@/features/chats'), 'Chats'),
 })
