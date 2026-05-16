@@ -1,10 +1,7 @@
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { AssignmentsTable } from './components/assignments-table'
 import { AssignmentsEmptyState } from './components/empty-state'
 import { AssignmentsErrorBoundary } from './components/error-boundary'
@@ -31,13 +28,7 @@ export default function AssignmentsPage() {
   return (
     <AssignmentsErrorBoundary>
       <div className='min-h-screen bg-[#F8FAFC] dark:bg-[#020617]'>
-        <Header>
-          <div className='ms-auto flex items-center space-x-2'>
-            <Search />
-            <ThemeSwitch />
-            <ConfigDrawer />
-          </div>
-        </Header>
+        <Header />
 
         <Main>
           <div className='mb-8'>
