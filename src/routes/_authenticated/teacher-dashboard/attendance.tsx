@@ -8,10 +8,17 @@ import { useGroupAttendance } from '@/hooks/teacher/attendance/useGroupAttendanc
 import { useTeacherGroups } from '@/hooks/teacher/groups/useTeacherGroups'
 import { useProfile } from '@/hooks/teacher/profile/useProfile'
 import { Calendar as CalendarPicker } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { RoseButton } from '@/components/ui/rose-button'
+import { ListPagination } from '@/components/list-pagination'
 
-export const Route = createFileRoute('/_authenticated/teacher-dashboard/attendance')({
+export const Route = createFileRoute(
+  '/_authenticated/teacher-dashboard/attendance'
+)({
   component: AttendancePage,
 })
 
@@ -30,7 +37,12 @@ const formatDate = (d: Date) =>
   `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
 
 const getInitials = (name: string) =>
-  name.split(' ').slice(0, 2).map((n) => n[0]).join('').toUpperCase()
+  name
+    .split(' ')
+    .slice(0, 2)
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
 
 const STATUS_STYLES: Record<AttendanceStatus, string> = {
   present: 'bg-emerald-500 text-white',
@@ -45,8 +57,12 @@ function AttendancePage() {
   const [groupOpen, setGroupOpen] = useState(false)
   const [date, setDate] = useState<Date>(() => new Date())
   const [searchQuery, setSearchQuery] = useState('')
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
-  
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>(
+    'idle'
+  )
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
   // students - ekrandagi o'zgarishlar uchun, savedStudents - faqat saqlangan (API) holat va statistika uchun
   const [students, setStudents] = useState<AttendanceStudent[]>([])
   const [savedStudents, setSavedStudents] = useState<AttendanceStudent[]>([])
@@ -54,7 +70,10 @@ function AttendancePage() {
   const isoDate = useMemo(() => toISODate(date), [date])
   const { data: profile } = useProfile()
   const { data: groups = [], isLoading: groupsLoading } = useTeacherGroups()
-  const { data: attendanceList = [] } = useAttendanceList()
+  const { data: attendanceList = [] } = useAttendanceList({
+    page,
+    page_size: pageSize,
+  })
 
   const filteredGroups = useMemo(() => {
     if (!profile?.id) return groups
@@ -62,7 +81,10 @@ function AttendancePage() {
   }, [groups, profile?.id])
 
   useEffect(() => {
-    if (filteredGroups.length && !filteredGroups.some(g => g.id === selectedGroupId)) {
+    if (
+      filteredGroups.length &&
+      !filteredGroups.some((g) => g.id === selectedGroupId)
+    ) {
       setSelectedGroupId(filteredGroups[0].id)
     }
   }, [filteredGroups, selectedGroupId])
@@ -109,7 +131,9 @@ function AttendancePage() {
 
   const filteredStudents = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
-    return q ? students.filter((s) => s.name.toLowerCase().includes(q)) : students
+    return q
+      ? students.filter((s) => s.name.toLowerCase().includes(q))
+      : students
   }, [searchQuery, students])
 
   const handleSave = async () => {
@@ -138,7 +162,9 @@ function AttendancePage() {
   // Progress Bar Animatsiyasi (O'chirilgani yo'q)
   const radius = 45
   const circumference = 2 * Math.PI * radius
-  const dashOffset = circumference - (Math.max(0, Math.min(100, stats.pct)) / 100) * circumference
+  const dashOffset =
+    circumference -
+    (Math.max(0, Math.min(100, stats.pct)) / 100) * circumference
 
   return (
     <div className='mx-auto max-w-7xl space-y-4 p-4 text-slate-900 dark:text-slate-100'>
@@ -149,32 +175,52 @@ function AttendancePage() {
           <p className='text-sm text-slate-500'>Manage student presence</p>
         </div>
         <div className='relative w-full sm:w-64'>
-          <Search className='absolute top-1/2 left-3 -translate-y-1/2 text-slate-400' size={16} />
+          <Search
+            className='absolute top-1/2 left-3 -translate-y-1/2 text-slate-400'
+            size={16}
+          />
           <input
             type='text'
             placeholder='Search student...'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className='h-10 w-full rounded-lg bg-slate-100 dark:bg-slate-800 pr-4 pl-9 text-base focus:ring-1 focus:ring-rose-500 outline-none border-none'
+            className='h-10 w-full rounded-lg border-none bg-slate-100 pr-4 pl-9 text-base outline-none focus:ring-1 focus:ring-rose-500 dark:bg-slate-800'
           />
         </div>
       </div>
 
       {/* Stats Panel */}
-      <div className='grid grid-cols-1 gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 md:grid-cols-12'>
+      <div className='grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-white p-4 md:grid-cols-12 dark:border-slate-800 dark:bg-slate-900'>
         <div className='flex items-center justify-center border-r border-slate-100 md:col-span-3'>
           <div className='relative flex items-center justify-center'>
             <svg width='110' height='110' className='-rotate-90'>
-              <circle cx='55' cy='55' r={radius} fill='none' stroke='currentColor' strokeWidth={9} className='text-slate-100 dark:text-slate-800' />
               <circle
-                cx='55' cy='55' r={radius} fill='none' stroke='#e11d48' strokeWidth={9}
-                strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                strokeLinecap='round' className='transition-all duration-700 ease-out' // Animatsiya saqlandi
+                cx='55'
+                cy='55'
+                r={radius}
+                fill='none'
+                stroke='currentColor'
+                strokeWidth={9}
+                className='text-slate-100 dark:text-slate-800'
+              />
+              <circle
+                cx='55'
+                cy='55'
+                r={radius}
+                fill='none'
+                stroke='#e11d48'
+                strokeWidth={9}
+                strokeDasharray={circumference}
+                strokeDashoffset={dashOffset}
+                strokeLinecap='round'
+                className='transition-all duration-700 ease-out' // Animatsiya saqlandi
               />
             </svg>
             <div className='absolute flex flex-col items-center'>
               <span className='text-2xl font-bold'>{stats.pct}%</span>
-              <span className='text-[10px] font-bold tracking-widest text-slate-400 uppercase'>Present</span>
+              <span className='text-[10px] font-bold tracking-widest text-slate-400 uppercase'>
+                Present
+              </span>
             </div>
           </div>
         </div>
@@ -187,7 +233,9 @@ function AttendancePage() {
             { label: 'Total', val: stats.total, color: 'text-slate-600' },
           ].map(({ label, val, color }) => (
             <div key={label}>
-              <p className='text-xs font-bold tracking-widest text-slate-400 uppercase'>{label}</p>
+              <p className='text-xs font-bold tracking-widest text-slate-400 uppercase'>
+                {label}
+              </p>
               <p className={`text-3xl font-bold ${color}`}>{val}</p>
             </div>
           ))}
@@ -195,27 +243,44 @@ function AttendancePage() {
       </div>
 
       {/* Controls */}
-      <div className='flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3'>
+      <div className='flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900'>
         <div className='min-w-52 flex-1'>
-          <label className='mb-1 block text-xs font-bold text-slate-400 uppercase'>Group</label>
+          <label className='mb-1 block text-xs font-bold text-slate-400 uppercase'>
+            Group
+          </label>
           <div className='relative'>
             <button
-              type='button' onClick={() => setGroupOpen(!groupOpen)} disabled={groupsLoading}
-              className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 text-base'
+              type='button'
+              onClick={() => setGroupOpen(!groupOpen)}
+              disabled={groupsLoading}
+              className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 bg-transparent px-3 text-base dark:border-slate-800'
             >
-              <span className='truncate'>{groupsLoading ? 'Loading...' : (groupData?.name ?? 'Select group')}</span>
-              <ChevronDown size={16} className={groupOpen ? 'rotate-180' : ''} />
+              <span className='truncate'>
+                {groupsLoading
+                  ? 'Loading...'
+                  : (groupData?.name ?? 'Select group')}
+              </span>
+              <ChevronDown
+                size={16}
+                className={groupOpen ? 'rotate-180' : ''}
+              />
             </button>
             {groupOpen && (
-              <div className='absolute top-full left-0 z-20 mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl'>
+              <div className='absolute top-full left-0 z-20 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900'>
                 {filteredGroups.map((g) => (
                   <button
-                    key={g.id} type='button'
-                    onClick={() => { setSelectedGroupId(g.id); setGroupOpen(false) }}
+                    key={g.id}
+                    type='button'
+                    onClick={() => {
+                      setSelectedGroupId(g.id)
+                      setGroupOpen(false)
+                    }}
                     className='flex w-full justify-between px-3 py-2 text-left text-base hover:bg-slate-50 dark:hover:bg-slate-800'
                   >
                     <span>{g.name}</span>
-                    <span className='text-sm text-slate-400'>{g.students.length} students</span>
+                    <span className='text-sm text-slate-400'>
+                      {g.students.length} students
+                    </span>
                   </button>
                 ))}
               </div>
@@ -224,61 +289,101 @@ function AttendancePage() {
         </div>
 
         <div className='min-w-52 flex-1'>
-          <label className='mb-1 block text-xs font-bold text-slate-400 uppercase'>Session Date</label>
+          <label className='mb-1 block text-xs font-bold text-slate-400 uppercase'>
+            Session Date
+          </label>
           <Popover>
             <PopoverTrigger asChild>
-              <button type='button' className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 text-base'>
-                <span className='flex items-center gap-2'><Calendar size={16} /> {formatDate(date)}</span>
+              <button
+                type='button'
+                className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 bg-transparent px-3 text-base dark:border-slate-800'
+              >
+                <span className='flex items-center gap-2'>
+                  <Calendar size={16} /> {formatDate(date)}
+                </span>
                 <ChevronDown size={16} />
               </button>
             </PopoverTrigger>
             <PopoverContent className='w-auto p-0'>
-              <CalendarPicker mode='single' selected={date} onSelect={(d) => d && setDate(d)} />
+              <CalendarPicker
+                mode='single'
+                selected={date}
+                onSelect={(d) => d && setDate(d)}
+              />
             </PopoverContent>
           </Popover>
         </div>
 
         <RoseButton
-          type='button' onClick={handleSave} roseVariant='solid'
+          type='button'
+          onClick={handleSave}
+          roseVariant='solid'
           disabled={saveState === 'saving' || !groupId || students.length === 0}
           className='h-10 px-6 text-base font-medium'
         >
-          {saveState === 'saving' ? <Loader2 size={18} className='animate-spin' /> : saveState === 'saved' ? <Check size={18} /> : 'Save Attendance'}
+          {saveState === 'saving' ? (
+            <Loader2 size={18} className='animate-spin' />
+          ) : saveState === 'saved' ? (
+            <Check size={18} />
+          ) : (
+            'Save Attendance'
+          )}
         </RoseButton>
       </div>
 
       {/* Responsive List View */}
       <div className='space-y-3'>
         {filteredStudents.length === 0 ? (
-          <div className='rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-10 text-center text-slate-400'>
-            {groupsLoading ? 'Loading groups...' : filteredGroups.length === 0 ? 'No groups assigned to you' : 'No students found'}
+          <div className='rounded-xl border border-slate-200 bg-white py-10 text-center text-slate-400 dark:border-slate-800 dark:bg-slate-900'>
+            {groupsLoading
+              ? 'Loading groups...'
+              : filteredGroups.length === 0
+                ? 'No groups assigned to you'
+                : 'No students found'}
           </div>
         ) : (
           filteredStudents.map((s, idx) => (
-            <div key={s.studentId} className='flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm'>
-              
+            <div
+              key={s.studentId}
+              className='flex flex-col justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:flex-row md:items-center dark:border-slate-800 dark:bg-slate-900'
+            >
               {/* Ism va ma'lumotlar */}
               <div className='flex items-center justify-between md:w-auto md:flex-1'>
                 <div className='flex items-center gap-3'>
-                  <div className='flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950 text-xs font-bold text-rose-700 dark:text-rose-300'>
+                  <div className='flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 text-xs font-bold text-rose-700 dark:bg-rose-950 dark:text-rose-300'>
                     {getInitials(s.name)}
                   </div>
                   <div>
-                    <span className='text-base font-semibold text-slate-800 dark:text-slate-200'>{s.name}</span>
+                    <span className='text-base font-semibold text-slate-800 dark:text-slate-200'>
+                      {s.name}
+                    </span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-slate-300 md:hidden">{String(idx + 1).padStart(2, '0')}</span>
+                <span className='text-xs font-bold text-slate-300 md:hidden'>
+                  {String(idx + 1).padStart(2, '0')}
+                </span>
               </div>
 
               {/* Tugmalar va Note input */}
-              <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto'>
-                <div className='flex gap-1 flex-1 sm:flex-initial'>
+              <div className='flex w-full flex-col items-stretch gap-2 sm:flex-row sm:items-center md:w-auto'>
+                <div className='flex flex-1 gap-1 sm:flex-initial'>
                   {STATUSES.map((st) => (
                     <button
-                      key={st} type='button'
-                      onClick={() => setStudents(prev => prev.map(p => p.studentId === s.studentId ? { ...p, status: st } : p))}
-                      className={`flex-1 md:w-24 rounded px-3 py-2 text-xs font-bold uppercase transition-all ${
-                        s.status === st ? STATUS_STYLES[st] : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                      key={st}
+                      type='button'
+                      onClick={() =>
+                        setStudents((prev) =>
+                          prev.map((p) =>
+                            p.studentId === s.studentId
+                              ? { ...p, status: st }
+                              : p
+                          )
+                        )
+                      }
+                      className={`flex-1 rounded px-3 py-2 text-xs font-bold uppercase transition-all md:w-24 ${
+                        s.status === st
+                          ? STATUS_STYLES[st]
+                          : 'bg-slate-100 text-slate-400 dark:bg-slate-800'
                       }`}
                     >
                       {st}
@@ -287,19 +392,44 @@ function AttendancePage() {
                 </div>
 
                 <input
-                  type='text' value={s.note} placeholder='Add note...'
-                  onChange={(e) => setStudents(prev => prev.map(p => p.studentId === s.studentId ? { ...p, note: e.target.value } : p))}
+                  type='text'
+                  value={s.note}
+                  placeholder='Add note...'
+                  onChange={(e) =>
+                    setStudents((prev) =>
+                      prev.map((p) =>
+                        p.studentId === s.studentId
+                          ? { ...p, note: e.target.value }
+                          : p
+                      )
+                    )
+                  }
                   disabled={s.status !== 'late'}
-                  className='h-9 w-full sm:w-40 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2 text-sm outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-30'
+                  className='h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-30 sm:w-40 dark:border-slate-800 dark:bg-slate-900'
                 />
 
-                <span className="hidden md:block text-xs font-bold text-slate-300 w-6 text-right">{String(idx + 1).padStart(2, '0')}</span>
+                <span className='hidden w-6 text-right text-xs font-bold text-slate-300 md:block'>
+                  {String(idx + 1).padStart(2, '0')}
+                </span>
               </div>
-
             </div>
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {filteredStudents.length > 0 && (
+        <ListPagination
+          page={page}
+          pageSize={pageSize}
+          totalCount={filteredStudents.length}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size)
+            setPage(1)
+          }}
+        />
+      )}
     </div>
   )
 }

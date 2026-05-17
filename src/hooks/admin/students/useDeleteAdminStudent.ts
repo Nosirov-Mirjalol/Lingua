@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-
 import { deleteAdminStudent } from '@/api/service/admin/student.service'
 
 export const useDeleteAdminStudent = () => {

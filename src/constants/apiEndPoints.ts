@@ -5,7 +5,8 @@ const API_ENDPOINTS = {
     VERIFY_PASSWORD: '/api/auth/verfiy-password/',
     USER_LIST: '/api/auth/user-list/',
     PROFILE_GET: '/api/auth/my-profile-list/',
-    PROFILE_UPDATE: '/api/auth/my-profile-update-delete/',
+    PROFILE_UPDATE: '/api/auth/my-profile-update/',
+    PROFILE_DELETE: (userId: number) => `/api/auth/profile-delete/${userId}/`,
   },
   ATTENDANCE: {
     LIST: '/api/attendance/list',

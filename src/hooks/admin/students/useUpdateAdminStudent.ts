@@ -4,21 +4,20 @@ import {
   type AdminStudentUpdatePayload,
 } from '@/api/service/admin/student.service'
 
-export const useUpdateAdminStudent = (studentId: number) => {
+export const useUpdateAdminStudent = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: AdminStudentUpdatePayload) =>
-      updateAdminStudent(studentId, data),
+    mutationFn: ({
+      studentId,
+      data,
+    }: {
+      studentId: number
+      data: AdminStudentUpdatePayload
+    }) => updateAdminStudent(studentId, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: ['admin', 'students', 'list'],
-      })
-      await queryClient.invalidateQueries({
-        queryKey: ['student', 'profile'],
-      })
-      await queryClient.invalidateQueries({
-        queryKey: ['student', 'dashboard'],
       })
     },
   })

@@ -162,8 +162,10 @@ class ApiClient {
             const isPublicAuthRequest = PUBLIC_AUTH_PATHS.some((path) =>
               requestUrl.includes(path)
             )
+            // Register endpointni ham redirect qilmaslik
+            const isRegisterRequest = requestUrl.includes('/api/auth/register/')
 
-            if (!isPublicAuthRequest) {
+            if (!isPublicAuthRequest && !isRegisterRequest) {
               useUserStore.getState().actions.clearUserInfoAndToken()
               window.location.href = '/sign-in'
             }

@@ -13,7 +13,15 @@ import { toast } from 'sonner'
 import type { User } from '@/api/service/teacher/user.type'
 import { SearchProvider } from '@/context/search-provider'
 import { useAdminStudents } from '@/hooks/admin/students/useAdminStudents'
-import { useCreateAdminStudent } from '@/hooks/admin/students/useCreateAdminStudent'
+import {
+  getCreateStudentErrorMessage,
+  useCreateAdminStudent,
+} from '@/hooks/admin/students/useCreateAdminStudent'
+import {
+  extractNationalNine,
+  formatPhoneDisplay,
+  getStudentApiErrorMessage,
+} from '@/api/service/admin/student.service'
 import { useDeleteAdminStudent } from '@/hooks/admin/students/useDeleteAdminStudent'
 import { useUpdateAdminStudent } from '@/hooks/admin/students/useUpdateAdminStudent'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -45,6 +53,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ListPagination } from '@/components/list-pagination'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -76,7 +85,10 @@ const getInitialFormData = (): StudentFormData => ({
 
 export default function AdminStudentsPage() {
   const [search, setSearch] = useState('')
-  const { data: students = [], isLoading, isError } = useAdminStudents(search)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const { data: students = [], isLoading, isError, totalCount } =
+    useAdminStudents(search, page, pageSize)
 
   // Show error toast if API fails
   useEffect(() => {
@@ -104,27 +116,27 @@ export default function AdminStudentsPage() {
     'detail'
   )
 
-  const updateMutation = useUpdateAdminStudent(selectedStudent?.id || 0)
+  const updateMutation = useUpdateAdminStudent()
   const [editDraft, setEditDraft] = useState<{
-    email: string
+    username: string
     first_name: string
     last_name: string
     phone: string
     is_active: boolean
   }>({
-    email: '',
+    username: '',
     first_name: '',
     last_name: '',
     phone: '+998',
     is_active: true,
   })
 
-  const toNationalNine = (phone?: string): string | undefined => {
-    if (!phone?.trim() || phone.trim() === '+998') return undefined
-    let digits = phone.replace(/\D/g, '')
-    if (digits.startsWith('998')) digits = digits.slice(3)
-    if (digits.length < 9) return undefined
-    return digits.slice(0, 9)
+  const hasAccessToken = (): boolean => {
+    if (typeof window === 'undefined') return false
+    return Boolean(
+      sessionStorage.getItem('linguapro_access_token') ||
+        localStorage.getItem('access_token')
+    )
   }
 
   const handleInputChange = (
@@ -161,8 +173,8 @@ export default function AdminStudentsPage() {
     // Faqat raqamlarga ruxsat (+998 dan keyin)
     const digits = value.slice(4).replace(/\D/g, '')
 
-    // Maksimal 15 ta raqam (ko'proq ruxsat berish uchun)
-    const limitedDigits = digits.slice(0, 15)
+    // +998 dan keyin maksimal 9 ta milliy raqam
+    const limitedDigits = digits.slice(0, 9)
 
     // Format: +998 XX XXX XX XX (9 raqam) + qo'shimcha raqamlar
     let formatted = '+998'
@@ -170,9 +182,6 @@ export default function AdminStudentsPage() {
     if (limitedDigits.length > 2) formatted += ' ' + limitedDigits.slice(2, 5)
     if (limitedDigits.length > 5) formatted += ' ' + limitedDigits.slice(5, 7)
     if (limitedDigits.length > 7) formatted += ' ' + limitedDigits.slice(7, 9)
-    if (limitedDigits.length > 9) formatted += ' ' + limitedDigits.slice(9, 12)
-    if (limitedDigits.length > 12)
-      formatted += ' ' + limitedDigits.slice(12, 15)
 
     handleInputChange('phone', formatted)
   }
@@ -190,14 +199,26 @@ export default function AdminStudentsPage() {
   const openEditModal = (student: User) => {
     setSelectedStudent(student)
     setEditDraft({
-      email: student.email ?? '',
+      username: student.username ?? '',
       first_name: student.first_name ?? '',
       last_name: student.last_name ?? '',
-      phone: student.phone || '+998',
+      phone: formatPhoneDisplay(student.phone),
       is_active: Boolean(student.is_active),
     })
     setModalAction('edit')
     setModalOpen(true)
+  }
+
+  const handleEditPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value
+    if (!value.startsWith('+998')) value = '+998'
+    const digits = value.slice(4).replace(/\D/g, '').slice(0, 9)
+    let formatted = '+998'
+    if (digits.length > 0) formatted += ' ' + digits.slice(0, 2)
+    if (digits.length > 2) formatted += ' ' + digits.slice(2, 5)
+    if (digits.length > 5) formatted += ' ' + digits.slice(5, 7)
+    if (digits.length > 7) formatted += ' ' + digits.slice(7, 9)
+    setEditDraft((p) => ({ ...p, phone: formatted }))
   }
 
   const handleAvatarPreview = (imageUrl: string) => {
@@ -218,37 +239,59 @@ export default function AdminStudentsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Phone number validation - check if complete
-    if (formData.phone && formData.phone !== '+998') {
-      const digits = formData.phone.replace(/\D/g, '')
-      if (digits.length < 9) {
-        toast.error(
-          "Telefon raqam to'liq kiritilmagan! Kamida 9 ta raqam kering."
-        )
-        return
-      }
+    if (!hasAccessToken()) {
+      toast.error("Sessiya topilmadi. Qayta tizimga kiring.")
+      return
     }
 
-    if (!formData.password || !String(formData.password).trim()) {
-      toast.error('Password kiritilishi shart')
+    if (!formData.username.trim()) {
+      toast.error('Username kiritilishi shart')
+      return
+    }
+    if (!formData.email.trim()) {
+      toast.error('Email kiritilishi shart')
+      return
+    }
+    if (!formData.first_name.trim() || !formData.last_name.trim()) {
+      toast.error("Ism va familiya to'ldirilishi shart")
+      return
+    }
+    if (!formData.password?.trim()) {
+      toast.error('Parol kiritilishi shart')
+      return
+    }
+    if (formData.password.trim().length < 8) {
+      toast.error("Parol kamida 8 belgi bo'lishi kerak")
+      return
+    }
+
+    try {
+      if (formData.phone && formData.phone !== '+998') {
+        extractNationalNine(formData.phone)
+      }
+    } catch (err) {
+      toast.error((err as Error).message)
       return
     }
 
     const submitData = {
-      ...formData,
-      phone: formData.phone || undefined,
-      password: formData.password || undefined,
+      username: formData.username.trim(),
+      email: formData.email.trim(),
+      first_name: formData.first_name.trim(),
+      last_name: formData.last_name.trim(),
+      phone: formData.phone !== '+998' ? formData.phone : undefined,
+      password: formData.password.trim(),
+      role: 'student' as const,
     }
 
-    // Create student (isModalOpen is for create modal)
     toast.promise(createMutation.mutateAsync(submitData), {
       loading: 'Yaratilmoqda...',
       success: () => {
         setIsModalOpen(false)
         resetForm()
-        return 'Student yaratildi'
+        return 'Student muvaffaqiyatli yaratildi'
       },
-      error: 'Xato yuz berdi',
+      error: (err) => getCreateStudentErrorMessage(err),
     })
   }
 
@@ -266,28 +309,56 @@ export default function AdminStudentsPage() {
   const confirmDelete = () => {
     if (!selectedStudent) return
     toast.promise(deleteMutation.mutateAsync(selectedStudent.id), {
-      loading: 'Ochirilmoqda...',
-      success: 'Student ochirildi',
-      error: 'Xato yuz berdi',
+      loading: "O'chirilmoqda...",
+      success: () => {
+        handleModalClose()
+        return "Student o'chirildi"
+      },
+      error: (err) => getStudentApiErrorMessage(err, "O'chirishda xatolik"),
     })
-    handleModalClose()
   }
 
   const confirmEdit = () => {
     if (!selectedStudent) return
-    const payload = {
-      email: editDraft.email.trim() || undefined,
-      first_name: editDraft.first_name.trim() || undefined,
-      last_name: editDraft.last_name.trim() || undefined,
-      phone: toNationalNine(editDraft.phone),
-      is_active: editDraft.is_active,
+
+    if (!editDraft.first_name.trim() || !editDraft.last_name.trim()) {
+      toast.error("Ism va familiya to'ldirilishi shart")
+      return
     }
-    toast.promise(updateMutation.mutateAsync(payload), {
-      loading: 'Yangilanilmoqda...',
-      success: 'Student yangilandi',
-      error: 'Xato yuz berdi',
-    })
-    handleModalClose()
+    if (!editDraft.username.trim()) {
+      toast.error('Username kiritilishi shart')
+      return
+    }
+
+    try {
+      if (editDraft.phone && editDraft.phone !== '+998') {
+        extractNationalNine(editDraft.phone)
+      }
+    } catch (err) {
+      toast.error((err as Error).message)
+      return
+    }
+
+    toast.promise(
+      updateMutation.mutateAsync({
+        studentId: selectedStudent.id,
+        data: {
+          username: editDraft.username.trim(),
+          first_name: editDraft.first_name.trim(),
+          last_name: editDraft.last_name.trim(),
+          phone: editDraft.phone,
+          is_active: editDraft.is_active,
+        },
+      }),
+      {
+        loading: 'Yangilanilmoqda...',
+        success: () => {
+          handleModalClose()
+          return 'Student yangilandi'
+        },
+        error: (err) => getStudentApiErrorMessage(err, 'Yangilashda xatolik'),
+      }
+    )
   }
 
   const handleViewStudent = (student: User) => {
@@ -752,15 +823,16 @@ export default function AdminStudentsPage() {
               1-{students.length} dan {students.length} ta ko'rsatilmoqda
             </div>
             <div className='flex items-center space-x-2'>
-              <Button variant='outline' size='sm' disabled>
-                Oldingi
-              </Button>
-              <Button variant='outline' size='sm'>
-                1
-              </Button>
-              <Button variant='outline' size='sm' disabled>
-                Keyingi
-              </Button>
+              <ListPagination
+                page={page}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size)
+                  setPage(1)
+                }}
+              />
             </div>
           </div>
         </Main>
@@ -872,9 +944,23 @@ export default function AdminStudentsPage() {
 
                 {modalAction === 'edit' && (
                   <div className='space-y-4'>
+                    <div>
+                      <Label htmlFor='edit-username'>Username</Label>
+                      <Input
+                        id='edit-username'
+                        value={editDraft.username}
+                        onChange={(e) =>
+                          setEditDraft((p) => ({
+                            ...p,
+                            username: e.target.value,
+                          }))
+                        }
+                        className='mt-1'
+                      />
+                    </div>
                     <div className='grid grid-cols-2 gap-3'>
                       <div>
-                        <Label htmlFor='edit-first-name'>First Name</Label>
+                        <Label htmlFor='edit-first-name'>Ism</Label>
                         <Input
                           id='edit-first-name'
                           value={editDraft.first_name}
@@ -888,7 +974,7 @@ export default function AdminStudentsPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor='edit-last-name'>Last Name</Label>
+                        <Label htmlFor='edit-last-name'>Familiya</Label>
                         <Input
                           id='edit-last-name'
                           value={editDraft.last_name}
@@ -903,25 +989,11 @@ export default function AdminStudentsPage() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor='edit-email'>Email</Label>
-                      <Input
-                        id='edit-email'
-                        type='email'
-                        value={editDraft.email}
-                        onChange={(e) =>
-                          setEditDraft((p) => ({ ...p, email: e.target.value }))
-                        }
-                        className='mt-1'
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor='edit-phone'>Phone</Label>
+                      <Label htmlFor='edit-phone'>Telefon</Label>
                       <Input
                         id='edit-phone'
                         value={editDraft.phone}
-                        onChange={(e) =>
-                          setEditDraft((p) => ({ ...p, phone: e.target.value }))
-                        }
+                        onChange={handleEditPhoneChange}
                         placeholder='+998 90 123 45 67'
                         className='mt-1'
                       />

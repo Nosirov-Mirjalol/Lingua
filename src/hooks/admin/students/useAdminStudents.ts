@@ -3,10 +3,14 @@ import { useQuery } from '@tanstack/react-query'
 import { searchAdminStudents } from '@/api/service/admin/student.service'
 import type { User } from '@/api/service/teacher/user.type'
 
-export const useAdminStudents = (search: string) => {
+export const useAdminStudents = (
+  search: string,
+  page = 1,
+  pageSize = 10
+) => {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['admin', 'students', 'list', { search }],
-    queryFn: () => searchAdminStudents(search),
+    queryKey: ['admin', 'students', 'list', { search, page, pageSize }],
+    queryFn: () => searchAdminStudents(search, page, pageSize),
   })
 
   const students = useMemo(() => {
@@ -21,6 +25,8 @@ export const useAdminStudents = (search: string) => {
     data: students,
     isLoading,
     isError,
-    totalCount: data?.count ?? 0,
+    totalCount: data?.count ?? students.length,
+    hasNext: Boolean(data?.next),
+    hasPrevious: Boolean(data?.previous),
   }
 }

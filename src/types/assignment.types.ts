@@ -26,6 +26,8 @@ export interface Submission {
 export type AssignmentListParams = {
   ordering?: string
   search?: string
+  page?: number
+  page_size?: number
 }
 
 export type CreateAssignmentPayload = Omit<
