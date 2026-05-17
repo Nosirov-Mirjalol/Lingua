@@ -1,14 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-<<<<<<< HEAD
-=======
-import { getMyGroups } from '@/api/service/student/group.service'
-<<<<<<< HEAD
->>>>>>> c8601919414cff32eb110164f7ac4aca75ccb2bf
-=======
-import { useStudentUnreadCount } from './useStudentNotifications'
-import { apiClient } from '@/api/client'
-import { MESSAGES } from '@/constants/apiEndPoints'
->>>>>>> 730e765139e9c133bab7734dfd9e68da9f912727
 import type {
   StudentAssignment,
   StudentConversation,
@@ -16,13 +6,33 @@ import type {
   StudentProfile,
   StudentScheduleItem,
 } from '@/types/student'
-import type { StudentGroup } from '@/api/service/student/group.service'
+import { apiClient } from '@/api/client'
+import {
+  getMyGroups,
+  type StudentGroup,
+} from '@/api/service/student/group.service'
+import { MESSAGES, AUTH } from '@/constants/apiEndPoints'
+import { useStudentUnreadCount } from './useStudentNotifications'
 
-<<<<<<< HEAD
-const getStoredUser = (): Partial<StudentProfile> | null => {
-  if (typeof window === 'undefined') return null
+interface GroupMessageResponse {
+  id: number
+  group_name: string
+  last_message?: {
+    text: string
+    created_at: string
+  }
+  unread_count: number
+}
 
-=======
+interface ProfileApiResponse {
+  'User Data'?: Partial<StudentProfile>
+}
+
+interface StoredUserData extends Partial<StudentProfile> {
+  first_name?: string
+  last_name?: string
+}
+
 function formatRelativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60_000)
@@ -38,10 +48,7 @@ const getStoredUser = () => {
   if (typeof window === 'undefined') return null
   const raw = sessionStorage.getItem('linguapro_user')
   if (!raw) return null
->>>>>>> 730e765139e9c133bab7734dfd9e68da9f912727
   try {
-    const raw = sessionStorage.getItem('linguapro_user')
-    if (!raw) return null
     return JSON.parse(raw) as Partial<StudentProfile>
   } catch {
     return null
@@ -49,11 +56,19 @@ const getStoredUser = () => {
 }
 
 const buildProfile = (): StudentProfile => {
-  const stored = getStoredUser()
+  const stored = getStoredUser() as any
+  const firstName = stored?.first_name || ''
+  const lastName = stored?.last_name || ''
+  const fullName =
+    stored?.full_name ||
+    `${firstName} ${lastName}`.trim() ||
+    stored?.username ||
+    ''
+
   return {
     id: stored?.id ?? 0,
     username: stored?.username || '',
-    full_name: stored?.full_name || '',
+    full_name: fullName,
     role: stored?.role ?? 'user',
     avatar: stored?.avatar || '/avatars/student1.jpg',
     timezone: stored?.timezone || '',
@@ -70,7 +85,16 @@ const buildProfile = (): StudentProfile => {
 export const useStudentProfile = () => {
   return useQuery({
     queryKey: ['student', 'profile'],
-    queryFn: async () => buildProfile(),
+    queryFn: async () => {
+      try {
+        const res = await apiClient.get<ProfileApiResponse>(AUTH.PROFILE_GET)
+        const userData = res['User Data'] || (res as Partial<StudentProfile>)
+        sessionStorage.setItem('linguapro_user', JSON.stringify(userData))
+        return buildProfile()
+      } catch {
+        return buildProfile()
+      }
+    },
     staleTime: 60_000,
   })
 }
@@ -78,32 +102,33 @@ export const useStudentProfile = () => {
 export const useStudentDashboard = () => {
   const { data: unreadRes } = useStudentUnreadCount()
   const unreadCount = unreadRes?.unread_count ?? 0
+  const { data: profile } = useStudentProfile()
 
   return useQuery({
-    queryKey: ['student', 'dashboard', unreadCount],
+    queryKey: ['student', 'dashboard', unreadCount, profile],
     queryFn: async () => {
-      const profile = buildProfile()
-      const completedHours = `${Math.max(40, Math.round(profile.completion * 0.8))}h`
+      const currentProfile = profile || buildProfile()
+      const completedHours = `${Math.max(40, Math.round(currentProfile.completion * 0.8))}h`
 
       return {
         stats: {
           upcomingLessons: 3,
           completedHours,
-          progress: profile.completion,
+          progress: currentProfile.completion,
           unreadMessages: unreadCount,
         } as StudentDashboardStats,
         highlights: [
           {
             title: 'Next lesson',
-            value: profile.nextLesson,
+            value: currentProfile.nextLesson,
           },
           {
             title: 'Current course',
-            value: profile.activeCourse,
+            value: currentProfile.activeCourse,
           },
           {
             title: 'Learning streak',
-            value: `${profile.streak} days`,
+            value: `${currentProfile.streak} days`,
           },
         ],
         quickActions: [
@@ -195,15 +220,17 @@ export const useStudentMessages = () => {
   return useQuery({
     queryKey: ['student', 'messages'],
     queryFn: async (): Promise<StudentConversation[]> => {
-      const res = await apiClient.get<any[]>(MESSAGES.GROUPS)
-      return (res || []).map((c: any) => ({
+      const res = await apiClient.get<GroupMessageResponse[]>(MESSAGES.GROUPS)
+      return (res || []).map((c: GroupMessageResponse) => ({
         id: c.id,
         participant: c.group_name || 'Guruh',
         subject: 'Guruh xabari',
-        lastMessage: c.last_message?.text || 'Xabarlar yo\'q',
-        time: c.last_message?.created_at ? formatRelativeTime(c.last_message.created_at) : '',
+        lastMessage: c.last_message?.text || "Xabarlar yo'q",
+        time: c.last_message?.created_at
+          ? formatRelativeTime(c.last_message.created_at)
+          : '',
         unread: c.unread_count || 0,
-        messages: []
+        messages: [],
       }))
     },
     staleTime: 60_000,

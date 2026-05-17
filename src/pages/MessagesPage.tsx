@@ -154,6 +154,14 @@ export function MessagesPage() {
   const sendMutation = useSendMessage(selectedGroupId ?? 0)
   const deleteMutation = useDeleteMessage(selectedGroupId ?? 0)
 
+  const handleStartChat = (users: Omit<ChatUser, 'messages'>[]) => {
+    const nextGroupId = Number(users[0]?.id)
+    if (!Number.isFinite(nextGroupId)) return
+
+    setSelectedGroupId(nextGroupId)
+    setCreateConversationDialog(false)
+  }
+
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop =
@@ -516,6 +524,7 @@ export function MessagesPage() {
         users={chatUsers}
         open={createConversationDialogOpened}
         onOpenChange={setCreateConversationDialog}
+        onStartChat={handleStartChat}
       />
     </div>
   )

@@ -59,7 +59,7 @@ export function CourseModal({
     >
       <div
         style={{
-          backgroundColor: 'white',
+          backgroundColor: 'var(--card)',
           borderRadius: '16px',
           padding: '24px',
           maxWidth: '500px',

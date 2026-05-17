@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Check, X } from 'lucide-react'
-import { showSubmittedData } from '@/lib/show-submitted-data'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -27,8 +26,14 @@ type NewChatProps = {
   users: User[]
   open: boolean
   onOpenChange: (open: boolean) => void
+  onStartChat?: (users: User[]) => void
 }
-export function NewChat({ users, onOpenChange, open }: NewChatProps) {
+export function NewChat({
+  users,
+  onOpenChange,
+  open,
+  onStartChat,
+}: NewChatProps) {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
 
   const handleSelectUser = (user: User) => {
@@ -49,6 +54,13 @@ export function NewChat({ users, onOpenChange, open }: NewChatProps) {
     if (!newOpen) {
       setSelectedUsers([])
     }
+  }
+
+  const handleStartChat = () => {
+    if (selectedUsers.length === 0) return
+
+    onStartChat?.(selectedUsers)
+    handleOpenChange(false)
   }
 
   return (
@@ -129,10 +141,10 @@ export function NewChat({ users, onOpenChange, open }: NewChatProps) {
           </Command>
           <Button
             variant={'default'}
-            onClick={() => showSubmittedData(selectedUsers)}
+            onClick={handleStartChat}
             disabled={selectedUsers.length === 0}
           >
-            Chat
+            Open Chat
           </Button>
         </div>
       </DialogContent>

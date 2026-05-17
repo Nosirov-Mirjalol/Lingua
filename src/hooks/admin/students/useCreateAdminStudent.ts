@@ -14,6 +14,12 @@ export const useCreateAdminStudent = () => {
       await queryClient.invalidateQueries({
         queryKey: ['admin', 'students', 'list'],
       })
+      await queryClient.invalidateQueries({
+        queryKey: ['student', 'profile'],
+      })
+      await queryClient.invalidateQueries({
+        queryKey: ['student', 'dashboard'],
+      })
     },
     onError: (error: unknown) => {
       const errorMessage =

@@ -1,6 +1,6 @@
+@import './theme.css';
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import './theme.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -62,15 +62,15 @@
 }
 
 .lp-primary-bg {
-  background-color: #b80035;
+  background-color: var(--primary);
 }
 
 .lp-primary-text {
-  color: #b80035;
+  color: var(--primary);
 }
 
 .lp-primary-border {
-  border-color: #b80035;
+  border-color: var(--primary);
 }
 
 .lp-messages-shell {

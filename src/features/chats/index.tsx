@@ -167,6 +167,16 @@ export function Chats() {
     setEditUsernameOpen(false)
   }
 
+  const handleStartChat = (users: Omit<ChatUser, 'messages'>[]) => {
+    const nextUserId = users[0]?.id
+    if (!nextUserId) return
+
+    const nextUser = chatList.find((user) => user.id === nextUserId) ?? null
+    setSelectedUserId(nextUserId)
+    setMobileSelectedUser(nextUser)
+    setCreateConversationDialog(false)
+  }
+
   return (
     <>
       <Header>
@@ -501,6 +511,7 @@ export function Chats() {
           users={users}
           onOpenChange={setCreateConversationDialog}
           open={createConversationDialogOpened}
+          onStartChat={handleStartChat}
         />
 
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
