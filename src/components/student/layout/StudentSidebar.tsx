@@ -74,7 +74,7 @@ export function StudentSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={user} role='student' />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

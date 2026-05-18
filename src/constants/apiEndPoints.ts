@@ -64,6 +64,10 @@ const API_ENDPOINTS = {
     BY_ID: (id: number) => `/api/assignments/${id}/`,
     SUBMIT: (id: number) => `/api/assignments/${id}/submit/`,
     GRADE: (id: number) => `/api/assignments/${id}/grade/`,
+<<<<<<< HEAD
+=======
+    STATUS: (id: number) => `/api/assignments/${id}/status/`,
+>>>>>>> b6612ff0a0c190d6006744c9e600144354c1074d
   },
 }
 

@@ -24,33 +24,44 @@ type ProfileForm = {
   learning_goal: string
 }
 
-// Uploadcare funksiyasi
-const uploadToUploadcare = async (file: File): Promise<string> => {
-  const pubKey = import.meta.env.VITE_UPLOADCARE_PUBLIC_KEY
-  if (!pubKey) throw new Error('VITE_UPLOADCARE_PUBLIC_KEY topilmadi!')
+// Uploadcare Hook
+const useUploadAvatar = () => {
+  const [isUploading, setIsUploading] = useState(false)
 
-  const formData = new FormData()
-  formData.append('UPLOADCARE_PUB_KEY', pubKey)
-  formData.append('UPLOADCARE_STORE', 'auto')
-  formData.append('file', file)
+  const uploadToUploadcare = async (file: File): Promise<string> => {
+    setIsUploading(true)
+    try {
+      const pubKey = import.meta.env.VITE_UPLOADCARE_PUBLIC_KEY
+      if (!pubKey) throw new Error('VITE_UPLOADCARE_PUBLIC_KEY topilmadi!')
 
-  const res = await fetch('https://upload.uploadcare.com/base/', {
-    method: 'POST',
-    body: formData,
-  })
+      const formData = new FormData()
+      formData.append('UPLOADCARE_PUB_KEY', pubKey)
+      formData.append('UPLOADCARE_STORE', 'auto')
+      formData.append('file', file)
 
-  const data = await res.json()
-  if (!data.file) throw new Error('Uploadcare xatosi yuz berdi')
+      const res = await fetch('https://upload.uploadcare.com/base/', {
+        method: 'POST',
+        body: formData,
+      })
 
-  return `https://4yypsqu6p6.ucarecd.net/${data.file}/`
+      const data = await res.json()
+      if (!data.file) throw new Error('Uploadcare xatosi yuz berdi')
+
+      return `https://4yypsqu6p6.ucarecd.net/${data.file}/`
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  return { uploadToUploadcare, isUploading }
 }
 
 function ProfilePage() {
   const { data: profile, isLoading, isError } = useProfile()
   const updateProfileMutation = useUpdateProfile()
+  const { uploadToUploadcare, isUploading } = useUploadAvatar()
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
 
   const previewUrl = useMemo(() => {
     if (selectedFile) return URL.createObjectURL(selectedFile)
@@ -58,7 +69,7 @@ function ProfilePage() {
   }, [profile?.avatar, selectedFile])
 
   useEffect(() => {
-    if (!selectedFile) return
+    if (!selectedFile || !previewUrl) return
     return () => {
       URL.revokeObjectURL(previewUrl)
     }
@@ -98,15 +109,12 @@ function ProfilePage() {
     let finalAvatarUrl = data.avatar
 
     if (selectedFile) {
-      setIsUploading(true)
       try {
         finalAvatarUrl = await uploadToUploadcare(selectedFile)
         setValue('avatar', finalAvatarUrl, { shouldDirty: true })
       } catch (_error) {
-        setIsUploading(false)
         return
       }
-      setIsUploading(false)
     }
 
     updateProfileMutation.mutate({ ...data, avatar: finalAvatarUrl })

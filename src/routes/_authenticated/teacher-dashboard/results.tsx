@@ -28,9 +28,7 @@ export const Route = createFileRoute(
 
 function ResultsPage() {
   const [open, setOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const [editingResult, setEditingResult] = useState<any>(null)
-  const [editScore, setEditScore] = useState('')
+  const [editState, setEditState] = useState({ open: false, result: null as any, score: '' })
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
 
@@ -242,9 +240,7 @@ function ResultsPage() {
                 <td className='py-4'>
                   <button
                     onClick={() => {
-                      setEditingResult(result)
-                      setEditScore(result.score)
-                      setEditOpen(true)
+                      setEditState({ open: true, result, score: result.score })
                     }}
                     className='flex items-center gap-1 text-sm font-semibold text-[#b80035] hover:underline dark:text-rose-400'
                   >
@@ -270,8 +266,7 @@ function ResultsPage() {
         }}
       />
 
-      {/* Edit Result Modal */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+      <Dialog open={editState.open} onOpenChange={(open) => setEditState(prev => ({ ...prev, open }))}>
         <DialogContent className='max-w-md rounded-2xl border-none bg-white p-6 shadow-[0_30px_60px_-15px_rgba(25,28,30,0.20)] dark:bg-slate-900 dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]'>
           <DialogHeader>
             <DialogTitle className='text-xl font-bold text-gray-800 dark:text-white'>
@@ -283,8 +278,8 @@ function ResultsPage() {
               <Label htmlFor='score'>Score</Label>
               <Input
                 id='score'
-                value={editScore}
-                onChange={(e) => setEditScore(e.target.value)}
+                value={editState.score}
+                onChange={(e) => setEditState(prev => ({ ...prev, score: e.target.value }))}
                 placeholder='Enter score (e.g., 95%)'
                 className='mt-1'
               />
@@ -292,7 +287,7 @@ function ResultsPage() {
             <div className='flex justify-end gap-3 pt-4'>
               <RoseButton
                 roseVariant='outline'
-                onClick={() => setEditOpen(false)}
+                onClick={() => setEditState(prev => ({ ...prev, open: false }))}
               >
                 Cancel
               </RoseButton>
@@ -300,7 +295,7 @@ function ResultsPage() {
                 roseVariant='solid'
                 onClick={() => {
                   // Update logic here
-                  setEditOpen(false)
+                  setEditState(prev => ({ ...prev, open: false }))
                 }}
               >
                 Save

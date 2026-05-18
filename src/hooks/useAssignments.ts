@@ -3,6 +3,7 @@ import {
   createAssignment,
   deleteAssignment,
   getAssignments,
+  getAssignmentStatus,
   gradeAssignment,
   submitAssignment,
   updateAssignment,
@@ -92,5 +93,13 @@ export const useSubmitAssignment = () => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['assignments'] })
     },
+  })
+}
+
+export const useGetAssignmentStatus = (id: number | null) => {
+  return useQuery({
+    queryKey: ['assignments', id, 'status'],
+    queryFn: () => (id ? getAssignmentStatus(id) : Promise.resolve(null)),
+    enabled: !!id,
   })
 }

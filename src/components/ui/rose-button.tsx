@@ -7,21 +7,26 @@ type RoseButtonVariant =
   | 'outline'
   | 'ghost'
   | 'link'
+  | 'gradient'
 
 type RoseButtonSize = 'sm' | 'md' | 'lg'
 
-type RoseButtonProps = Omit<React.ComponentProps<typeof Button>, 'variant'> & {
+type RoseButtonProps = Omit<React.ComponentProps<typeof Button>, 'variant' | 'size'> & {
   roseVariant?: RoseButtonVariant
   roseSize?: RoseButtonSize
 }
 
 const variantClassNames: Record<RoseButtonVariant, string> = {
   solid:
-    'bg-gradient-to-br from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-600 text-white shadow-md shadow-rose-200 transition-all active:scale-95',
+    'bg-gradient-to-br from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-600 text-white shadow-md shadow-rose-200 dark:shadow-none',
   outline:
-    'bg-transparent text-rose-600 border border-rose-100 hover:bg-rose-50 rounded-xl transition-all',
-  ghost: 'bg-rose-50/50 text-rose-600 hover:bg-rose-100 transition-all',
-  link: 'text-rose-600 hover:text-rose-700 hover:underline p-0 h-auto transition-all',
+    'bg-transparent text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/20 shadow-xs dark:shadow-none',
+  ghost:
+    'bg-rose-50/50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/30',
+  link:
+    'bg-transparent hover:bg-transparent border-none text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:underline p-0 h-auto shadow-none',
+  gradient:
+    'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-md shadow-rose-200 dark:shadow-none',
 }
 
 const sizeClassNames: Record<RoseButtonSize, string> = {
@@ -39,8 +44,10 @@ function RoseButton({
 }: RoseButtonProps) {
   return (
     <Button
+      variant={null as any}
+      size={null as any}
       className={cn(
-        'font-bold tracking-tight rounded-lg border-none',
+        'font-bold tracking-tight rounded-lg select-none transition-all duration-200 active:scale-95 border-none',
         variantClassNames[roseVariant],
         sizeClassNames[roseSize],
         className
