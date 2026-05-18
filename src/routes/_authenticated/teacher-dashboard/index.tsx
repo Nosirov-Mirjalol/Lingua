@@ -10,6 +10,8 @@ import {
   Loader2,
   CalendarDays,
 } from 'lucide-react'
+import { apiClient } from '@/api/client'
+import { ASSIGNMENTS } from '@/constants/apiEndPoints'
 import { useGroupSchedule } from '@/hooks/teacher/groups/useGroupSchedule'
 import { useTeacherGroups } from '@/hooks/teacher/groups/useTeacherGroups'
 import { useProfile } from '@/hooks/teacher/profile/useProfile'
@@ -136,17 +138,24 @@ const AssignmentRow = ({ a, now }: { a: any; now: number }) => {
     if (isOpen && !statusData) {
       setLoading(true)
       try {
+        const baseUrl =
+          import.meta.env.VITE_API_BASE_URL || window.location.origin
+        const endpoint = `${baseUrl}/api/assignments/${a.id}/status/`
         const token = localStorage.getItem('access_token')
-        const res = await fetch(
-          `http://185.190.143.64:8000/api/assignments/${a.id}/status/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/json',
-            },
-          }
-        )
-        if (res.ok) setStatusData(await res.json())
+        const res = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setStatusData(Array.isArray(data) ? data : [])
+        } else {
+          console.error('Failed to fetch status:', res.status)
+        }
+      } catch (error) {
+        console.error('Error fetching status:', error)
       } finally {
         setLoading(false)
       }
