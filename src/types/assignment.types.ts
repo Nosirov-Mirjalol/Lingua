@@ -40,6 +40,7 @@ export type GradeAssignmentPayload = {
 }
 
 export type SubmitAssignmentPayload = {
+  assignment: number
   text_answer?: string
-  file_answer?: string
+  file_answer?: string | File
 }

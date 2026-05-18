@@ -27,6 +27,7 @@ const API_ENDPOINTS = {
     REMOVE_STUDENT: (groupId: number, studentId: number) =>
       `/api/groups/${groupId}/remove-student/${studentId}/`,
     SCHEDULE: '/api/groups/schedule/',
+    MY_SCHEDULE: '/api/groups/my-schedule/',
     TODAY_SCHEDULE: '/api/groups/today-schedule/',
   },
   COURSE: {
@@ -59,6 +60,7 @@ const API_ENDPOINTS = {
   },
   ASSIGNMENTS: {
     LIST: '/api/assignments/',
+    MY: '/api/assignments/my/',
     BY_ID: (id: number) => `/api/assignments/${id}/`,
     SUBMIT: (id: number) => `/api/assignments/${id}/submit/`,
     GRADE: (id: number) => `/api/assignments/${id}/grade/`,

@@ -20,6 +20,12 @@ export const getAssignments = (
   return apiClient.get<Assignment[]>(ASSIGNMENTS_LIST_CREATE, { params })
 }
 
+export const getMyAssignments = (
+  params?: AssignmentListParams
+): Promise<Assignment[]> => {
+  return apiClient.get<Assignment[]>('/api/assignments/my/', { params })
+}
+
 export const createAssignment = (
   payload: CreateAssignmentPayload
 ): Promise<Assignment> => {
@@ -46,7 +52,7 @@ export const gradeAssignment = (
 
 export const submitAssignment = (
   id: number,
-  payload: SubmitAssignmentPayload
+  payload: SubmitAssignmentPayload | FormData
 ): Promise<Submission> => {
   return apiClient.post<Submission>(ASSIGNMENTS_SUBMIT(id), payload)
 }

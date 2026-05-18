@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMyGroups } from '@/api/service/student/group.service'
 import { useStudentUnreadCount } from './useStudentNotifications'
 import { apiClient } from '@/api/client'
-import { MESSAGES } from '@/constants/apiEndPoints'
+import { GROUP, MESSAGES } from '@/constants/apiEndPoints'
 import type {
   StudentAssignment,
   StudentConversation,
@@ -11,6 +11,93 @@ import type {
   StudentScheduleItem,
 } from '@/types/student'
 import type { StudentGroup } from '@/api/service/student/group.service'
+import { getMyAssignments, submitAssignment } from '@/services/assignment.service'
+import type { Assignment, SubmitAssignmentPayload } from '@/types/assignment.types'
+import { formatLessonDays } from '@/lib/formatters'
+
+type StudentScheduleApiItem = Partial<StudentScheduleItem> &
+  Partial<StudentGroup> & {
+    course_name?: string
+    lesson_status?: string
+    start_time?: string
+    end_time?: string
+    group_name?: string
+    days?: string[]
+  }
+
+function asScheduleArray(value: unknown): StudentScheduleApiItem[] {
+  if (!Array.isArray(value)) return []
+  return value.filter(
+    (item): item is StudentScheduleApiItem =>
+      !!item && typeof item === 'object'
+  )
+}
+
+function unwrapSchedule(raw: unknown): StudentScheduleApiItem[] {
+  const direct = asScheduleArray(raw)
+  if (direct.length > 0) return direct
+
+  if (raw && typeof raw === 'object') {
+    const record = raw as Record<string, unknown>
+    const nestedKeys = ['results', 'data', 'schedule', 'schedules', 'items']
+
+    for (const key of nestedKeys) {
+      const current = asScheduleArray(record[key])
+      if (current.length > 0) return current
+    }
+  }
+
+  return []
+}
+
+function formatTimeRange(
+  start?: string,
+  end?: string,
+  fallback?: string
+): string {
+  if (fallback?.trim()) return fallback
+  const parts = [start, end].filter((value): value is string => !!value?.trim())
+  return parts.length === 2
+    ? `${parts[0]} - ${parts[1]}`
+    : parts[0] || 'Vaqti belgilanmagan'
+}
+
+function normalizeLessonStatus(status?: string): string {
+  if (!status) return 'Faol'
+
+  const normalized = status.toLowerCase()
+  if (normalized === 'ongoing') return 'Davom etmoqda'
+  if (normalized === 'upcoming') return 'Kutilmoqda'
+  if (normalized === 'completed') return 'Tugagan'
+
+  return status
+}
+
+function normalizeStudentScheduleItem(
+  item: StudentScheduleApiItem
+): StudentScheduleItem {
+  const rawDays = item.week_days_names || item.days || []
+  const formattedDaysString = formatLessonDays(rawDays)
+  const cleanDays = formattedDaysString === 'No lesson days available' 
+    ? [] 
+    : formattedDaysString.split(', ')
+
+  return {
+    id: item.id ?? 0,
+    title:
+      item.title ||
+      item.name ||
+      item.group_name ||
+      item.course_name ||
+      'Dars',
+    time: formatTimeRange(item.start_time, item.end_time, item.time),
+    week_days_type: item.week_days_type || 'Dars jadvali',
+    week_days_names: cleanDays,
+    status: normalizeLessonStatus(item.status || item.lesson_status),
+    start_date: item.start_date || '-',
+    end_date: item.end_date || '-',
+  }
+}
 
 function formatRelativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
@@ -111,35 +198,10 @@ export const useStudentDashboard = () => {
 export const useStudentSchedule = () => {
   return useQuery({
     queryKey: ['student', 'schedule'],
-    queryFn: async (): Promise<StudentScheduleItem[]> => [
-      {
-        id: 1,
-        day: 'Monday',
-        time: '10:00 AM - 11:00 AM',
-        title: 'Pronunciation Lab',
-        location: 'Online Classroom',
-        instructor: 'Ms. Ziya',
-        status: 'Upcoming',
-      },
-      {
-        id: 2,
-        day: 'Wednesday',
-        time: '2:00 PM - 3:00 PM',
-        title: 'Grammar Workshop',
-        location: 'Room 210',
-        instructor: 'Mr. Eldor',
-        status: 'Upcoming',
-      },
-      {
-        id: 3,
-        day: 'Friday',
-        time: '4:00 PM - 5:00 PM',
-        title: 'Conversation Practice',
-        location: 'Study Hall',
-        instructor: 'Mrs. Nilufar',
-        status: 'Upcoming',
-      },
-    ],
+    queryFn: async (): Promise<StudentScheduleItem[]> => {
+      const data = await apiClient.get<unknown>(GROUP.MY_SCHEDULE)
+      return unwrapSchedule(data).map(normalizeStudentScheduleItem)
+    },
     staleTime: 60_000,
   })
 }
@@ -147,33 +209,22 @@ export const useStudentSchedule = () => {
 export const useStudentHomework = () => {
   return useQuery({
     queryKey: ['student', 'homework'],
-    queryFn: async (): Promise<StudentAssignment[]> => [
-      {
-        id: 1,
-        title: 'Module 4 Writing Assignment',
-        course: 'Advanced English Communication',
-        dueDate: 'May 4, 2026',
-        status: 'Pending',
-        completion: 65,
-      },
-      {
-        id: 2,
-        title: 'Pronunciation Reflection',
-        course: 'Pronunciation Lab',
-        dueDate: 'May 6, 2026',
-        status: 'Submitted',
-        completion: 100,
-      },
-      {
-        id: 3,
-        title: 'Vocabulary Drill',
-        course: 'Grammar Workshop',
-        dueDate: 'May 8, 2026',
-        status: 'Late',
-        completion: 45,
-      },
-    ],
+    queryFn: async (): Promise<Assignment[]> => {
+      const data = await getMyAssignments()
+      return data || []
+    },
     staleTime: 60_000,
+  })
+}
+
+export const useSubmitHomework = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: SubmitAssignmentPayload | FormData }) =>
+      submitAssignment(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'homework'] })
+    },
   })
 }
 
