@@ -115,7 +115,7 @@ export default function AdminTeachersPage() {
             <div className="p-6 border-b border-slate-50 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-full w-fit">
                   {['Hammasi', 'Faol', 'Nofaol'].map(tab => (
-                    <button key={tab} className={cn("px-6 py-2 rounded-full text-xs font-bold transition-all", tab === 'Hammasi' ? "bg-rose-600 text-white shadow-md shadow-rose-200" : "text-slate-500")}>
+                    <button key={tab} className={cn("px-6 py-2 rounded-full text-xs font-bold transition-all", tab === 'Hammasi' ? "bg-rose-600 text-white shadow-md shadow-rose-200 dark:shadow-none" : "text-slate-500")}>
                       {tab}
                     </button>
                   ))}

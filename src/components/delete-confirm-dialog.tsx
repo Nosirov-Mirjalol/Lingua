@@ -29,12 +29,12 @@ export function DeleteConfirmDialog({
 }: DeleteConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-[360px] rounded-2xl border-none p-6 shadow-2xl">
+      <AlertDialogContent className="max-w-[360px] rounded-2xl border-none bg-white p-6 shadow-2xl dark:bg-slate-900">
         <AlertDialogHeader className="space-y-2">
-          <AlertDialogTitle className="text-center text-lg font-bold text-slate-900">
+          <AlertDialogTitle className="text-center text-lg font-bold text-slate-900 dark:text-slate-100">
             {title}
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-center text-sm text-slate-500">
+          <AlertDialogDescription className="text-center text-sm text-slate-500 dark:text-slate-400">
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -45,11 +45,11 @@ export function DeleteConfirmDialog({
               onConfirm()
             }}
             disabled={isLoading}
-            className="h-11 w-full rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 font-bold text-white shadow-lg shadow-rose-200 transition-all active:scale-95"
+            className="h-11 w-full rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 font-bold text-white shadow-lg shadow-rose-200 dark:shadow-none transition-all active:scale-95"
           >
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "O'chirish"}
           </AlertDialogAction>
-          <AlertDialogCancel className="h-11 w-full rounded-xl border-none bg-slate-50 font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-600">
+          <AlertDialogCancel className="h-11 w-full rounded-xl border-none bg-slate-50 dark:bg-slate-800 font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-300">
             Bekor qilish
           </AlertDialogCancel>
         </AlertDialogFooter>

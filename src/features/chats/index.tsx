@@ -1,11 +1,8 @@
 import { type FormEvent, useRef, useState, useMemo } from 'react'
-import { Fragment } from 'react/jsx-runtime'
 import { format } from 'date-fns'
 import {
   ArrowLeft,
-  Edit,
   ImagePlus,
-  MessagesSquare,
   MoreVertical,
   Paperclip,
   Phone,
@@ -19,13 +16,11 @@ import {
   UserCircle,
   Pin,
   Archive,
-  Search,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -167,7 +162,7 @@ export function Chats() {
     setEditUsernameOpen(false)
   }
 
-  const handleStartChat = (users: Omit<ChatUser, 'messages'>[]) => {
+  const handleStartChat = (users: Partial<ChatUser>[]) => {
     const nextUserId = users[0]?.id
     if (!nextUserId) return
 
@@ -221,7 +216,7 @@ export function Chats() {
             <ScrollArea className='flex-1 px-4 md:px-0'>
               <div className='flex flex-col gap-1 py-2'>
                 {filteredChatList.map((chatUsr) => {
-                  const { id, profile, username, messages, fullName, status } = chatUsr
+                  const { id, profile, messages, fullName, status } = chatUsr
                   const lastConvo = messages[0]
                   const isSelected = selectedUserId === id
                   const lastMsg = lastConvo.sender === 'You' ? `You: ${lastConvo.message}` : lastConvo.message
@@ -365,11 +360,11 @@ export function Chats() {
                       Object.keys(currentMessageGroups).map((date) => (
                         <div key={date} className='flex flex-col gap-4'>
                           <div className='flex items-center gap-4 py-2'>
-                            <div className='h-[1px] flex-1 bg-slate-200/60' />
+                            <div className='h-px flex-1 bg-slate-200/60' />
                             <span className='text-[11px] font-bold tracking-wider text-slate-400 uppercase'>
                               {date}
                             </span>
-                            <div className='h-[1px] flex-1 bg-slate-200/60' />
+                            <div className='h-px flex-1 bg-slate-200/60' />
                           </div>
 
                           <div className='flex flex-col gap-3'>
@@ -387,7 +382,7 @@ export function Chats() {
                                     className={cn(
                                       'relative max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm md:max-w-[70%]',
                                       isMe
-                                        ? 'rounded-tr-none bg-rose-600 text-white shadow-rose-200'
+                                        ? 'rounded-tr-none bg-rose-600 text-white shadow-rose-200 dark:shadow-none'
                                         : 'rounded-tl-none bg-white text-slate-800 ring-1 ring-slate-100'
                                     )}
                                   >
@@ -481,7 +476,7 @@ export function Chats() {
                   <Button
                     type='submit'
                     size='icon'
-                    className='h-[52px] w-[52px] shrink-0 rounded-2xl bg-rose-600 shadow-lg shadow-rose-200 transition-all hover:bg-rose-700 hover:shadow-rose-300 active:scale-95 disabled:opacity-50'
+                    className='h-[52px] w-[52px] shrink-0 rounded-2xl bg-rose-600 shadow-lg shadow-rose-200 dark:shadow-none transition-all hover:bg-rose-700 hover:shadow-rose-300 dark:hover:shadow-none active:scale-95 disabled:opacity-50'
                     disabled={!messageText.trim()}
                   >
                     <Send className='h-5 w-5' />
@@ -497,7 +492,7 @@ export function Chats() {
               action={
                 <Button
                   onClick={() => setCreateConversationDialog(true)}
-                  className='mt-8 rounded-xl bg-rose-600 px-8 py-6 text-base font-semibold shadow-lg shadow-rose-200 hover:bg-rose-700'
+                  className='mt-8 rounded-xl bg-rose-600 px-8 py-6 text-base font-semibold shadow-lg shadow-rose-200 dark:shadow-none hover:bg-rose-700'
                 >
                   Send Message
                 </Button>

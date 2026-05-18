@@ -69,7 +69,7 @@ function ProfilePage() {
   }, [profile?.avatar, selectedFile])
 
   useEffect(() => {
-    if (!selectedFile) return
+    if (!selectedFile || !previewUrl) return
     return () => {
       URL.revokeObjectURL(previewUrl)
     }

@@ -23,8 +23,8 @@ export const useUnreadCount = (
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
     enabled,
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 300_000, // 5 daqiqa
+    refetchInterval: 300_000, // 5 daqiqa
     refetchOnWindowFocus: false,
   })
 }

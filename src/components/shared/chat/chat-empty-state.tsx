@@ -13,13 +13,26 @@ export function ChatEmptyState({
   action,
 }: ChatEmptyStateProps) {
   return (
-    <div className='hidden flex-1 flex-col items-center justify-center rounded-3xl border border-slate-100 bg-white shadow-xl shadow-slate-200/50 md:flex'>
-      <div className='flex h-24 w-24 items-center justify-center rounded-full bg-rose-50 text-rose-500'>
+    <div className='hidden flex-1 flex-col items-center justify-center rounded-3xl bg-transparent p-6 text-center md:flex'>
+      {/* Icon wrapper - Ota blok fonida ajralib turishi uchun shaffof rose foni saqlandi */}
+      <div className='flex h-24 w-24 items-center justify-center rounded-full bg-rose-500/10 text-rose-500 transition-transform duration-300 hover:scale-105'>
         <MessagesSquare className='h-12 w-12' />
       </div>
-      <h2 className='mt-6 text-xl font-bold text-slate-900'>{title}</h2>
-      <p className='mt-2 max-w-xs text-slate-500'>{description}</p>
-      {action}
+      
+      {/* Sarlavha - Dark va Light rejimga moslanuvchan */}
+      <h2 className='mt-6 text-xl font-bold text-slate-900 dark:text-white/90'>
+        {title}
+      </h2>
+      
+      {/* Tavsif matni */}
+      <p className='mt-2 max-w-xs text-sm font-medium text-slate-500 dark:text-slate-400/80'>
+        {description}
+      </p>
+      
+      {/* Tugma yoki qo'shimcha harakatlar */}
+      <div className='mt-2'>
+        {action}
+      </div>
     </div>
   )
 }
