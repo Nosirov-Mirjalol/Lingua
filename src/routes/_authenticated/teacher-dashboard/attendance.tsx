@@ -53,26 +53,23 @@ const STATUS_STYLES: Record<AttendanceStatus, string> = {
 const STATUSES: AttendanceStatus[] = ['present', 'absent', 'late']
 
 function AttendancePage() {
-  const [selectedGroupId, setSelectedGroupId] = useState(0)
+  const [filters, setFilters] = useState({
+    groupId: 0,
+    date: new Date(),
+    search: '',
+    page: 1,
+    pageSize: 10,
+  })
   const [groupOpen, setGroupOpen] = useState(false)
-  const [date, setDate] = useState<Date>(() => new Date())
-  const [searchQuery, setSearchQuery] = useState('')
-  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>(
-    'idle'
-  )
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [modifications, setModifications] = useState<Record<number, {status?: AttendanceStatus, note?: string}>>({})
 
-  // students - ekrandagi o'zgarishlar uchun, savedStudents - faqat saqlangan (API) holat va statistika uchun
-  const [students, setStudents] = useState<AttendanceStudent[]>([])
-  const [savedStudents, setSavedStudents] = useState<AttendanceStudent[]>([])
-
-  const isoDate = useMemo(() => toISODate(date), [date])
+  const isoDate = useMemo(() => toISODate(filters.date), [filters.date])
   const { data: profile } = useProfile()
   const { data: groups = [], isLoading: groupsLoading } = useTeacherGroups()
   const { data: attendanceList = [] } = useAttendanceList({
-    page,
-    page_size: pageSize,
+    page: filters.page,
+    page_size: filters.pageSize,
   })
 
   const filteredGroups = useMemo(() => {
@@ -83,18 +80,18 @@ function AttendancePage() {
   useEffect(() => {
     if (
       filteredGroups.length &&
-      !filteredGroups.some((g) => g.id === selectedGroupId)
+      !filteredGroups.some((g) => g.id === filters.groupId)
     ) {
-      setSelectedGroupId(filteredGroups[0].id)
+      setFilters((prev) => ({ ...prev, groupId: filteredGroups[0].id }))
     }
-  }, [filteredGroups, selectedGroupId])
+  }, [filteredGroups, filters.groupId])
 
-  const groupId = selectedGroupId || filteredGroups[0]?.id || 0
+  const groupId = filters.groupId || filteredGroups[0]?.id || 0
   const groupData = filteredGroups.find((g) => g.id === groupId)
   const groupAttendanceMutation = useGroupAttendance(groupId)
 
   // API dan kelgan ma'lumotlarni yig'ish
-  const derivedStudents = useMemo<AttendanceStudent[]>(() => {
+  const savedStudents = useMemo<AttendanceStudent[]>(() => {
     if (!groupData) return []
     const byStudentId = new Map(
       attendanceList
@@ -113,11 +110,13 @@ function AttendancePage() {
     })
   }, [groupData, attendanceList, groupId, isoDate])
 
-  // Ma'lumotlar o'zgarganda statelarni yangilash
-  useEffect(() => {
-    setStudents(derivedStudents)
-    setSavedStudents(derivedStudents) // Statistika faqat shu saqlangan holatdan hisoblanadi
-  }, [derivedStudents])
+  // Joriy o'zgarishlarni qo'llash
+  const currentStudents = useMemo(() => {
+    return savedStudents.map((s) => ({
+      ...s,
+      ...modifications[s.studentId]
+    }))
+  }, [savedStudents, modifications])
 
   // Statistika faqat saqlangan (savedStudents) talabalardan hisoblanadi
   const stats = useMemo(() => {
@@ -130,11 +129,11 @@ function AttendancePage() {
   }, [savedStudents])
 
   const filteredStudents = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase()
+    const q = filters.search.trim().toLowerCase()
     return q
-      ? students.filter((s) => s.name.toLowerCase().includes(q))
-      : students
-  }, [searchQuery, students])
+      ? currentStudents.filter((s) => s.name.toLowerCase().includes(q))
+      : currentStudents
+  }, [filters.search, currentStudents])
 
   const handleSave = async () => {
     if (saveState === 'saving' || !groupId) return
@@ -143,7 +142,7 @@ function AttendancePage() {
       await toast.promise(
         groupAttendanceMutation.mutateAsync({
           date: isoDate,
-          records: students.map((s) => ({
+          records: currentStudents.map((s) => ({
             student: s.studentId,
             status: s.status,
             note: s.note || undefined,
@@ -151,7 +150,7 @@ function AttendancePage() {
         }),
         { loading: 'Saving...', success: 'Saved', error: 'Error' }
       )
-      setSavedStudents(students) // Saqlash muvaffaqiyatli bo'lgach statistika yangilanadi
+      setModifications({}) // Saqlash muvaffaqiyatli bo'lgach o'zgarishlar tozalanadi
       setSaveState('saved')
       setTimeout(() => setSaveState('idle'), 1300)
     } catch {
@@ -182,8 +181,8 @@ function AttendancePage() {
           <input
             type='text'
             placeholder='Search student...'
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={filters.search}
+            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
             className='h-10 w-full rounded-lg border-none bg-slate-100 pr-4 pl-9 text-base outline-none focus:ring-1 focus:ring-rose-500 dark:bg-slate-800'
           />
         </div>
@@ -272,7 +271,8 @@ function AttendancePage() {
                     key={g.id}
                     type='button'
                     onClick={() => {
-                      setSelectedGroupId(g.id)
+                      setFilters(prev => ({ ...prev, groupId: g.id }))
+                      setModifications({})
                       setGroupOpen(false)
                     }}
                     className='flex w-full justify-between px-3 py-2 text-left text-base hover:bg-slate-50 dark:hover:bg-slate-800'
@@ -299,7 +299,7 @@ function AttendancePage() {
                 className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 bg-transparent px-3 text-base dark:border-slate-800'
               >
                 <span className='flex items-center gap-2'>
-                  <Calendar size={16} /> {formatDate(date)}
+                  <Calendar size={16} /> {formatDate(filters.date)}
                 </span>
                 <ChevronDown size={16} />
               </button>
@@ -307,8 +307,13 @@ function AttendancePage() {
             <PopoverContent className='w-auto p-0'>
               <CalendarPicker
                 mode='single'
-                selected={date}
-                onSelect={(d) => d && setDate(d)}
+                selected={filters.date}
+                onSelect={(d) => {
+                  if (d) {
+                    setFilters(prev => ({ ...prev, date: d }))
+                    setModifications({})
+                  }
+                }}
               />
             </PopoverContent>
           </Popover>
@@ -318,7 +323,7 @@ function AttendancePage() {
           type='button'
           onClick={handleSave}
           roseVariant='solid'
-          disabled={saveState === 'saving' || !groupId || students.length === 0}
+          disabled={saveState === 'saving' || !groupId || currentStudents.length === 0}
           className='h-10 px-6 text-base font-medium'
         >
           {saveState === 'saving' ? (
@@ -372,13 +377,10 @@ function AttendancePage() {
                       key={st}
                       type='button'
                       onClick={() =>
-                        setStudents((prev) =>
-                          prev.map((p) =>
-                            p.studentId === s.studentId
-                              ? { ...p, status: st }
-                              : p
-                          )
-                        )
+                        setModifications((prev) => ({
+                          ...prev,
+                          [s.studentId]: { ...prev[s.studentId], status: st }
+                        }))
                       }
                       className={`flex-1 rounded px-3 py-2 text-xs font-bold uppercase transition-all md:w-24 ${
                         s.status === st
@@ -396,13 +398,10 @@ function AttendancePage() {
                   value={s.note}
                   placeholder='Add note...'
                   onChange={(e) =>
-                    setStudents((prev) =>
-                      prev.map((p) =>
-                        p.studentId === s.studentId
-                          ? { ...p, note: e.target.value }
-                          : p
-                      )
-                    )
+                    setModifications((prev) => ({
+                      ...prev,
+                      [s.studentId]: { ...prev[s.studentId], note: e.target.value }
+                    }))
                   }
                   disabled={s.status !== 'late'}
                   className='h-9 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 text-sm outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-30 sm:w-40 dark:border-slate-800 dark:bg-slate-900'
@@ -420,14 +419,11 @@ function AttendancePage() {
       {/* Pagination */}
       {filteredStudents.length > 0 && (
         <ListPagination
-          page={page}
-          pageSize={pageSize}
+          page={filters.page}
+          pageSize={filters.pageSize}
           totalCount={filteredStudents.length}
-          onPageChange={setPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size)
-            setPage(1)
-          }}
+          onPageChange={(p) => setFilters(prev => ({ ...prev, page: p }))}
+          onPageSizeChange={(size) => setFilters(prev => ({ ...prev, pageSize: size, page: 1 }))}
         />
       )}
     </div>

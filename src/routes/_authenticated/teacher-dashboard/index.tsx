@@ -15,7 +15,7 @@ import { ASSIGNMENTS } from '@/constants/apiEndPoints'
 import { useGroupSchedule } from '@/hooks/teacher/groups/useGroupSchedule'
 import { useTeacherGroups } from '@/hooks/teacher/groups/useTeacherGroups'
 import { useProfile } from '@/hooks/teacher/profile/useProfile'
-import { useGetAssignments } from '@/hooks/useAssignments'
+import { useGetAssignments, useGetAssignmentStatus } from '@/hooks/useAssignments'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -125,46 +125,17 @@ const LinkBtn = ({ onClick, loading, variant = 'primary', children }: any) => (
 const AssignmentRow = ({ a, now }: { a: any; now: number }) => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
-  const [statusData, setStatusData] = useState<any[] | null>(null)
-  const [loading, setLoading] = useState(false)
+
+  const { data: statusData, isLoading: loading } = useGetAssignmentStatus(open ? a.id : null)
 
   const daysLeft = Math.ceil(
     (new Date(a.deadline).getTime() - now) / 86_400_000
   )
   const urg = urgencyConfig(daysLeft)
 
-  const handleOpen = async (isOpen: boolean) => {
-    setOpen(isOpen)
-    if (isOpen && !statusData) {
-      setLoading(true)
-      try {
-        const baseUrl =
-          import.meta.env.VITE_API_BASE_URL || window.location.origin
-        const endpoint = `${baseUrl}/api/assignments/${a.id}/status/`
-        const token = localStorage.getItem('access_token')
-        const res = await fetch(endpoint, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-          },
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setStatusData(Array.isArray(data) ? data : [])
-        } else {
-          console.error('Failed to fetch status:', res.status)
-        }
-      } catch (error) {
-        console.error('Error fetching status:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-  }
-
   const total = statusData?.length ?? 0
   const submitted =
-    statusData?.filter((x) => x.status === 'topshirgan').length ?? 0
+    statusData?.filter((x: any) => x.status === 'topshirgan').length ?? 0
   const pct = total ? Math.round((submitted / total) * 100) : 0
 
   return (
@@ -190,7 +161,7 @@ const AssignmentRow = ({ a, now }: { a: any; now: number }) => {
           {urg.label}
         </span>
 
-        <Popover open={open} onOpenChange={handleOpen}>
+        <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button className='flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'>
               {loading ? (

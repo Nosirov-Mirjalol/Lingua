@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import type { Assignment } from '@/types/assignment.types'
 import { BookOpen, Plus, PencilLine, Trash2, Eye, Check, Loader2, Download } from 'lucide-react'
 import { toast } from 'sonner'
-import { useDeleteAssignment, useGetAssignments } from '@/hooks/useAssignments'
+import { useDeleteAssignment, useGetAssignments, useGetAssignmentStatus } from '@/hooks/useAssignments'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { RoseButton } from '@/components/ui/rose-button'
@@ -26,15 +26,6 @@ const formatDate = (val: string | null) => {
 }
 
 const getStatus = (item: Assignment) => (item.is_active ?? new Date(item.deadline).getTime() >= Date.now()) ? 'active' : 'completed'
-
-const fetchAssignmentStatus = async (id: number) => {
-  const token = localStorage.getItem('access_token')
-  const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || window.location.origin}/api/assignments/${id}/status/`, {
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-  })
-  if (!res.ok) throw new Error('Xatolik')
-  return await res.json()
-}
 
 // --- 2. BATAFSIL MA'LUMOT MODALI (Alohida komponent) ---
 function AssignmentDetailsModal({ open, onOpenChange, assignment, data, loading }: any) {
@@ -172,8 +163,8 @@ function HomeworkPage() {
 
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [detailsAssignment, setDetailsAssignment] = useState<Assignment | null>(null)
-  const [detailsData, setDetailsData] = useState<AssignmentStatus[] | null>(null)
-  const [detailsLoadingId, setDetailsLoadingId] = useState<number | null>(null)
+
+  const { data: detailsData, isLoading: detailsLoading } = useGetAssignmentStatus(detailsAssignment?.id ?? null)
 
   const filteredAssignments = useMemo(() => 
     (assignments ?? []).filter(hw => filter === 'all' || getStatus(hw) === filter),
@@ -184,11 +175,9 @@ function HomeworkPage() {
     catch { toast.error("Xatolik yuz berdi") }
   }
 
-  const handleOpenDetails = async (item: Assignment) => {
-    setDetailsAssignment(item); setDetailsOpen(true); setDetailsLoadingId(item.id);
-    try { setDetailsData(await fetchAssignmentStatus(item.id)) } 
-    catch { toast.error('Ma\'lumot yuklanmadi') } 
-    finally { setDetailsLoadingId(null) }
+  const handleOpenDetails = (item: Assignment) => {
+    setDetailsAssignment(item); 
+    setDetailsOpen(true);
   }
 
   return (
@@ -214,7 +203,7 @@ function HomeworkPage() {
         {isLoading ? <p className='text-gray-500'>Yuklanmoqda...</p> : 
          filteredAssignments.length === 0 ? <p className='text-gray-500'>Topshiriqlar yo'q</p> : 
          filteredAssignments.map(hw => (
-          <HomeworkCard key={hw.id} hw={hw} onEdit={(h: any) => { setEditingAssignment(h); setModalOpen(true) }} onDelete={handleDelete} onOpenDetails={handleOpenDetails} loadingId={detailsLoadingId} />
+          <HomeworkCard key={hw.id} hw={hw} onEdit={(h: any) => { setEditingAssignment(h); setModalOpen(true) }} onDelete={handleDelete} onOpenDetails={handleOpenDetails} loadingId={detailsLoading && detailsAssignment?.id === hw.id ? hw.id : null} />
         ))}
       </div>
 
@@ -225,7 +214,7 @@ function HomeworkPage() {
       )}
 
       <AssignTaskModal open={modalOpen} onOpenChange={setModalOpen} editingAssignment={editingAssignment} />
-      <AssignmentDetailsModal open={detailsOpen} onOpenChange={setDetailsOpen} assignment={detailsAssignment} data={detailsData} loading={!!detailsLoadingId} />
+      <AssignmentDetailsModal open={detailsOpen} onOpenChange={setDetailsOpen} assignment={detailsAssignment} data={detailsData} loading={detailsLoading} />
     </div>
   )
 }

@@ -7,6 +7,7 @@ type RoseButtonVariant =
   | 'outline'
   | 'ghost'
   | 'link'
+  | 'gradient'
 
 type RoseButtonSize = 'sm' | 'md' | 'lg'
 
@@ -22,6 +23,8 @@ const variantClassNames: Record<RoseButtonVariant, string> = {
     'bg-transparent text-rose-600 border border-rose-100 hover:bg-rose-50 rounded-xl transition-all',
   ghost: 'bg-rose-50/50 text-rose-600 hover:bg-rose-100 transition-all',
   link: 'text-rose-600 hover:text-rose-700 hover:underline p-0 h-auto transition-all',
+  gradient:
+    'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white shadow-md shadow-rose-200 transition-all active:scale-95',
 }
 
 const sizeClassNames: Record<RoseButtonSize, string> = {
