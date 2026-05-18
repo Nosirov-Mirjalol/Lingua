@@ -147,7 +147,6 @@ export default function AdminTeachersPage() {
             </RoseButton>
           </div>
 
-<<<<<<< HEAD
           <Card className='overflow-hidden rounded-[32px] border-none bg-card shadow-sm'>
             <div className='flex flex-col gap-4 border-b p-6 md:flex-row md:items-center md:justify-between'>
               <div className='flex w-fit items-center gap-1 rounded-full bg-muted p-1'>
@@ -186,29 +185,6 @@ export default function AdminTeachersPage() {
                   <Filter className='h-4 w-4' />
                 </Button>
               </div>
-=======
-          <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
-            <div className="p-6 border-b border-slate-50 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-               <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-full w-fit">
-                  {['Hammasi', 'Faol', 'Nofaol'].map(tab => (
-                    <button key={tab} className={cn("px-6 py-2 rounded-full text-xs font-bold transition-all", tab === 'Hammasi' ? "bg-rose-600 text-white shadow-md shadow-rose-200 dark:shadow-none" : "text-slate-500")}>
-                      {tab}
-                    </button>
-                  ))}
-               </div>
-               <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <Input 
-                      placeholder="Ustozlarni qidirish..." 
-                      className="h-10 w-64 rounded-full bg-slate-50 border-none pl-10 text-xs font-medium" 
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                    />
-                  </div>
-                  <Button variant="ghost" size="icon" className="rounded-full text-slate-400"><Filter className="h-4 w-4" /></Button>
-               </div>
->>>>>>> b6612ff0a0c190d6006744c9e600144354c1074d
             </div>
 
             <div className='overflow-x-auto'>
@@ -337,6 +313,7 @@ export default function AdminTeachersPage() {
               </table>
             </div>
           </Card>
+
           <ListPagination
             page={page}
             pageSize={pageSize}
