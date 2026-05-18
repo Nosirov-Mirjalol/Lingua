@@ -1,5 +1,5 @@
-import { useRouterState } from '@tanstack/react-router'
-import { ChevronsUpDown, LogOut } from 'lucide-react'
+import { Link, useRouterState } from '@tanstack/react-router'
+import { ChevronsUpDown, LogOut, User } from 'lucide-react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -24,14 +24,17 @@ type NavUserProps = {
     email: string
     avatar: string
   }
+  role?: string
 }
 
-export function NavUser({ user }: NavUserProps) {
+export function NavUser({ user, role }: NavUserProps) {
   const { isMobile } = useSidebar()
   const [open, setOpen] = useDialogState()
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
+
+  const isTeacher = role === 'teacher' || pathname.startsWith('/teacher-dashboard')
 
   return (
     <>
@@ -75,6 +78,17 @@ export function NavUser({ user }: NavUserProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {isTeacher && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to='/teacher-dashboard/profile' className='cursor-pointer flex items-center gap-2'>
+                      <User className='size-4' />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem
                 variant='destructive'
                 onClick={() => setOpen(true)}
