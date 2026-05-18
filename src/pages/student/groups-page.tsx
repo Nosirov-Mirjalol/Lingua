@@ -38,7 +38,9 @@ export function StudentGroupsPage() {
   if (error) {
     return (
       <div className='p-6 text-center'>
-        <h1 className='text-2xl font-bold text-red-500'>Error loading groups</h1>
+        <h1 className='text-2xl font-bold text-destructive'>
+          Error loading groups
+        </h1>
         <p className='text-muted-foreground'>Please try again later.</p>
       </div>
     )
@@ -68,7 +70,11 @@ export function StudentGroupsPage() {
             >
               <CardHeader>
                 <div className='mb-2 flex items-center justify-between'>
-                  <Badge variant={group.status === 'active' ? 'default' : 'secondary'}>
+                  <Badge
+                    variant={
+                      group.status === 'active' ? 'default' : 'secondary'
+                    }
+                  >
                     {group.status || 'Active'}
                   </Badge>
                 </div>

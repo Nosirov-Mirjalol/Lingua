@@ -27,15 +27,15 @@ export function AdminButton({
   const getVariantClasses = () => {
     switch (variant) {
       case 'primary':
-        return 'bg-slate-900 text-white hover:bg-slate-800 font-bold'
+        return 'bg-primary text-primary-foreground hover:bg-primary/90 font-bold'
       case 'secondary':
-        return 'bg-slate-100 text-slate-900 hover:bg-slate-200 font-medium'
+        return 'bg-muted text-foreground hover:bg-muted/80 font-medium'
       case 'danger':
-        return 'bg-rose-600 text-white hover:bg-rose-700 font-bold'
+        return 'bg-destructive text-destructive-foreground hover:bg-destructive/90 font-bold'
       case 'outline':
-        return 'border-slate-300 text-slate-700 hover:bg-slate-50 font-medium'
+        return 'border text-foreground hover:bg-muted font-medium'
       default:
-        return 'bg-slate-900 text-white hover:bg-slate-800 font-bold'
+        return 'bg-primary text-primary-foreground hover:bg-primary/90 font-bold'
     }
   }
 

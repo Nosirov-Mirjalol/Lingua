@@ -10,6 +10,11 @@ import {
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  extractNationalNine,
+  formatPhoneDisplay,
+  getStudentApiErrorMessage,
+} from '@/api/service/admin/student.service'
 import type { User } from '@/api/service/teacher/user.type'
 import { SearchProvider } from '@/context/search-provider'
 import { useAdminStudents } from '@/hooks/admin/students/useAdminStudents'
@@ -17,11 +22,6 @@ import {
   getCreateStudentErrorMessage,
   useCreateAdminStudent,
 } from '@/hooks/admin/students/useCreateAdminStudent'
-import {
-  extractNationalNine,
-  formatPhoneDisplay,
-  getStudentApiErrorMessage,
-} from '@/api/service/admin/student.service'
 import { useDeleteAdminStudent } from '@/hooks/admin/students/useDeleteAdminStudent'
 import { useUpdateAdminStudent } from '@/hooks/admin/students/useUpdateAdminStudent'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -53,10 +53,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ListPagination } from '@/components/list-pagination'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { ListPagination } from '@/components/list-pagination'
 import { ThemeSwitch } from '@/components/theme-switch'
 
 interface StudentFormData {
@@ -87,8 +87,12 @@ export default function AdminStudentsPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const { data: students = [], isLoading, isError, totalCount } =
-    useAdminStudents(search, page, pageSize)
+  const {
+    data: students = [],
+    isLoading,
+    isError,
+    totalCount,
+  } = useAdminStudents(search, page, pageSize)
 
   // Show error toast if API fails
   useEffect(() => {
@@ -135,7 +139,7 @@ export default function AdminStudentsPage() {
     if (typeof window === 'undefined') return false
     return Boolean(
       sessionStorage.getItem('linguapro_access_token') ||
-        localStorage.getItem('access_token')
+      localStorage.getItem('access_token')
     )
   }
 
@@ -240,7 +244,7 @@ export default function AdminStudentsPage() {
     e.preventDefault()
 
     if (!hasAccessToken()) {
-      toast.error("Sessiya topilmadi. Qayta tizimga kiring.")
+      toast.error('Sessiya topilmadi. Qayta tizimga kiring.')
       return
     }
 
@@ -369,7 +373,7 @@ export default function AdminStudentsPage() {
 
   return (
     <SearchProvider>
-      <div className='min-h-screen bg-[#F8FAFC] dark:bg-[#020617]'>
+      <div className='min-h-screen bg-background'>
         <Header>
           <Search className='me-auto' />
           <ThemeSwitch />
@@ -380,30 +384,27 @@ export default function AdminStudentsPage() {
           <div
             style={{
               fontSize: 11,
-              color: '#94a3b8',
+              color: 'var(--muted-foreground)',
               fontWeight: 600,
               letterSpacing: '0.05em',
             }}
           >
             <Link to='/admin-dashboard'>Dashboard</Link> /{' '}
-            <span style={{ color: '#e11d48' }}>Students</span>
+            <span style={{ color: 'var(--primary)' }}>Students</span>
           </div>
           <div className='mb-8'>
             <div className='flex items-center justify-between'>
               <div>
-                <h1 className='text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white'>
+                <h1 className='text-3xl font-extrabold tracking-tight text-foreground'>
                   Students List
                 </h1>
-                <p className='mt-1 text-sm font-medium text-gray-600 dark:text-gray-400'>
+                <p className='mt-1 text-sm font-medium text-muted-foreground'>
                   All students information and payment status
                 </p>
               </div>
               <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogTrigger asChild>
-                  <RoseButton
-                    className='rounded-2xl dark:border dark:border-[#A01521] dark:bg-transparent dark:text-white dark:hover:border-[#A01521]'
-                    onClick={openCreateModal}
-                  >
+                  <RoseButton className='rounded-2xl' onClick={openCreateModal}>
                     <Plus className='mr-2 h-4 w-4' />
                     Add Student
                   </RoseButton>
@@ -413,13 +414,13 @@ export default function AdminStudentsPage() {
                   showCloseButton={false}
                 >
                   <div className='flex items-start justify-between px-4 pt-4'>
-                    <DialogTitle className='text-lg font-semibold text-slate-900'>
+                    <DialogTitle className='text-lg font-semibold text-foreground'>
                       Add Student
                     </DialogTitle>
                     <button
                       type='button'
                       onClick={() => setIsModalOpen(false)}
-                      className='grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      className='grid h-8 w-8 place-items-center rounded-full bg-muted text-foreground hover:bg-muted/80'
                     >
                       <X size={16} />
                     </button>
@@ -447,18 +448,20 @@ export default function AdminStudentsPage() {
                           <img
                             src={avatarPreview}
                             alt='Avatar'
-                            className='h-16 w-16 rounded-full border-2 border-gray-300 object-cover'
+                            className='h-16 w-16 rounded-full border-2 border-border object-cover'
                           />
                         ) : (
-                          <div className='flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-gray-100'>
-                            <Plus className='h-6 w-6 text-gray-400' />
+                          <div className='flex h-16 w-16 items-center justify-center rounded-full border-2 border-dashed border-border bg-muted'>
+                            <Plus className='h-6 w-6 text-muted-foreground' />
                           </div>
                         )}
-                        <div className='absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#C00639]'>
-                          <Plus className='h-2.5 w-2.5 text-white' />
+                        <div className='absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-primary'>
+                          <Plus className='h-2.5 w-2.5 text-primary-foreground' />
                         </div>
                       </div>
-                      <p className='text-sm text-gray-500'>Upload image</p>
+                      <p className='text-sm text-muted-foreground'>
+                        Upload image
+                      </p>
                     </div>
 
                     {/* Form Fields */}
@@ -628,69 +631,71 @@ export default function AdminStudentsPage() {
           <div className='mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>
+                <CardTitle className='text-sm font-medium text-muted-foreground'>
                   Yangi
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-blue-100 p-2'>
-                  <Plus className='h-4 w-4 text-blue-600' />
+                <div className='h-8 w-8 rounded-full bg-primary/10 p-2'>
+                  <Plus className='h-4 w-4 text-primary' />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                <div className='text-2xl font-bold text-foreground'>
                   {students.length}
                 </div>
-                <p className='text-xs text-gray-500'>Jami studentlar</p>
+                <p className='text-xs text-muted-foreground'>Jami studentlar</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>
+                <CardTitle className='text-sm font-medium text-muted-foreground'>
                   Faol
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-green-100 p-2'>
-                  <Plus className='h-4 w-4 text-green-600' />
+                <div className='h-8 w-8 rounded-full bg-primary/10 p-2'>
+                  <Plus className='h-4 w-4 text-primary' />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                <div className='text-2xl font-bold text-foreground'>
                   {students.filter((s) => s.is_active).length}
                 </div>
-                <p className='text-xs text-gray-500'>Faol studentlar</p>
+                <p className='text-xs text-muted-foreground'>Faol studentlar</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>
+                <CardTitle className='text-sm font-medium text-muted-foreground'>
                   Nofaol
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-red-100 p-2'>
-                  <Plus className='h-4 w-4 text-red-600' />
+                <div className='h-8 w-8 rounded-full bg-destructive/10 p-2'>
+                  <Plus className='h-4 w-4 text-destructive' />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                <div className='text-2xl font-bold text-foreground'>
                   {students.filter((s) => !s.is_active).length}
                 </div>
-                <p className='text-xs text-gray-500'>Nofaol studentlar</p>
+                <p className='text-xs text-muted-foreground'>
+                  Nofaol studentlar
+                </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                <CardTitle className='text-sm font-medium text-gray-600'>
+                <CardTitle className='text-sm font-medium text-muted-foreground'>
                   O'sish
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-purple-100 p-2'>
-                  <Plus className='h-4 w-4 text-purple-600' />
+                <div className='h-8 w-8 rounded-full bg-primary/10 p-2'>
+                  <Plus className='h-4 w-4 text-primary' />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                <div className='text-2xl font-bold text-foreground'>
                   +{students.length}%
                 </div>
-                <p className='text-xs text-gray-500'>O'sish darajasi</p>
+                <p className='text-xs text-muted-foreground'>O'sish darajasi</p>
               </CardContent>
             </Card>
           </div>
@@ -705,8 +710,8 @@ export default function AdminStudentsPage() {
                     Total {students.length} students
                   </CardDescription>
                 </div>
-                <div className='hidden w-[320px] items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm md:flex'>
-                  <Search className='h-4 w-4 text-slate-400' />
+                <div className='hidden w-[320px] items-center gap-2 rounded-2xl border bg-background px-3 py-2 shadow-sm md:flex'>
+                  <Search className='h-4 w-4 text-muted-foreground' />
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -719,15 +724,19 @@ export default function AdminStudentsPage() {
             <CardContent>
               {isLoading ? (
                 <div className='py-8 text-center'>
-                  <div className='text-sm text-gray-500'>Yuklanmoqda...</div>
+                  <div className='text-sm text-muted-foreground'>
+                    Yuklanmoqda...
+                  </div>
                 </div>
               ) : isError ? (
                 <div className='py-8 text-center'>
-                  <div className='text-sm text-red-500'>Xatolik yuz berdi</div>
+                  <div className='text-sm text-destructive'>
+                    Xatolik yuz berdi
+                  </div>
                 </div>
               ) : students.length === 0 ? (
                 <div className='py-8 text-center'>
-                  <div className='text-sm text-gray-500'>
+                  <div className='text-sm text-muted-foreground'>
                     Studentlar mavjud emas
                   </div>
                 </div>
@@ -756,7 +765,7 @@ export default function AdminStudentsPage() {
                             }
                           >
                             <AvatarImage src={student.avatar || undefined} />
-                            <AvatarFallback className='bg-gray-100 text-gray-600'>
+                            <AvatarFallback className='bg-muted text-foreground'>
                               <UserIcon className='h-4 w-4' />
                             </AvatarFallback>
                           </Avatar>
@@ -771,8 +780,8 @@ export default function AdminStudentsPage() {
                           <Badge
                             className={
                               student.is_active
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-primary/10 text-primary'
+                                : 'bg-muted text-muted-foreground'
                             }
                           >
                             {student.is_active ? 'Faol' : 'Nofaol'}
@@ -784,7 +793,7 @@ export default function AdminStudentsPage() {
                               variant='ghost'
                               size='sm'
                               onClick={() => handleViewStudent(student)}
-                              className='hover:bg-blue-50 hover:text-blue-600'
+                              className='hover:bg-primary/10 hover:text-primary'
                               title='View'
                             >
                               <Eye className='h-4 w-4' />
@@ -793,7 +802,7 @@ export default function AdminStudentsPage() {
                               variant='ghost'
                               size='sm'
                               onClick={() => openEditModal(student)}
-                              className='hover:bg-green-50 hover:text-green-600'
+                              className='hover:bg-primary/10 hover:text-primary'
                               title='Edit'
                             >
                               <Edit className='h-4 w-4' />
@@ -802,7 +811,7 @@ export default function AdminStudentsPage() {
                               variant='ghost'
                               size='sm'
                               onClick={() => handleDeleteStudent(student)}
-                              className='text-red-600 hover:bg-red-50 hover:text-red-700'
+                              className='text-destructive hover:bg-destructive/10'
                               title='Delete'
                             >
                               <Trash2 className='h-4 w-4' />
@@ -819,7 +828,7 @@ export default function AdminStudentsPage() {
 
           {/* Pagination */}
           <div className='mt-6 flex items-center justify-between'>
-            <div className='text-sm text-gray-700'>
+            <div className='text-sm text-foreground'>
               1-{students.length} dan {students.length} ta ko'rsatilmoqda
             </div>
             <div className='flex items-center space-x-2'>
@@ -843,7 +852,7 @@ export default function AdminStudentsPage() {
             <div className='relative'>
               <button
                 onClick={closePreviewModal}
-                className='absolute top-4 right-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70'
+                className='absolute top-4 right-4 z-10 rounded-full bg-background/50 p-2 text-foreground transition-colors hover:bg-background/70'
               >
                 <X className='h-4 w-4' />
               </button>

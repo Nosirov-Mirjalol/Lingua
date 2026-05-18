@@ -117,7 +117,7 @@ export function getStudentApiErrorMessage(
 
 function assertStudentId(studentId: number): void {
   if (!Number.isFinite(studentId) || studentId <= 0) {
-    throw new Error('Student ID noto\'g\'ri')
+    throw new Error("Student ID noto'g'ri")
   }
 }
 
@@ -168,10 +168,14 @@ export const createAdminStudent = async (
     const status = (error as ApiError)?.status
     if (status === 401) {
       throw new Error(
-        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring (admin hisobi bilan)."
+        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring (admin hisobi bilan).",
+        { cause: error }
       )
     }
-    throw new Error(getStudentApiErrorMessage(error, 'Student yaratishda xatolik'))
+    throw new Error(
+      getStudentApiErrorMessage(error, 'Student yaratishda xatolik'),
+      { cause: error }
+    )
   }
 }
 
@@ -192,8 +196,6 @@ export const updateAdminStudent = async (
 
   const fullName = buildFullName(firstName, lastName)
   const payload: Record<string, unknown> = {
-    id: studentId,
-    full_name: fullName,
     first_name: firstName,
     last_name: lastName,
   }
@@ -210,17 +212,27 @@ export const updateAdminStudent = async (
 
   if (data.is_active !== undefined) payload.is_active = data.is_active
 
+  const profilePayload = {
+    ...payload,
+    id: studentId,
+    full_name: fullName,
+  }
+
   try {
-    return await apiClient.patch<User>(AUTH.PROFILE_UPDATE, payload)
+    return await apiClient.patch<User>(AUTH.PROFILE_UPDATE, profilePayload)
   } catch (error) {
     const status = (error as ApiError)?.status
     if (status === 401) {
       throw new Error(
-        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring."
+        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring.",
+        {
+          cause: error,
+        }
       )
     }
     throw new Error(
-      getStudentApiErrorMessage(error, 'Student yangilashda xatolik')
+      getStudentApiErrorMessage(error, 'Student yangilashda xatolik'),
+      { cause: error }
     )
   }
 }
@@ -237,14 +249,18 @@ export const deleteAdminStudent = async (studentId: number): Promise<void> => {
     const status = (error as ApiError)?.status
     if (status === 401) {
       throw new Error(
-        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring."
+        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring.",
+        {
+          cause: error,
+        }
       )
     }
     if (status === 404) {
-      throw new Error('Student topilmadi')
+      throw new Error('Student topilmadi', { cause: error })
     }
     throw new Error(
-      getStudentApiErrorMessage(error, "Student o'chirishda xatolik")
+      getStudentApiErrorMessage(error, "Student o'chirishda xatolik"),
+      { cause: error }
     )
   }
 }

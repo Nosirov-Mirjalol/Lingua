@@ -48,6 +48,7 @@ const API_ENDPOINTS = {
     GROUPS: '/api/messages/',
     GROUP_MESSAGES: (groupId: number) => `/api/messages/${groupId}/messages/`,
     SEND: (groupId: number) => `/api/messages/${groupId}/send/`,
+    MARK_READ: (groupId: number) => `/api/messages/${groupId}/read/`,
     DELETE: (groupId: number, messageId: number) =>
       `/api/messages/${groupId}/messages/${messageId}/`,
     UNREAD_COUNT: '/api/messages/unread-count/',
@@ -63,7 +64,7 @@ const API_ENDPOINTS = {
     BY_ID: (id: number) => `/api/assignments/${id}/`,
     SUBMIT: (id: number) => `/api/assignments/${id}/submit/`,
     GRADE: (id: number) => `/api/assignments/${id}/grade/`,
-  }
+  },
 }
 
 export const {

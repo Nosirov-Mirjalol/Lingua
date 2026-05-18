@@ -1,4 +1,5 @@
 import { apiClient } from '@/api/client'
+import { AUTH } from '@/constants/apiEndPoints'
 
 export type AdminTeacher = {
   id: number
@@ -6,6 +7,7 @@ export type AdminTeacher = {
   email: string
   first_name: string
   last_name: string
+  role?: 'teacher' | 'student' | 'admin'
   phone?: string
   is_active?: boolean
   created_at?: string
@@ -47,25 +49,13 @@ function normalizeTeacherListResponse(raw: unknown): AdminTeacher[] {
 }
 
 export const getAdminTeachers = (): Promise<AdminTeacher[]> => {
-  return apiClient
-    .get<unknown>('/api/auth/user-list/')
-    .then((res) => {
-      const list = normalizeTeacherListResponse(res)
-      if (list.length > 0) return list
-      return apiClient.get<unknown>('/api/teachers/').then(normalizeTeacherListResponse)
+  return apiClient.get<unknown>(AUTH.USER_LIST).then((res) => {
+    const list = normalizeTeacherListResponse(res)
+    return list.filter((user) => {
+      const role = user.role != null ? String(user.role).toLowerCase() : ''
+      return role === 'teacher'
     })
-    .then((list) => {
-      if (list.length > 0) return list
-      return apiClient.get<unknown>('/api/groups/teachers-list/').then(normalizeTeacherListResponse)
-    })
-    .catch(() =>
-      apiClient
-        .get<unknown>('/api/teachers/')
-        .then(normalizeTeacherListResponse)
-        .catch(() =>
-          apiClient.get<unknown>('/api/groups/teachers-list/').then(normalizeTeacherListResponse)
-        )
-    )
+  })
 }
 
 export const createAdminTeacher = (
@@ -84,17 +74,22 @@ export const createAdminTeacher = (
     throw new Error("Email formati noto'g'ri")
   }
 
+  const firstName = data.first_name.trim()
+  const lastName = data.last_name.trim()
+  const password = data.password.trim()
   const payload = {
     username: data.username.trim(),
     email: data.email.trim(),
-    first_name: data.first_name.trim(),
-    last_name: data.last_name.trim(),
+    first_name: firstName,
+    last_name: lastName,
+    full_name: `${firstName} ${lastName}`.replace(/\s+/g, ' ').trim(),
     phone: data.phone?.trim() || undefined,
-    password: data.password.trim(),
+    password,
+    password2: password,
     role: 'teacher' as const,
   }
 
-  return apiClient.post<AdminTeacher>('/api/teachers/', payload)
+  return apiClient.post<AdminTeacher>('/api/auth/register/', payload)
 }
 
 export const updateAdminTeacher = (
@@ -121,10 +116,17 @@ export const updateAdminTeacher = (
   if (data.is_active !== undefined) {
     updatePayload.is_active = data.is_active
   }
+  updatePayload.id = teacherId
+  if (updatePayload.first_name || updatePayload.last_name) {
+    updatePayload.full_name =
+      `${String(updatePayload.first_name ?? '').trim()} ${String(updatePayload.last_name ?? '').trim()}`
+        .replace(/\s+/g, ' ')
+        .trim()
+  }
 
-  return apiClient.patch<AdminTeacher>(`/api/teachers/${teacherId}/`, updatePayload)
+  return apiClient.patch<AdminTeacher>(AUTH.PROFILE_UPDATE, updatePayload)
 }
 
 export const deleteAdminTeacher = (teacherId: number): Promise<unknown> => {
-  return apiClient.delete<unknown>(`/api/teachers/${teacherId}/`)
+  return apiClient.delete<unknown>(AUTH.PROFILE_DELETE(teacherId))
 }

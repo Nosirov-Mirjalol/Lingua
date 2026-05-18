@@ -1,11 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import {
-  Calendar,
-  Clock,
-  Paperclip,
-  UploadCloud,
-  PencilLine,
-} from 'lucide-react'
+import { Calendar, Clock, UploadCloud, PencilLine } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useStudentHomework } from '@/hooks/student/useStudentPortal'
@@ -19,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { StudentInfoTile } from '@/components/student/common/student-info-tile'
@@ -178,7 +171,7 @@ export default function StudentHomeworkPage() {
 
                     <div className='flex items-center gap-3 rounded-2xl border bg-card px-4 py-3'>
                       <Avatar className='size-10'>
-                        <AvatarFallback className='bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'>
+                        <AvatarFallback className='bg-primary/10 text-primary'>
                           T
                         </AvatarFallback>
                       </Avatar>
@@ -217,18 +210,18 @@ export default function StudentHomeworkPage() {
                         </h4>
                         <div className='mt-3 space-y-2'>
                           <div className='flex items-start gap-2 text-sm text-muted-foreground'>
-                            <span className='mt-1 size-1.5 shrink-0 rounded-full bg-rose-500' />
+                            <span className='mt-1 size-1.5 shrink-0 rounded-full bg-primary' />
                             <p>Answer all questions in complete sentences.</p>
                           </div>
                           <div className='flex items-start gap-2 text-sm text-muted-foreground'>
-                            <span className='mt-1 size-1.5 shrink-0 rounded-full bg-rose-500' />
+                            <span className='mt-1 size-1.5 shrink-0 rounded-full bg-primary' />
                             <p>
                               Use at least 10 new vocabulary words from the
                               unit.
                             </p>
                           </div>
                           <div className='flex items-start gap-2 text-sm text-muted-foreground'>
-                            <span className='mt-1 size-1.5 shrink-0 rounded-full bg-rose-500' />
+                            <span className='mt-1 size-1.5 shrink-0 rounded-full bg-primary' />
                             <p>Submit as PDF or DOCX.</p>
                           </div>
                         </div>
@@ -301,7 +294,7 @@ export default function StudentHomeworkPage() {
                         </div>
                       </div>
 
-                      <Button className='h-12 w-full rounded-2xl bg-rose-600 text-base text-white hover:bg-rose-700'>
+                      <Button className='h-12 w-full rounded-2xl bg-primary text-base text-primary-foreground hover:bg-primary/90'>
                         Submit Homework
                       </Button>
                       {activeAssignment.status === 'Submitted' && (
@@ -322,7 +315,7 @@ export default function StudentHomeworkPage() {
                 </CardContent>
               </>
             ) : (
-              <CardContent className='flex h-[300px] items-center justify-center text-muted-foreground'>
+              <CardContent className='flex h-75 items-center justify-center text-muted-foreground'>
                 No homework found.
               </CardContent>
             )}
@@ -332,9 +325,9 @@ export default function StudentHomeworkPage() {
 
       {/* Edit Submission Modal */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className='max-w-md rounded-2xl border-none bg-white p-6 shadow-[0_30px_60px_-15px_rgba(25,28,30,0.20)] dark:bg-slate-900 dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]'>
+        <DialogContent className='max-w-md rounded-2xl border bg-card p-6 shadow-lg'>
           <DialogHeader>
-            <DialogTitle className='text-xl font-bold text-gray-800 dark:text-white'>
+            <DialogTitle className='text-xl font-bold text-foreground'>
               Edit Submission
             </DialogTitle>
           </DialogHeader>
@@ -347,7 +340,7 @@ export default function StudentHomeworkPage() {
                 onChange={(e) => setEditComment(e.target.value)}
                 placeholder='Update your submission comment...'
                 rows={4}
-                className='mt-1 w-full resize-none rounded-xl border bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500/20 focus:outline-none'
+                className='mt-1 w-full resize-none rounded-xl border bg-background px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none'
               />
             </div>
             <div className='flex justify-end gap-3 pt-4'>

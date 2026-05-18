@@ -26,8 +26,6 @@ export type AddResultPayload = {
 
 type ScoreErrors = Partial<Record<ScoreKey, string>>
 
-const ACCENT = '#E8294C'
-
 function sanitizeBandInput(value: string) {
   const only = value.replace(/[^0-9.]/g, '')
   const capped = only.slice(0, 3)
@@ -192,11 +190,11 @@ export function AddResultModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className='max-w-[420px] gap-0 overflow-hidden rounded-[28px] border-0 bg-white p-0 shadow-[0_30px_90px_-50px_rgba(2,6,23,0.45)]'
+        className='max-w-[420px] gap-0 overflow-hidden rounded-[28px] border-0 bg-card p-0 shadow-[0_30px_90px_-50px_rgba(2,6,23,0.45)]'
       >
         <div className='flex items-start justify-between px-10 pt-8'>
           <DialogHeader className='gap-1'>
-            <DialogTitle className='text-xl font-extrabold text-slate-900'>
+            <DialogTitle className='text-xl font-extrabold text-foreground'>
               Yangi Natija Qo'shish
             </DialogTitle>
           </DialogHeader>
@@ -205,7 +203,7 @@ export function AddResultModal({
             <button
               type='button'
               onClick={handleClose}
-              className='grid h-10 w-10 place-items-center rounded-full bg-white text-slate-700 hover:bg-slate-100'
+              className='grid h-10 w-10 place-items-center rounded-full bg-card text-foreground hover:bg-muted'
             >
               <X size={18} />
             </button>
@@ -228,7 +226,7 @@ export function AddResultModal({
               <button
                 type='button'
                 onClick={handlePickImage}
-                className='grid h-20 w-20 place-items-center overflow-hidden rounded-full border border-dashed border-rose-200 bg-rose-50 text-rose-700'
+                className='grid h-20 w-20 place-items-center overflow-hidden rounded-full border border-dashed border-primary/20 bg-primary/10 text-primary'
               >
                 {photoPreview ? (
                   <img
@@ -240,13 +238,13 @@ export function AddResultModal({
                   <Camera size={18} />
                 )}
               </button>
-              <p className='mt-3 text-[11px] font-extrabold tracking-[0.14em] text-rose-700'>
+              <p className='mt-3 text-[11px] font-extrabold tracking-[0.14em] text-primary'>
                 PROFIL RASMI
               </p>
             </div>
 
             <div>
-              <p className='text-[11px] font-extrabold tracking-[0.14em] text-slate-400'>
+              <p className='text-[11px] font-extrabold tracking-[0.14em] text-muted-foreground'>
                 O\'QUVCHI ISM FAMILIYASI
               </p>
               <Input
@@ -258,25 +256,25 @@ export function AddResultModal({
                 placeholder='Masalan: Azizbek Temirov'
                 className={
                   nameError
-                    ? `mt-2 h-12 rounded-full border border-[${ACCENT}] bg-slate-100 px-5 text-sm shadow-none focus:border-[${ACCENT}] focus:ring-2 focus:ring-[${ACCENT}]/25`
-                    : 'mt-2 h-12 rounded-full border-0 bg-slate-100 px-5 text-sm shadow-none'
+                    ? `mt-2 h-12 rounded-full border border-destructive bg-muted px-5 text-sm shadow-none focus:border-destructive focus:ring-2 focus:ring-destructive/25`
+                    : 'mt-2 h-12 rounded-full border-0 bg-muted px-5 text-sm shadow-none'
                 }
               />
               {nameError && (
-                <p className='mt-1 text-xs font-semibold text-rose-600'>
+                <p className='mt-1 text-xs font-semibold text-destructive'>
                   {nameError}
                 </p>
               )}
             </div>
 
             <div>
-              <p className='text-[11px] font-extrabold tracking-[0.14em] text-slate-400'>
+              <p className='text-[11px] font-extrabold tracking-[0.14em] text-muted-foreground'>
                 IELTS KO\'NIKMALARI
               </p>
 
               <div className='mt-2 grid grid-cols-2 gap-3'>
-                <div className='flex items-center justify-between rounded-2xl bg-slate-100 px-4 py-3'>
-                  <span className='text-sm font-semibold text-slate-700'>
+                <div className='flex items-center justify-between rounded-2xl bg-muted px-4 py-3'>
+                  <span className='text-sm font-semibold text-foreground'>
                     Reading
                   </span>
                   <Input
@@ -288,13 +286,13 @@ export function AddResultModal({
                     placeholder='0.0'
                     className={
                       scoreErrors.reading
-                        ? `h-8 w-16 rounded-full border border-[${ACCENT}] bg-white px-3 text-right text-sm shadow-none focus:border-[${ACCENT}] focus:ring-2 focus:ring-[${ACCENT}]/25`
-                        : 'h-8 w-16 rounded-full border-0 bg-white px-3 text-right text-sm shadow-none'
+                        ? `h-8 w-16 rounded-full border border-destructive bg-card px-3 text-right text-sm shadow-none focus:border-destructive focus:ring-2 focus:ring-destructive/25`
+                        : 'h-8 w-16 rounded-full border-0 bg-card px-3 text-right text-sm shadow-none'
                     }
                   />
                 </div>
-                <div className='flex items-center justify-between rounded-2xl bg-slate-100 px-4 py-3'>
-                  <span className='text-sm font-semibold text-slate-700'>
+                <div className='flex items-center justify-between rounded-2xl bg-muted px-4 py-3'>
+                  <span className='text-sm font-semibold text-foreground'>
                     Listening
                   </span>
                   <Input
@@ -306,13 +304,13 @@ export function AddResultModal({
                     placeholder='0.0'
                     className={
                       scoreErrors.listening
-                        ? `h-8 w-16 rounded-full border border-[${ACCENT}] bg-white px-3 text-right text-sm shadow-none focus:border-[${ACCENT}] focus:ring-2 focus:ring-[${ACCENT}]/25`
-                        : 'h-8 w-16 rounded-full border-0 bg-white px-3 text-right text-sm shadow-none'
+                        ? `h-8 w-16 rounded-full border border-destructive bg-card px-3 text-right text-sm shadow-none focus:border-destructive focus:ring-2 focus:ring-destructive/25`
+                        : 'h-8 w-16 rounded-full border-0 bg-card px-3 text-right text-sm shadow-none'
                     }
                   />
                 </div>
-                <div className='flex items-center justify-between rounded-2xl bg-slate-100 px-4 py-3'>
-                  <span className='text-sm font-semibold text-slate-700'>
+                <div className='flex items-center justify-between rounded-2xl bg-muted px-4 py-3'>
+                  <span className='text-sm font-semibold text-foreground'>
                     Writing
                   </span>
                   <Input
@@ -324,13 +322,13 @@ export function AddResultModal({
                     placeholder='0.0'
                     className={
                       scoreErrors.writing
-                        ? `h-8 w-16 rounded-full border border-[${ACCENT}] bg-white px-3 text-right text-sm shadow-none focus:border-[${ACCENT}] focus:ring-2 focus:ring-[${ACCENT}]/25`
-                        : 'h-8 w-16 rounded-full border-0 bg-white px-3 text-right text-sm shadow-none'
+                        ? `h-8 w-16 rounded-full border border-destructive bg-card px-3 text-right text-sm shadow-none focus:border-destructive focus:ring-2 focus:ring-destructive/25`
+                        : 'h-8 w-16 rounded-full border-0 bg-card px-3 text-right text-sm shadow-none'
                     }
                   />
                 </div>
-                <div className='flex items-center justify-between rounded-2xl bg-slate-100 px-4 py-3'>
-                  <span className='text-sm font-semibold text-slate-700'>
+                <div className='flex items-center justify-between rounded-2xl bg-muted px-4 py-3'>
+                  <span className='text-sm font-semibold text-foreground'>
                     Speaking
                   </span>
                   <Input
@@ -342,8 +340,8 @@ export function AddResultModal({
                     placeholder='0.0'
                     className={
                       scoreErrors.speaking
-                        ? `h-8 w-16 rounded-full border border-[${ACCENT}] bg-white px-3 text-right text-sm shadow-none focus:border-[${ACCENT}] focus:ring-2 focus:ring-[${ACCENT}]/25`
-                        : 'h-8 w-16 rounded-full border-0 bg-white px-3 text-right text-sm shadow-none'
+                        ? `h-8 w-16 rounded-full border border-destructive bg-card px-3 text-right text-sm shadow-none focus:border-destructive focus:ring-2 focus:ring-destructive/25`
+                        : 'h-8 w-16 rounded-full border-0 bg-card px-3 text-right text-sm shadow-none'
                     }
                   />
                 </div>
@@ -360,7 +358,7 @@ export function AddResultModal({
                     return (
                       <p
                         key={k}
-                        className='text-xs font-semibold text-rose-600'
+                        className='text-xs font-semibold text-destructive'
                       >
                         {k.charAt(0).toUpperCase() + k.slice(1)}: {msg}
                       </p>
@@ -371,17 +369,17 @@ export function AddResultModal({
             </div>
 
             <div>
-              <p className='text-[11px] font-extrabold tracking-[0.14em] text-slate-400'>
+              <p className='text-[11px] font-extrabold tracking-[0.14em] text-muted-foreground'>
                 UMUMIY BALL
               </p>
-              <div className='mt-2 flex items-center justify-between rounded-2xl bg-slate-100 px-4 py-3'>
-                <span className='text-sm font-semibold text-slate-700'>
+              <div className='mt-2 flex items-center justify-between rounded-2xl bg-muted px-4 py-3'>
+                <span className='text-sm font-semibold text-foreground'>
                   Overall Band
                 </span>
                 <Input
                   readOnly
                   value={overall.toFixed(1)}
-                  className='h-8 w-16 rounded-full border-0 bg-white px-3 text-right text-sm font-extrabold text-slate-700 shadow-none'
+                  className='h-8 w-16 rounded-full border-0 bg-card px-3 text-right text-sm font-extrabold text-foreground shadow-none'
                 />
               </div>
             </div>
@@ -394,7 +392,7 @@ export function AddResultModal({
                     handleClose()
                     reset()
                   }}
-                  className='h-11 rounded-full bg-transparent text-sm font-bold text-slate-600 hover:bg-slate-50'
+                  className='h-11 rounded-full bg-transparent text-sm font-bold text-muted-foreground hover:bg-muted'
                 >
                   Bekor qilish
                 </button>
@@ -402,7 +400,7 @@ export function AddResultModal({
               <button
                 type='button'
                 onClick={handleSubmit}
-                className='primary-gradient h-11 rounded-full text-sm font-bold text-white shadow-lg shadow-rose-900/15'
+                className='h-11 rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-lg shadow-primary/15'
               >
                 Natijani Saqlash
               </button>
