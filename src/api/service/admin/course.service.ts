@@ -64,7 +64,7 @@ export const updateAdminCourse = (
   courseId: number,
   data: AdminCourseUpdatePayload
 ): Promise<AdminCourse> => {
-  return apiClient.patch<AdminCourse>(COURSE.UPDATE_DELETE(courseId), data)
+  return apiClient.put<AdminCourse>(COURSE.UPDATE_DELETE(courseId), data)
 }
 
 export const deleteAdminCourse = (courseId: number): Promise<unknown> => {

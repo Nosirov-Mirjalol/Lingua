@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Edit, Eye, Plus, Search, Trash2, User as UserIcon, X } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   extractNationalNine,
-  formatPhoneDisplay,
   getStudentApiErrorMessage,
 } from '@/api/service/admin/student.service'
 import type { User } from '@/api/service/teacher/user.type'
@@ -24,7 +23,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RoseButton } from '@/components/ui/rose-button'
 import { Switch } from '@/components/ui/switch'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -88,6 +94,7 @@ export default function AdminStudentsPage() {
     last_name: '',
     phone: '+998',
     is_active: true,
+    email: '',
   })
 
   const handleInputChange = (field: keyof StudentFormData, value: string | boolean) => {
@@ -139,9 +146,10 @@ export default function AdminStudentsPage() {
     setSelectedStudent(student)
     setEditDraft({
       username: student.username ?? '',
+      email: student.email ?? '',
       first_name: student.first_name ?? '',
       last_name: student.last_name ?? '',
-      phone: formatPhoneDisplay(student.phone),
+      phone: student.phone || '+998',
       is_active: Boolean(student.is_active),
     })
     setModalAction('edit')
@@ -199,7 +207,12 @@ export default function AdminStudentsPage() {
   return (
     <div className='min-h-screen bg-background'>
       <Header>
-        <Search className='me-auto' />
+        <div className='me-auto'>
+          <div className='flex items-center gap-2 rounded-2xl border bg-background px-3 py-2 shadow-sm md:w-80'>
+            <Search className='h-4 w-4 text-muted-foreground' />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder='Search students...' className='h-8 border-0 bg-transparent px-0 text-sm focus-visible:ring-0' />
+          </div>
+        </div>
         <ThemeSwitch />
         <ConfigDrawer />
       </Header>
@@ -308,16 +321,8 @@ export default function AdminStudentsPage() {
         {/* Table */}
         <Card>
           <CardHeader>
-            <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
-              <div>
-                <CardTitle>Students Table</CardTitle>
-                <CardDescription>Total {totalCount ?? students.length} students</CardDescription>
-              </div>
-              <div className='flex w-full items-center gap-2 rounded-2xl border bg-background px-3 py-2 shadow-sm md:w-80'>
-                <Search className='h-4 w-4 text-muted-foreground' />
-                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder='Search students...' className='h-8 border-0 bg-transparent px-0 text-sm focus-visible:ring-0' />
-              </div>
-            </div>
+            <CardTitle>Students Table</CardTitle>
+            <CardDescription>Total {totalCount ?? students.length} students</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (

@@ -8,6 +8,7 @@ export interface Assignment {
   max_score: number
   attachment: string | null
   submission_type: 'text' | 'file'
+  is_submitted?: boolean
   created_at: string
   is_active: boolean
 }
@@ -26,8 +27,6 @@ export interface Submission {
 export type AssignmentListParams = {
   ordering?: string
   search?: string
-  page?: number
-  page_size?: number
 }
 
 export type CreateAssignmentPayload = Omit<
@@ -42,6 +41,7 @@ export type GradeAssignmentPayload = {
 }
 
 export type SubmitAssignmentPayload = {
+  assignment: number
   text_answer?: string
-  file_answer?: string
+  file_answer?: string | File
 }

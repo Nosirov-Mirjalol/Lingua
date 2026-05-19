@@ -35,10 +35,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { RoseButton } from '@/components/ui/rose-button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ListPagination } from '@/components/list-pagination'
 import { AssignTaskModal } from '@/components/teacher/modals/AssignTaskModal'
+import { ListPagination } from '@/components/list-pagination'
 
-// --- 1. YORDAMCHI FUNKSIYALAR VA TIPLAR ---
 interface AssignmentStatus {
   student_id: number
   username: string
@@ -69,7 +68,6 @@ const getStatus = (item: Assignment) =>
     ? 'active'
     : 'completed'
 
-// File helpers to resolve absolute API URLs and identify file details
 const getFileUrl = (url: string | null) => {
   if (!url) return ''
   if (
@@ -108,7 +106,6 @@ const getFileIcon = (url: string | null) => {
   return <Paperclip size={18} />
 }
 
-// --- 2. BATAFSIL MA'LUMOT MODALI (Alohida komponent) ---
 function AssignmentDetailsModal({
   open,
   onOpenChange,
@@ -146,7 +143,6 @@ function AssignmentDetailsModal({
             <p className='py-8 text-center text-gray-500'>Ma'lumot topilmadi</p>
           ) : (
             <div className='space-y-5'>
-              {/* Statistika */}
               <div className='grid grid-cols-3 gap-3 rounded-2xl bg-gray-50 p-5 dark:bg-slate-800'>
                 <div className='text-center'>
                   <p className='text-xs text-gray-500'>Jami</p>
@@ -162,7 +158,6 @@ function AssignmentDetailsModal({
                 </div>
               </div>
 
-              {/* Ro'yxat (Tabs) */}
               {total > 0 && (
                 <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
                   <TabsList className='w-full bg-gray-100 p-1 dark:bg-slate-800'>
@@ -276,7 +271,6 @@ function AssignmentDetailsModal({
         </DialogContent>
       </Dialog>
 
-      {/* Full File Answer Preview Dialog */}
       <Dialog
         open={!!previewUrl}
         onOpenChange={(isOpen) => !isOpen && setPreviewUrl(null)}
@@ -341,7 +335,7 @@ function AssignmentDetailsModal({
     </>
   )
 }
-// --- 3. HOMEWORK CARD (Alohida komponent) ---
+
 function HomeworkCard({ hw, onEdit, onDelete, onOpenDetails, loadingId }: any) {
   const status = getStatus(hw)
 
@@ -418,7 +412,6 @@ function HomeworkCard({ hw, onEdit, onDelete, onOpenDetails, loadingId }: any) {
   )
 }
 
-// --- 4. ASOSIY SAHIFA KOMPONENTI ---
 export const Route = createFileRoute(
   '/_authenticated/teacher-dashboard/homework'
 )({
@@ -474,8 +467,12 @@ function HomeworkPage() {
     <div>
       <div className='mb-6 flex items-center justify-between'>
         <div>
-          <h1 className='text-2xl font-bold dark:text-white'>Homework</h1>
-          <p className='text-gray-500'>Vazifalarni boshqarish</p>
+          <h1 className='text-2xl font-bold text-gray-800 dark:text-white md:text-3xl'>
+            Homework
+          </h1>
+          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400 md:mt-2 md:text-base'>
+            Create and manage homework assignments
+          </p>
         </div>
         <RoseButton
           onClick={() => {

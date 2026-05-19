@@ -16,13 +16,18 @@ export interface StudentNotificationAPI {
 // ─── REST Hooks ───────────────────────────────────────────────────────────────
 
 /** Barcha bildirishnomalarni olish */
-export const useStudentNotificationsList = () => {
+export const useStudentNotificationsList = (
+  options: { enabled?: boolean } = {}
+) => {
+  const { enabled = true } = options
   return useQuery({
     queryKey: ['student', 'notifications'],
     queryFn: () =>
       apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
-    staleTime: 2_000,
-    refetchInterval: 2_000, // 2 soniya - ultra tezkor polling
+    enabled,
+    staleTime: 300_000, // 5 daqiqa
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -63,6 +68,23 @@ export const useStudentMarkAllRead = () => {
   return useMutation({
     mutationFn: () =>
       apiClient.post<{ updated: number }>(NOTIFICATIONS.MARK_ALL_READ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+    },
+  })
+}
+
+export const useStudentDeleteNotifications = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (ids: number[]) =>
+      Promise.all(
+        ids.map((id) =>
+          apiClient.delete<void>(NOTIFICATIONS.DELETE(id))
+        )
+      ),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
       await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })

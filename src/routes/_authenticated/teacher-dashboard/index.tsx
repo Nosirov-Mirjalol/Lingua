@@ -10,8 +10,6 @@ import {
   Loader2,
   CalendarDays,
 } from 'lucide-react'
-import { apiClient } from '@/api/client'
-import { ASSIGNMENTS } from '@/constants/apiEndPoints'
 import { useGroupSchedule } from '@/hooks/teacher/groups/useGroupSchedule'
 import { useTeacherGroups } from '@/hooks/teacher/groups/useTeacherGroups'
 import { useProfile } from '@/hooks/teacher/profile/useProfile'

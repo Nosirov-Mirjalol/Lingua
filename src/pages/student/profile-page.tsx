@@ -1,125 +1,243 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
+import { Loader2, Save, Camera, User as UserIcon } from 'lucide-react'
+import { toast } from 'sonner'
 import { useStudentProfile } from '@/hooks/student/useStudentPortal'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { useUpdateStudentProfile } from '@/hooks/student/useUpdateProfile'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { StudentPageHeader } from '@/components/student/common/student-page-header'
-
-type ProfileForm = {
-  username: string
-  full_name: string
-  avatar: string
-  timezone: string
-  bio: string
-  learning_goal: string
-}
+import { RoseButton } from '@/components/ui/rose-button'
 
 export function StudentProfilePage() {
-  const { data: profile } = useStudentProfile()
-  const { register, reset, handleSubmit, formState } = useForm<ProfileForm>({
-    defaultValues: {
-      username: '',
-      full_name: '',
-      avatar: '',
-      timezone: '',
-      bio: '',
-      learning_goal: '',
-    },
+  const { data: profile, isLoading } = useStudentProfile()
+
+  const updateProfileMutation = useUpdateStudentProfile()
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  const previewUrl = useMemo(() => {
+    if (selectedFile) return URL.createObjectURL(selectedFile)
+    return profile?.avatar ?? null
+  }, [profile?.avatar, selectedFile])
+
+  useEffect(() => {
+    if (!selectedFile) return
+    return () => {
+      URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl, selectedFile])
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { isDirty, errors },
+  } = useForm<Partial<Record<string, any>>>({
     mode: 'onBlur',
   })
 
   useEffect(() => {
-    if (!profile) return
-
-    reset({
-      username: profile.username || '',
-      full_name: profile.full_name || '',
-      avatar: profile.avatar || '',
-      timezone: profile.timezone || '',
-      bio: profile.bio || '',
-      learning_goal: profile.learning_goal || '',
-    })
+    if (profile) {
+      reset({
+        full_name: profile.full_name || '',
+        username: profile.username || '',
+        avatar: profile.avatar || '',
+        timezone: profile.timezone || '',
+        bio: profile.bio || '',
+        learning_goal: profile.learning_goal || '',
+      })
+    }
   }, [profile, reset])
 
-  const onSubmit = (data: ProfileForm) => {
-    console.log('Update profile', data)
+  const uploadToUploadcare = async (file: File): Promise<string> => {
+    const pubKey = import.meta.env.VITE_UPLOADCARE_PUBLIC_KEY
+    if (!pubKey) throw new Error('VITE_UPLOADCARE_PUBLIC_KEY not found')
+
+    const formData = new FormData()
+    formData.append('UPLOADCARE_PUB_KEY', pubKey)
+    formData.append('UPLOADCARE_STORE', 'auto')
+    formData.append('file', file)
+
+    const res = await fetch('https://upload.uploadcare.com/base/', {
+      method: 'POST',
+      body: formData,
+    })
+
+    const data = await res.json()
+    if (!data.file) throw new Error('Uploadcare error')
+
+    return `https://4yypsqu6p6.ucarecd.net/${data.file}/`
   }
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) setSelectedFile(file)
+  }
+
+  const onSubmit = async (data: any) => {
+    let finalAvatarUrl = data.avatar || profile?.avatar || ''
+
+    if (selectedFile) {
+      setIsUploading(true)
+      try {
+        finalAvatarUrl = await uploadToUploadcare(selectedFile)
+        setValue('avatar', finalAvatarUrl, { shouldDirty: true })
+      } catch (error) {
+        setIsUploading(false)
+        console.error('Avatar upload failed', error)
+        // Let user know
+        // eslint-disable-next-line no-undef
+        ;(await import('sonner')).toast.error('Avatar upload failed')
+        return
+      }
+      setIsUploading(false)
+    }
+
+    // Build payload only with fields that are present to avoid sending empty strings
+    const payload: Record<string, unknown> = {}
+    if (data.username !== undefined) payload.username = data.username
+    if (data.full_name !== undefined) payload.full_name = data.full_name
+    if (finalAvatarUrl) payload.avatar = finalAvatarUrl
+    if (data.timezone !== undefined) payload.timezone = data.timezone
+    if (data.bio !== undefined) payload.bio = data.bio
+    if (data.learning_goal !== undefined) payload.learning_goal = data.learning_goal
+
+    try {
+      await updateProfileMutation.mutateAsync(payload as any)
+    } catch (error) {
+      console.error('Profile update failed', error)
+      // eslint-disable-next-line no-undef
+      ;(await import('sonner')).toast.error('Failed to update profile. See console.')
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className='flex min-h-100 items-center justify-center'>
+        <Loader2 className='animate-spin text-rose-500' size={40} />
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className='rounded-xl border border-rose-200 bg-rose-50 p-6 text-center text-rose-600'>
+        Failed to load profile. Please refresh the page.
+      </div>
+    )
+  }
+
+  const isFormDisabled = updateProfileMutation.isPending || isUploading
+
   return (
-    <div className='max-w-4xl space-y-6'>
-      <StudentPageHeader title='Manage your student profile' eyebrow='Profile' />
+    <div className='mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold tracking-tight text-gray-900 dark:text-white'>
+          My Profile
+        </h1>
+        <p className='mt-2 text-sm text-gray-500 dark:text-gray-400'>
+          Update your personal details and public profile.
+        </p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal information</CardTitle>
-        </CardHeader>
-        <CardContent className='space-y-6'>
-          <form onSubmit={handleSubmit(onSubmit)} className='space-y-6'>
-            <div className='grid gap-4 md:grid-cols-2'>
-              <div className='space-y-2'>
-                <Label htmlFor='username'>Username</Label>
-                <Input id='username' placeholder='Enter username' {...register('username')} />
+      <div className='flex flex-col gap-8 md:flex-row'>
+        <div className='w-full md:w-1/3 lg:w-1/4'>
+          <div className='flex flex-col items-center rounded-xl border border-slate-200 bg-card p-6 text-card-foreground shadow-sm'>
+            <div className='group relative mb-4'>
+              <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-muted'>
+                {previewUrl ? (
+                  <img src={previewUrl} alt='Profile' className='h-full w-full object-cover' />
+                ) : (
+                  <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
+                    <UserIcon size={48} />
+                  </div>
+                )}
               </div>
-              <div className='space-y-2'>
-                <Label htmlFor='full_name'>Full name</Label>
-                <Input
-                  id='full_name'
-                  placeholder='Enter full name'
-                  {...register('full_name')}
+              <label className='absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-background bg-[#b80035] text-white shadow-sm transition-transform hover:scale-105'>
+                <Camera size={16} />
+                <input
+                  type='file'
+                  style={{ display: 'none' }}
+                  accept='image/jpeg, image/png, image/webp'
+                  onChange={handleFileChange}
+                  disabled={isFormDisabled}
                 />
-              </div>
+              </label>
             </div>
 
-            <div className='grid gap-4 md:grid-cols-2'>
+            <h2 className='text-lg font-semibold text-foreground dark:text-white'>
+              {profile.full_name || profile.username || 'User'}
+            </h2>
+            <span className='mt-1 text-sm text-muted-foreground dark:text-slate-400'>Student</span>
+          </div>
+        </div>
+
+        <div className='w-full md:w-2/3 lg:w-3/4'>
+          <div className='rounded-xl border border-slate-200 bg-card text-card-foreground shadow-sm'>
+            <form id='profile-form' onSubmit={handleSubmit(onSubmit)} className='space-y-6 p-6 sm:p-8'>
+              <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
+                <div className='space-y-2'>
+                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
+                    Full name
+                  </label>
+                  <Input {...register('full_name')} placeholder='e.g. John Doe' disabled={isFormDisabled} />
+                  {errors.full_name && <p className='text-[0.8rem] text-destructive'>{errors.full_name.message}</p>}
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
+                    Username
+                  </label>
+                  <Input {...register('username')} placeholder='e.g. john_doe' disabled={isFormDisabled} />
+                  {errors.username && <p className='text-[0.8rem] text-destructive'>{errors.username.message}</p>}
+                </div>
+
+                <div className='space-y-2'>
+                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
+                    Timezone
+                  </label>
+                  <Input {...register('timezone')} placeholder='continent/city' disabled={isFormDisabled} defaultValue={profile?.timezone || ''} />
+                  {errors.timezone && <p className='text-[0.8rem] text-destructive'>{errors.timezone.message}</p>}
+                </div>
+              </div>
+
               <div className='space-y-2'>
-                <Label htmlFor='avatar'>Avatar URL</Label>
-                <Input
-                  id='avatar'
-                  placeholder='https://example.com/avatar.jpg'
-                  {...register('avatar')}
-                />
+                <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
+                  Bio
+                </label>
+                <Textarea {...register('bio')} rows={4} placeholder='Write a short introduction...' disabled={isFormDisabled} className='resize-none' />
               </div>
+
               <div className='space-y-2'>
-                <Label htmlFor='timezone'>Timezone</Label>
-                <Input id='timezone' placeholder='UTC+5' {...register('timezone')} />
+                <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
+                  Learning Goal
+                </label>
+                <Textarea {...register('learning_goal')} rows={3} placeholder='What are your main goals?' disabled={isFormDisabled} className='resize-none' />
               </div>
-            </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='learning_goal'>Learning goal</Label>
-              <Input
-                id='learning_goal'
-                placeholder='e.g. Learn English for work'
-                {...register('learning_goal')}
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='bio'>Bio</Label>
-              <Textarea
-                id='bio'
-                rows={4}
-                placeholder='Tell us about yourself'
-                {...register('bio')}
-              />
-            </div>
-
-            <div className='flex justify-end'>
-              <Button type='submit' disabled={!formState.isDirty}>
-                Save changes
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <div className='flex justify-end border-t border-slate-100 dark:border-slate-800 pt-4'>
+                <RoseButton type='submit' form='profile-form' disabled={(!isDirty && !selectedFile) || isFormDisabled} className='w-full sm:w-auto'>
+                  {isFormDisabled ? (
+                    <>
+                      <Loader2 size={16} className='mr-2 animate-spin' />
+                      {isUploading ? 'Uploading...' : 'Saving...'}
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} className='mr-2' />
+                      Save Changes
+                    </>
+                  )}
+                </RoseButton>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

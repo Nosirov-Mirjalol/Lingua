@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   createAdminStudent,
-  getStudentApiErrorMessage,
   type AdminStudentCreatePayload,
 } from '@/api/service/admin/student.service'
 
@@ -15,9 +15,10 @@ export const useCreateAdminStudent = () => {
         queryKey: ['admin', 'students', 'list'],
       })
     },
+    onError: (error: unknown) => {
+      const errorMessage =
+        (error as Error)?.message || 'Student yaratishda xatolik'
+      toast.error(errorMessage)
+    },
   })
-}
-
-export function getCreateStudentErrorMessage(error: unknown): string {
-  return getStudentApiErrorMessage(error, 'Student yaratishda xatolik')
 }

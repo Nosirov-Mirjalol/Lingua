@@ -82,15 +82,6 @@ export interface StudentNotification {
   read: boolean
 }
 
-export interface StudentNotification {
-  id: number
-  title: string
-  description: string
-  time: string
-  category: 'Reminder' | 'Announcement' | 'Update'
-  read: boolean
-}
-
 
 export type HomeworkStatus = 'pending' | 'submitted' | 'late' | 'completed'
 
