@@ -2,19 +2,13 @@ import type { StudentConversation } from '@/types/student'
 import { MESSAGES } from '@/constants/apiEndPoints'
 import { apiClient } from './client'
 
-export const getStudentConversations = async (): Promise<
+export const getAdminConversations = async (): Promise<
   StudentConversation[]
 > => {
   return apiClient.get<StudentConversation[]>(MESSAGES.GROUPS)
 }
 
-export const searchConversations = async (
-  query: string
-): Promise<StudentConversation[]> => {
-  return apiClient.get<StudentConversation[]>(MESSAGES.SEARCH(query))
-}
-
-export const getStudentConversationMessages = async (
+export const getAdminConversationMessages = async (
   conversationId: number
 ): Promise<StudentConversation> => {
   return apiClient.get<StudentConversation>(
@@ -22,7 +16,7 @@ export const getStudentConversationMessages = async (
   )
 }
 
-export const sendStudentMessage = async (
+export const sendAdminMessage = async (
   conversationId: number,
   message: string
 ): Promise<void> => {
@@ -31,7 +25,7 @@ export const sendStudentMessage = async (
   })
 }
 
-export const markStudentConversationAsRead = async (
+export const markAdminConversationAsRead = async (
   conversationId: number
 ): Promise<void> => {
   await apiClient.post(MESSAGES.MARK_READ(conversationId))

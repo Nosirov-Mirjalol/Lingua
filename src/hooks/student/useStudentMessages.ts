@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import {
-  getStudentConversations,
   getStudentConversationMessages,
-  sendStudentMessage,
+  getStudentConversations,
   markStudentConversationAsRead,
+  sendStudentMessage,
 } from '@/api/student-messages.api'
 
 export const useStudentConversations = () => {

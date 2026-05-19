@@ -218,7 +218,7 @@ export function Chats() {
             <ScrollArea className='flex-1 px-4 md:px-0'>
               <div className='flex flex-col gap-1 py-2'>
                 {filteredChatList.map((chatUsr) => {
-                  const { id, profile, username, messages, fullName, status } =
+                  const { id, profile, messages, fullName, status } =
                     chatUsr
                   const lastConvo = messages[0]
                   const isSelected = selectedUserId === id

@@ -52,6 +52,7 @@ const API_ENDPOINTS = {
     DELETE: (groupId: number, messageId: number) =>
       `/api/messages/${groupId}/messages/${messageId}/`,
     UNREAD_COUNT: '/api/messages/unread-count/',
+    SEARCH: (query: string) => `/api/messages/search/?q=${query}`,
   },
   USER: {
     USER_ME: '/user',
