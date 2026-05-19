@@ -432,7 +432,13 @@ export function MessagesPage() {
                                     }
                                   )
                                 }
-                                className='h-8 w-8 rounded-xl opacity-0 transition-all group-hover:opacity-100 hover:bg-rose-100 hover:text-rose-600'
+                                disabled={deleteMutation.isLoading}
+                                className={cn(
+                                  'h-8 w-8 rounded-xl transition-all',
+                                  deleteMutation.isLoading
+                                    ? 'opacity-50 cursor-not-allowed'
+                                    : 'opacity-0 group-hover:opacity-100 hover:bg-rose-100 hover:text-rose-600'
+                                )}
                               >
                                 <Trash2 size={14} />
                               </Button>

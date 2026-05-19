@@ -64,6 +64,23 @@ export const useStudentMarkAllRead = () => {
   })
 }
 
+export const useStudentDeleteNotifications = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (ids: number[]) =>
+      Promise.all(
+        ids.map((id) =>
+          apiClient.delete<void>(NOTIFICATIONS.DELETE(id))
+        )
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+    },
+  })
+}
+
 // ─── WebSocket Hook ───────────────────────────────────────────────────────────
 
 function getWsBaseUrl(): string {

@@ -1,4 +1,3 @@
-import { useRouterState } from '@tanstack/react-router'
 import { ChevronsUpDown, LogOut } from 'lucide-react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -29,9 +28,6 @@ type NavUserProps = {
 export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar()
   const [open, setOpen] = useDialogState()
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  })
 
   return (
     <>
@@ -80,7 +76,7 @@ export function NavUser({ user }: NavUserProps) {
                 onClick={() => setOpen(true)}
               >
                 <LogOut />
-                Sign out
+                Chiqish
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -38,6 +38,7 @@ const API_ENDPOINTS = {
   },
   NOTIFICATIONS: {
     MY: '/api/notifications/my/',
+    DELETE: (id: number) => `/api/notifications/my/${id}/delete/`,
     MARK_READ: (id: number) => `/api/notifications/${id}/read/`,
     MARK_ALL_READ: '/api/notifications/read-all/',
     UNREAD_COUNT: '/api/notifications/unread-count/',
@@ -56,7 +57,7 @@ const API_ENDPOINTS = {
     USER_ME: '/user',
   },
   STUDENT: {
-    ASSIGNED_GROUPS: '/api/groups/my/',
+    ASSIGNED_GROUPS: '/api/groups/my-groups/',
   },
   ASSIGNMENTS: {
     LIST: '/api/assignments/',

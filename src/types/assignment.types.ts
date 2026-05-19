@@ -8,6 +8,7 @@ export interface Assignment {
   max_score: number
   attachment: string | null
   submission_type: 'text' | 'file'
+  is_submitted?: boolean
   created_at: string
   is_active: boolean
 }

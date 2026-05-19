@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMyGroups } from '@/api/service/student/group.service'
+import { getMyGroups, type StudentGroup } from '@/api/service/student/group.service'
 import { useStudentUnreadCount } from './useStudentNotifications'
 import { apiClient } from '@/api/client'
-import { GROUP, MESSAGES } from '@/constants/apiEndPoints'
+import { GROUP, MESSAGES, AUTH } from '@/constants/apiEndPoints'
 import type {
   StudentAssignment,
   StudentConversation,
@@ -10,51 +10,73 @@ import type {
   StudentProfile,
   StudentScheduleItem,
 } from '@/types/student'
-import type { StudentGroup } from '@/api/service/student/group.service'
 import { getMyAssignments, submitAssignment } from '@/services/assignment.service'
 import type { Assignment, SubmitAssignmentPayload } from '@/types/assignment.types'
 import { formatLessonDays } from '@/lib/formatters'
 
-type StudentScheduleApiItem = Partial<StudentScheduleItem> &
-  Partial<StudentGroup> & {
-    course_name?: string
-    lesson_status?: string
-    start_time?: string
-    end_time?: string
-    group_name?: string
-    days?: string[]
-  }
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function asScheduleArray(value: unknown): StudentScheduleApiItem[] {
-  if (!Array.isArray(value)) return []
-  return value.filter(
-    (item): item is StudentScheduleApiItem =>
-      !!item && typeof item === 'object'
-  )
-}
-
-function unwrapSchedule(raw: unknown): StudentScheduleApiItem[] {
-  const direct = asScheduleArray(raw)
-  if (direct.length > 0) return direct
+function unwrap<T>(raw: unknown, nestedKeys: string[] = ['results', 'data', 'items', 'groups', 'schedule']): T[] {
+  // If it's already an array, return it
+  if (Array.isArray(raw)) return raw as T[]
 
   if (raw && typeof raw === 'object') {
     const record = raw as Record<string, unknown>
-    const nestedKeys = ['results', 'data', 'schedule', 'schedules', 'items']
-
+    
+    // Search in provided nested keys
     for (const key of nestedKeys) {
-      const current = asScheduleArray(record[key])
-      if (current.length > 0) return current
+      if (Array.isArray(record[key])) {
+        return record[key] as T[]
+      }
+    }
+
+    // If it's a single object that looks like the type (not an empty object)
+    if (Object.keys(record).length > 0 && !record.results && !record.data) {
+      // Special case: if it's a single object, we might want to wrap it in an array for list-based hooks
+      // But we must be careful not to return the whole response object as a single item if it's metadata
+      if ('id' in record || 'name' in record || 'title' in record) {
+        return [record as unknown as T]
+      }
     }
   }
 
   return []
 }
 
-function formatTimeRange(
-  start?: string,
-  end?: string,
-  fallback?: string
-): string {
+// Helper to find a single object in a response
+function unwrapSingle<T>(raw: unknown, nestedKeys: string[] = ['results', 'data', 'profile', 'user']): T | null {
+  if (!raw) return null
+  
+  // If it's an array, take the first item
+  if (Array.isArray(raw)) {
+    return raw.length > 0 ? (raw[0] as T) : null
+  }
+
+  if (typeof raw === 'object') {
+    const record = raw as Record<string, unknown>
+    
+    // Search in nested keys
+    for (const key of nestedKeys) {
+      const val = record[key]
+      if (val && typeof val === 'object') {
+        if (Array.isArray(val)) {
+          if (val.length > 0) return val[0] as T
+        } else {
+          return val as T
+        }
+      }
+    }
+    
+    // If it's the object itself
+    if ('id' in record || 'username' in record || 'full_name' in record) {
+      return record as unknown as T
+    }
+  }
+
+  return null
+}
+
+function formatTimeRange(start?: string, end?: string, fallback?: string): string {
   if (fallback?.trim()) return fallback
   const parts = [start, end].filter((value): value is string => !!value?.trim())
   return parts.length === 2
@@ -64,18 +86,14 @@ function formatTimeRange(
 
 function normalizeLessonStatus(status?: string): string {
   if (!status) return 'Faol'
-
-  const normalized = status.toLowerCase()
+  const normalized = String(status).toLowerCase()
   if (normalized === 'ongoing') return 'Davom etmoqda'
   if (normalized === 'upcoming') return 'Kutilmoqda'
   if (normalized === 'completed') return 'Tugagan'
-
   return status
 }
 
-function normalizeStudentScheduleItem(
-  item: StudentScheduleApiItem
-): StudentScheduleItem {
+function normalizeStudentScheduleItem(item: any): StudentScheduleItem {
   const rawDays = item.week_days_names || item.days || []
   const formattedDaysString = formatLessonDays(rawDays)
   const cleanDays = formattedDaysString === 'No lesson days available' 
@@ -84,12 +102,7 @@ function normalizeStudentScheduleItem(
 
   return {
     id: item.id ?? 0,
-    title:
-      item.title ||
-      item.name ||
-      item.group_name ||
-      item.course_name ||
-      'Dars',
+    title: item.title || item.name || item.group_name || item.course_name || 'Dars',
     time: formatTimeRange(item.start_time, item.end_time, item.time),
     week_days_type: item.week_days_type || 'Dars jadvali',
     week_days_names: cleanDays,
@@ -100,14 +113,21 @@ function normalizeStudentScheduleItem(
 }
 
 function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60_000)
-  const h = Math.floor(m / 60)
-  const d = Math.floor(h / 24)
-  if (m < 1) return 'Hozirgina'
-  if (m < 60) return `${m} daqiqa oldin`
-  if (h < 24) return `${h} soat oldin`
-  return `${d} kun oldin`
+  try {
+    const date = new Date(iso)
+    if (isNaN(date.getTime())) return 'Yaqinda'
+    
+    const diff = Date.now() - date.getTime()
+    const m = Math.floor(diff / 60_000)
+    const h = Math.floor(m / 60)
+    const d = Math.floor(h / 24)
+    if (m < 1) return 'Hozirgina'
+    if (m < 60) return `${m} daqiqa oldin`
+    if (h < 24) return `${h} soat oldin`
+    return `${d} kun oldin`
+  } catch {
+    return 'Yaqinda'
+  }
 }
 
 const getStoredUser = () => {
@@ -121,72 +141,110 @@ const getStoredUser = () => {
   }
 }
 
-const buildProfile = (): StudentProfile => {
+const buildProfile = (overrides?: Partial<StudentProfile>): StudentProfile => {
   const stored = getStoredUser()
+  const data = { ...stored, ...overrides }
+  
+  // Filter out placeholder "string" values from API
+  const username = data?.username && data.username !== 'string' ? data.username : ''
+  const full_name = data?.full_name && data.full_name !== 'string' ? data.full_name : ''
+  const timezone = data?.timezone && data.timezone !== 'string' ? data.timezone : ''
+  const bio = data?.bio && data.bio !== 'string' ? data.bio : ''
+  const learning_goal = data?.learning_goal && data.learning_goal !== 'string' ? data.learning_goal : ''
+  
   return {
-    id: stored?.id ?? 0,
-    username: stored?.username || '',
-    full_name: stored?.full_name || '',
-    role: stored?.role ?? 'user',
-    avatar: stored?.avatar || '/avatars/student1.jpg',
-    timezone: stored?.timezone || '',
-    bio: stored?.bio || '',
-    learning_goal: stored?.learning_goal || '',
-    activeCourse: stored?.activeCourse || '',
-    nextLesson: stored?.nextLesson || '',
-    completion: stored?.completion ?? 0,
-    attendance: stored?.attendance ?? 0,
-    streak: stored?.streak ?? 0,
+    id: data?.id ?? 0,
+    username: username || '',
+    full_name: full_name || '',
+    role: data?.role ?? 'student',
+    avatar: data?.avatar || '/avatars/student1.jpg',
+    timezone: timezone || '',
+    bio: bio || '',
+    learning_goal: learning_goal || '',
+    activeCourse: data?.activeCourse || '',
+    nextLesson: data?.nextLesson || '',
+    completion: data?.completion ?? 0,
+    attendance: data?.attendance ?? 0,
+    streak: data?.streak ?? 0,
   }
 }
+
+// ─── Hooks ────────────────────────────────────────────────────────────────────
 
 export const useStudentProfile = () => {
   return useQuery({
     queryKey: ['student', 'profile'],
-    queryFn: async () => buildProfile(),
-    staleTime: 60_000,
+    queryFn: async (): Promise<StudentProfile> => {
+      try {
+        // Bypass caching/304 with timestamp and no-cache headers
+        const cacheBuster = `t=${Date.now()}`
+        const url = AUTH.PROFILE_GET.includes('?') 
+          ? `${AUTH.PROFILE_GET}&${cacheBuster}` 
+          : `${AUTH.PROFILE_GET}?${cacheBuster}`
+
+        const response = await apiClient.get<unknown>(url, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+          }
+        })
+        const profileData = unwrapSingle<any>(response)
+        
+        if (profileData) {
+          const current = getStoredUser()
+          const updated = { ...current, ...profileData }
+          sessionStorage.setItem('linguapro_user', JSON.stringify(updated))
+          return buildProfile(profileData)
+        }
+      } catch (error) {
+        console.error('Failed to fetch student profile:', error)
+      }
+      return buildProfile()
+    },
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
   })
 }
 
 export const useStudentDashboard = () => {
   const { data: unreadRes } = useStudentUnreadCount()
   const unreadCount = unreadRes?.unread_count ?? 0
+  const { data: profile } = useStudentProfile()
 
   return useQuery({
-    queryKey: ['student', 'dashboard', unreadCount],
+    queryKey: ['student', 'dashboard', unreadCount, profile?.id],
     queryFn: async () => {
-      const profile = buildProfile()
-      const completedHours = `${Math.max(40, Math.round(profile.completion * 0.8))}h`
+      const activeProfile = profile || buildProfile()
+      const completion = activeProfile.completion ?? 0
+      const completedHours = `${Math.max(0, Math.round(completion * 0.8))}h`
 
       return {
         stats: {
-          upcomingLessons: 3,
+          upcomingLessons: 0,
           completedHours,
-          progress: profile.completion,
+          progress: completion,
           unreadMessages: unreadCount,
         } as StudentDashboardStats,
         highlights: [
           {
             title: 'Next lesson',
-            value: profile.nextLesson,
+            value: activeProfile.nextLesson || 'No upcoming lessons',
           },
           {
             title: 'Current course',
-            value: profile.activeCourse,
+            value: activeProfile.activeCourse || 'No active course',
           },
           {
             title: 'Learning streak',
-            value: `${profile.streak} days`,
+            value: `${activeProfile.streak ?? 0} days`,
           },
         ],
         quickActions: [
           {
-            label: 'Join live class',
-            description: 'Today at 11:00 AM',
-          },
-          {
-            label: 'Review vocabulary',
-            description: '20 min focused practice',
+            label: 'Review lessons',
+            description: 'Check your progress',
           },
         ],
       }
@@ -200,7 +258,7 @@ export const useStudentSchedule = () => {
     queryKey: ['student', 'schedule'],
     queryFn: async (): Promise<StudentScheduleItem[]> => {
       const data = await apiClient.get<unknown>(GROUP.MY_SCHEDULE)
-      return unwrapSchedule(data).map(normalizeStudentScheduleItem)
+      return unwrap<any>(data, ['results', 'data', 'schedule', 'schedules']).map(normalizeStudentScheduleItem)
     },
     staleTime: 60_000,
   })
@@ -211,7 +269,7 @@ export const useStudentHomework = () => {
     queryKey: ['student', 'homework'],
     queryFn: async (): Promise<Assignment[]> => {
       const data = await getMyAssignments()
-      return data || []
+      return unwrap<Assignment>(data, ['results', 'data', 'assignments', 'items'])
     },
     staleTime: 60_000,
   })
@@ -232,8 +290,9 @@ export const useStudentMessages = () => {
   return useQuery({
     queryKey: ['student', 'messages'],
     queryFn: async (): Promise<StudentConversation[]> => {
-      const res = await apiClient.get<any[]>(MESSAGES.GROUPS)
-      return (res || []).map((c: any) => ({
+      const res = await apiClient.get<unknown>(MESSAGES.GROUPS)
+      const data = unwrap<any>(res, ['results', 'data', 'groups', 'conversations'])
+      return data.map((c: any) => ({
         id: c.id,
         participant: c.group_name || 'Guruh',
         subject: 'Guruh xabari',
@@ -250,7 +309,11 @@ export const useStudentMessages = () => {
 export const useStudentGroups = () => {
   return useQuery({
     queryKey: ['student', 'groups'],
-    queryFn: (): Promise<StudentGroup[]> => getMyGroups(),
+    queryFn: async (): Promise<StudentGroup[]> => {
+      const data = await getMyGroups()
+      // getMyGroups already calls unwrapGroups, but we add an extra safety layer here
+      return unwrap<StudentGroup>(data, ['results', 'data', 'groups', 'assigned_groups', 'my_groups'])
+    },
     staleTime: 60_000,
   })
 }
