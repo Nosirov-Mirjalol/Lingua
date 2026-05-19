@@ -29,7 +29,6 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { AdminCourseCreateModal } from '@/features/admin-courses/components/admin-course-create-modal'
 
 export default function AdminCoursesPage() {
@@ -81,10 +80,7 @@ export default function AdminCoursesPage() {
   return (
     <>
       <AdminHeader fixed>
-        <div className='ms-auto flex items-center space-x-2'>
-          <ThemeSwitch />
-          <ConfigDrawer />
-        </div>
+        <ConfigDrawer />
       </AdminHeader>
 
       <Main className='bg-background font-outfit'>

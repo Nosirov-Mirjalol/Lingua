@@ -17,6 +17,8 @@ import {
 } from '@/hooks/admin/useAdminMessages'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { RoseButton } from '@/components/ui/rose-button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { AdminHeader } from '@/components/layout/admin-header'
@@ -83,10 +85,9 @@ export function AdminChat() {
               <div className='space-y-3'>
                 <div className='relative'>
                   <SearchIcon className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-                  <input
-                    type='text'
+                <Input
                     placeholder='Search conversations...'
-                    className='h-10 w-full rounded-xl border-none bg-background pr-4 pl-10 text-sm shadow-sm ring-1 ring-border transition-all focus:ring-2 focus:ring-rose-500 focus:outline-none'
+                    className='h-10 rounded-xl border-none bg-background shadow-sm ring-1 ring-border focus-visible:ring-2 focus-visible:ring-rose-500'
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -290,18 +291,18 @@ export function AdminChat() {
                       </Button>
                     </div>
 
-                    <Button
+                    <RoseButton
                       type='submit'
-                      size='icon'
+                      roseSize='lg'
                       className={cn(
-                        'flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white shadow-md transition-all active:scale-90',
+                        'h-12 w-12 shrink-0 rounded-full p-0 transition-all',
                         !messageText.trim() &&
                           'pointer-events-none scale-50 opacity-0'
                       )}
                       disabled={!messageText.trim()}
                     >
                       <Send size={22} className='translate-x-0.5' />
-                    </Button>
+                    </RoseButton>
                   </form>
 
                   <input

@@ -12,6 +12,7 @@ import { useCreateAdminGroup } from '@/hooks/admin/groups/useCreateAdminGroup'
 import { useDeleteAdminGroup } from '@/hooks/admin/groups/useDeleteAdminGroup'
 import { useAdminTeachers } from '@/hooks/admin/teachers/useAdminTeachers'
 import { Button } from '@/components/ui/button'
+import { RoseButton } from '@/components/ui/rose-button'
 import {
   Dialog,
   DialogContent,
@@ -167,15 +168,14 @@ export default function AdminGroupsPage() {
                 Boshqaruv paneli
               </p>
             </div>
-            <Button
+            <RoseButton
               onClick={() => {
                 reset()
                 setCreateOpen(true)
               }}
-              className='h-11 rounded-full bg-slate-900 px-6 text-xs font-bold text-white shadow-lg shadow-slate-100 transition-all hover:bg-slate-800 dark:bg-rose-600 dark:shadow-none dark:hover:bg-rose-700'
             >
               <Plus className='mr-2 h-4 w-4' /> Qo'shish
-            </Button>
+            </RoseButton>
           </div>
 
           <div className='relative mb-8 max-w-md'>
@@ -486,17 +486,17 @@ export default function AdminGroupsPage() {
                 >
                   Bekor qilish
                 </Button>
-                <Button
+                <RoseButton
                   type='submit'
                   disabled={createMutation.isPending}
-                  className='h-12 flex-1 rounded-2xl bg-primary font-bold text-primary-foreground transition-all hover:bg-primary/90'
+                  className='h-12 flex-1 rounded-2xl'
                 >
                   {createMutation.isPending ? (
                     <Loader2 className='h-4 w-4 animate-spin' />
                   ) : (
                     'Saqlash'
                   )}
-                </Button>
+                </RoseButton>
               </DialogFooter>
             </form>
           </DialogContent>
