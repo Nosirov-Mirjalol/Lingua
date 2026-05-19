@@ -29,6 +29,7 @@ const API_ENDPOINTS = {
       `/api/groups/${groupId}/remove-student/${studentId}/`,
     SCHEDULE: '/api/groups/schedule/',
     TODAY_SCHEDULE: '/api/groups/today-schedule/',
+    TEACHER_LIST: '/api/groups/teachers-list/',
   },
   COURSE: {
     CREATE: '/api/courses/create/',

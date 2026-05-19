@@ -24,9 +24,9 @@ export function AdminTeacherCreateModal({
   const [formData, setFormData] = useState({
     username: '',
     email: '',
-    first_name: '',
-    last_name: '',
+    full_name: '',
     phone: '',
+    learning_goal: '',
     password: '',
   })
 
@@ -41,7 +41,14 @@ export function AdminTeacherCreateModal({
     toast.promise(createMutation.mutateAsync({ ...formData, role: 'teacher' }), {
       loading: 'Yaratilmoqda...',
       success: () => {
-        setFormData({ username: '', email: '', first_name: '', last_name: '', phone: '', password: '' })
+        setFormData({
+          username: '',
+          email: '',
+          full_name: '',
+          phone: '',
+          learning_goal: '',
+          password: '',
+        })
         onOpenChange(false)
         return 'Muvaffaqiyatli yaratildi'
       },
@@ -56,15 +63,14 @@ export function AdminTeacherCreateModal({
           <DialogTitle className='text-lg font-bold'>Yangi Ustoz</DialogTitle>
         </DialogHeader>
         <form id='teacher-form' onSubmit={handleSubmit} className='grid gap-4 py-2'>
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='space-y-1'>
-              <Label className='text-xs font-bold text-slate-500'>Ism</Label>
-              <Input value={formData.first_name} onChange={e => handleInputChange('first_name', e.target.value)} required className="h-10 rounded-lg" />
-            </div>
-            <div className='space-y-1'>
-              <Label className='text-xs font-bold text-slate-500'>Familiya</Label>
-              <Input value={formData.last_name} onChange={e => handleInputChange('last_name', e.target.value)} required className="h-10 rounded-lg" />
-            </div>
+          <div className='space-y-1'>
+            <Label className='text-xs font-bold text-slate-500'>To'liq ism</Label>
+            <Input
+              value={formData.full_name}
+              onChange={e => handleInputChange('full_name', e.target.value)}
+              required
+              className='h-10 rounded-lg'
+            />
           </div>
           <div className='space-y-1'>
             <Label className='text-xs font-bold text-slate-500'>Username</Label>
@@ -73,6 +79,14 @@ export function AdminTeacherCreateModal({
           <div className='space-y-1'>
             <Label className='text-xs font-bold text-slate-500'>Email</Label>
             <Input type='email' value={formData.email} onChange={e => handleInputChange('email', e.target.value)} required className="h-10 rounded-lg" />
+          </div>
+          <div className='space-y-1'>
+            <Label className='text-xs font-bold text-slate-500'>Telefon</Label>
+            <Input value={formData.phone} onChange={e => handleInputChange('phone', e.target.value)} className="h-10 rounded-lg" />
+          </div>
+          <div className='space-y-1'>
+            <Label className='text-xs font-bold text-slate-500'>O'quv maqsadi</Label>
+            <Input value={formData.learning_goal} onChange={e => handleInputChange('learning_goal', e.target.value)} className="h-10 rounded-lg" />
           </div>
           <div className='space-y-1'>
             <Label className='text-xs font-bold text-slate-500'>Parol</Label>

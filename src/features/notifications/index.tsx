@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { type Notification } from '@/data/notifications-data'
 import { BellRing, Inbox, Loader2, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -74,7 +73,7 @@ export default function NotificationsPage() {
       return []
     }
   }, [apiNotifications, error])
-  const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all')
+  const [activeTab, setActiveTab] = useState<BroadcastTargetRole>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -94,7 +93,7 @@ export default function NotificationsPage() {
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
       const matchesTab =
-        activeTab === 'all' || (activeTab === 'unread' && !n.read)
+        activeTab === 'all' || n.target_role === activeTab
       const notDeleted = !deletedIds.has(n.id)
       return matchesSearch && matchesTab && notDeleted
     })
@@ -235,12 +234,13 @@ export default function NotificationsPage() {
                 <nav className='space-y-1'>
                   {[
                     { id: 'all', label: 'Barchasi', icon: Inbox },
-                    { id: 'unread', label: "O'qilmagan", icon: BellRing },
+                    { id: 'teacher', label: 'Teacher', icon: BellRing },
+                    { id: 'student', label: 'Student', icon: BellRing },
                   ].map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => {
-                        setActiveTab(tab.id as 'all' | 'unread')
+                        setActiveTab(tab.id as BroadcastTargetRole)
                         setPage(1)
                       }}
                       className={cn(
