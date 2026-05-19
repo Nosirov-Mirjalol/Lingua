@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { getSessionUserRole } from '@/lib/auth-role'
-import { AdminChat } from '@/features/admin-chat'
+import { MessagesPage } from '@/pages/MessagesPage'
 
 export const Route = createFileRoute('/_authenticated/admin-chats/')({
   beforeLoad: () => {
@@ -9,5 +9,5 @@ export const Route = createFileRoute('/_authenticated/admin-chats/')({
     if (role === 'teacher') throw redirect({ to: '/teacher-dashboard' })
     if (role !== 'admin') throw redirect({ to: '/student' })
   },
-  component: AdminChat,
+  component: MessagesPage,
 })
