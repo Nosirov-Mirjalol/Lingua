@@ -131,31 +131,6 @@ const AssignmentRow = ({ a, now }: { a: any; now: number }) => {
   )
   const urg = urgencyConfig(daysLeft)
 
-<<<<<<< HEAD
-  const handleOpen = async (isOpen: boolean) => {
-    setOpen(isOpen)
-    if (isOpen && !statusData) {
-      setLoading(true)
-      try {
-        const token = localStorage.getItem('access_token')
-        const res = await fetch(
-          `http://185.190.143.64:8000/api/assignments/${a.id}/status/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/json',
-            },
-          }
-        )
-        if (res.ok) setStatusData(await res.json())
-      } finally {
-        setLoading(false)
-      }
-    }
-  }
-
-=======
->>>>>>> b0ebaf4aab0b520dc3332ccc363bf8e993f7202d
   const total = statusData?.length ?? 0
   const submitted =
     statusData?.filter((x: any) => x.status === 'topshirgan').length ?? 0

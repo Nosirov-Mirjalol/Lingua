@@ -33,8 +33,12 @@ export function StudentNotificationModal({
   open,
   onOpenChange,
 }: StudentNotificationModalProps) {
-  const { data: notificationsRes, isLoading } = useStudentNotificationsList()
-  const { data: unreadRes } = useStudentUnreadCount()
+  const { data: notificationsRes, isLoading } = useStudentNotificationsList({
+    enabled: open,
+  })
+  const { data: unreadRes } = useStudentUnreadCount({
+    enabled: open,
+  })
   const markAsRead = useStudentMarkAsRead()
   const markAllRead = useStudentMarkAllRead()
   const deleteNotifications = useStudentDeleteNotifications()

@@ -78,7 +78,7 @@ export function StudentOverviewPage() {
               {highlights.map((highlight) => (
                 <div
                   key={highlight.title}
-                  className='rounded-3xl border border-primary/10 bg-primary/[0.02] p-4 transition-colors hover:bg-primary/[0.04]'
+                  className='rounded-3xl border border-primary/10 bg-primary/2 p-4 transition-colors hover:bg-primary/4'
                 >
                   <p className='text-xs uppercase tracking-[0.18em] text-primary/70 font-bold'>
                     {highlight.title === 'Next lesson' ? 'Navbatdagi dars' : 
@@ -104,7 +104,7 @@ export function StudentOverviewPage() {
             {quickActions.map((action) => (
               <div
                 key={action.label}
-                className='flex items-center justify-between rounded-3xl border border-primary/10 bg-primary/[0.02] p-4 transition-all hover:bg-primary/5 cursor-pointer group'
+                className='flex items-center justify-between rounded-3xl border border-primary/10 bg-primary/2 p-4 transition-all hover:bg-primary/5 cursor-pointer group'
               >
                 <div>
                   <p className='font-bold text-foreground group-hover:text-primary transition-colors'>
@@ -122,7 +122,7 @@ export function StudentOverviewPage() {
               </div>
             ))}
             <div className='mt-4'>
-              <StudentInfoTile title='Maqsad' value={profile?.goal ?? '-'} muted />
+              <StudentInfoTile title='Maqsad' value={profile?.learning_goal ?? '-'} muted />
             </div>
           </CardContent>
         </Card>

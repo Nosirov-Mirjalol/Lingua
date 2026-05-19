@@ -16,13 +16,18 @@ export interface StudentNotificationAPI {
 // ─── REST Hooks ───────────────────────────────────────────────────────────────
 
 /** Barcha bildirishnomalarni olish */
-export const useStudentNotificationsList = () => {
+export const useStudentNotificationsList = (
+  options: { enabled?: boolean } = {}
+) => {
+  const { enabled = true } = options
   return useQuery({
     queryKey: ['student', 'notifications'],
     queryFn: () =>
       apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
-    staleTime: 2_000,
-    refetchInterval: 2_000, // 2 soniya - ultra tezkor polling
+    enabled,
+    staleTime: 300_000, // 5 daqiqa
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
   })
 }
 
