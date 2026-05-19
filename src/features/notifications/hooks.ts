@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 import { NOTIFICATIONS } from '@/constants/apiEndPoints'
-import type { Notification } from './types'
+import type { BroadcastTargetRole, Notification } from './types'
 
 type NotificationQueryOptions = {
   enabled?: boolean
@@ -23,8 +23,8 @@ export const useUnreadCount = (
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
     enabled,
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    staleTime: 300_000, // 5 daqiqa
+    refetchInterval: 300_000, // 5 daqiqa
     refetchOnWindowFocus: false,
   })
 }
@@ -71,7 +71,11 @@ export const useSendBroadcast = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: { title: string; message: string; type?: string }) =>
+    mutationFn: (payload: {
+      title: string
+      message: string
+      target_role: BroadcastTargetRole
+    }) =>
       apiClient.post<Notification>(NOTIFICATIONS.BROADCAST_SEND, payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({

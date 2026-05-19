@@ -1,8 +1,20 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { studentsData } from '@/data/students-data'
 import { Edit, Eye, Plus, Search, Trash2, User, X } from 'lucide-react'
+import {
+  formatPhoneDisplay,
+  getStudentApiErrorMessage,
+} from '@/api/service/admin/student.service'
+import type { User as ApiUser } from '@/api/service/teacher/user.type'
+import { cn } from '@/lib/utils'
 import { SearchProvider } from '@/context/search-provider'
+import { useAdminStudents } from '@/hooks/admin/students/useAdminStudents'
+import {
+  getCreateStudentErrorMessage,
+  useCreateAdminStudent,
+} from '@/hooks/admin/students/useCreateAdminStudent'
+import { useDeleteAdminStudent } from '@/hooks/admin/students/useDeleteAdminStudent'
+import { useUpdateAdminStudent } from '@/hooks/admin/students/useUpdateAdminStudent'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -46,6 +58,8 @@ import { StudentModal } from './components/StudentModal'
 
 export interface Student {
   id: number
+  username: string
+  email: string
   fullName: string
   phone: string
   group: string
@@ -54,35 +68,44 @@ export interface Student {
   avatar: string | null
 }
 
-// --- Helper function to convert students data ---
-const convertStudentsData = (students: typeof studentsData): Student[] => {
-  return students.map((student) => ({
-    id: student.id,
-    fullName: student.name,
-    phone: student.phone,
-    group: student.groupName,
-    paymentStatus: 'paid' as const, // Default payment status
-    status: student.status === 'graduated' ? 'inactive' : student.status,
-    avatar: student.avatar || null,
-  }))
-}
+const getInitialFormData = () => ({
+  username: '',
+  email: '',
+  password: '',
+  name: '',
+  surname: '',
+  phone: '+998',
+  level: '',
+  status: true,
+  paymentStatus: '',
+  avatar: null as File | null,
+})
 
-const getInitialStudentsData = (): Student[] => {
-  if (typeof window !== 'undefined') {
-    const savedData = localStorage.getItem('studentsData')
-    if (savedData) {
-      return JSON.parse(savedData)
-    }
+const apiUserToStudent = (student: ApiUser): Student => ({
+  id: student.id,
+  username: student.username ?? '',
+  email: student.email ?? '',
+  fullName:
+    `${student.first_name ?? ''} ${student.last_name ?? ''}`
+      .replace(/\s+/g, ' ')
+      .trim() ||
+    student.username ||
+    `Student #${student.id}`,
+  phone: formatPhoneDisplay(student.phone),
+  group: 'Belgilanmagan',
+  paymentStatus: 'pending',
+  status: student.is_active ? 'active' : 'inactive',
+  avatar: student.avatar || null,
+})
+
+function splitFullName(fullName: string) {
+  const parts = fullName.trim().replace(/\s+/g, ' ').split(' ')
+  const firstName = parts.shift() ?? ''
+  const lastName = parts.join(' ')
+  return {
+    firstName,
+    lastName: lastName || firstName,
   }
-
-  // Use converted data from separate file
-  const defaultData = convertStudentsData(studentsData)
-
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('studentsData', JSON.stringify(defaultData))
-  }
-
-  return defaultData
 }
 
 const paymentStatusColors = {
@@ -99,18 +122,17 @@ const statusColors = {
 
 export default function StudentsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [studentsData, setStudentsData] = useState<Student[]>(() =>
-    getInitialStudentsData()
-  )
-  const [formData, setFormData] = useState({
-    name: '',
-    surname: '',
-    phone: '',
-    level: '',
-    status: true,
-    paymentStatus: '',
-    avatar: null as File | null,
-  })
+  const [search, setSearch] = useState('')
+  const {
+    data: apiStudents = [],
+    isLoading,
+    isError,
+  } = useAdminStudents(search, 1, 100)
+  const studentsData = apiStudents.map(apiUserToStudent)
+  const createMutation = useCreateAdminStudent()
+  const updateMutation = useUpdateAdminStudent()
+  const deleteMutation = useDeleteAdminStudent()
+  const [formData, setFormData] = useState(getInitialFormData)
   const [avatarPreview, setAvatarPreview] = useState<string>('')
   const { addToast, ToastContainer } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -125,12 +147,6 @@ export default function StudentsPage() {
   const [modalAction, setModalAction] = useState<'edit' | 'delete' | 'detail'>(
     'detail'
   )
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && studentsData.length > 0) {
-      localStorage.setItem('studentsData', JSON.stringify(studentsData))
-    }
-  }, [studentsData])
 
   const handleInputChange = (
     field: string,
@@ -179,56 +195,34 @@ export default function StudentsPage() {
     setFormData((prev) => ({ ...prev, phone: formatted }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Add new student functionality only - edit is now handled by modal
-    // Add new student
-    const newStudent = {
-      id: studentsData.length + 1,
-      fullName: `${formData.name} ${formData.surname}`,
-      phone: formData.phone,
-      group: formData.level || 'Belgilanmagan',
-      paymentStatus:
-        (formData.paymentStatus as 'paid' | 'pending' | 'overdue') || 'pending',
-      status: (formData.status ? 'active' : 'inactive') as
-        | 'active'
-        | 'inactive',
-      avatar: avatarPreview || null,
+    try {
+      await createMutation.mutateAsync({
+        username: formData.username,
+        email: formData.email,
+        first_name: formData.name,
+        last_name: formData.surname,
+        phone: formData.phone,
+        password: formData.password,
+        role: 'student',
+      })
+
+      addToast(
+        `${formData.name} ${formData.surname} muvaffaqiyatli qo'shildi!`,
+        'success'
+      )
+      setFormData(getInitialFormData())
+      setAvatarPreview('')
+      setIsModalOpen(false)
+    } catch (error) {
+      addToast(getCreateStudentErrorMessage(error), 'error')
     }
-
-    setStudentsData((prev) => [newStudent, ...prev])
-
-    // Show success toast
-    addToast(
-      `${formData.name} ${formData.surname} muvaffaqiyatli qo'shildi!`,
-      'success'
-    )
-
-    // Reset form and close add modal
-    setFormData({
-      name: '',
-      surname: '',
-      phone: '',
-      level: '',
-      status: true,
-      paymentStatus: '',
-      avatar: null,
-    })
-    setAvatarPreview('')
-    setIsModalOpen(false)
   }
 
   const handleCancel = () => {
-    setFormData({
-      name: '',
-      surname: '',
-      phone: '',
-      level: '',
-      status: true,
-      paymentStatus: '',
-      avatar: null,
-    })
+    setFormData(getInitialFormData())
     setAvatarPreview('')
     setIsModalOpen(false)
   }
@@ -267,29 +261,35 @@ export default function StudentsPage() {
     setSelectedStudent(null)
   }
 
-  const handleModalConfirm = (updatedStudent: Student) => {
-    if (modalAction === 'delete') {
-      // Delete functionality
-      setStudentsData((prevStudents) =>
-        prevStudents.filter((s) => s.id !== updatedStudent.id)
-      )
-      addToast(
-        `${updatedStudent.fullName} student was successfully deleted`,
-        'success'
-      )
-    } else if (modalAction === 'edit') {
-      // Edit functionality
-      setStudentsData((prevStudents) =>
-        prevStudents.map((s) =>
-          s.id === updatedStudent.id ? updatedStudent : s
+  const handleModalConfirm = async (updatedStudent: Student) => {
+    try {
+      if (modalAction === 'delete') {
+        await deleteMutation.mutateAsync(updatedStudent.id)
+        addToast(
+          `${updatedStudent.fullName} student was successfully deleted`,
+          'success'
         )
-      )
-      addToast(
-        `${updatedStudent.fullName} student was successfully updated`,
-        'success'
-      )
+      } else if (modalAction === 'edit') {
+        const { firstName, lastName } = splitFullName(updatedStudent.fullName)
+        await updateMutation.mutateAsync({
+          studentId: updatedStudent.id,
+          data: {
+            username: updatedStudent.username,
+            first_name: firstName,
+            last_name: lastName,
+            phone: updatedStudent.phone,
+            is_active: updatedStudent.status === 'active',
+          },
+        })
+        addToast(
+          `${updatedStudent.fullName} student was successfully updated`,
+          'success'
+        )
+      }
+      handleModalClose()
+    } catch (error) {
+      addToast(getStudentApiErrorMessage(error), 'error')
     }
-    handleModalClose()
   }
 
   return (
@@ -326,15 +326,7 @@ export default function StudentsPage() {
                   <RoseButton
                     className='rounded-2xl dark:border dark:border-[#A01521] dark:bg-transparent dark:text-white dark:hover:border-[#A01521]'
                     onClick={() => {
-                      setFormData({
-                        name: '',
-                        surname: '',
-                        phone: '',
-                        level: '',
-                        status: true,
-                        paymentStatus: '',
-                        avatar: null,
-                      })
+                      setFormData(getInitialFormData())
                       setAvatarPreview('')
                     }}
                   >
@@ -389,10 +381,49 @@ export default function StudentsPage() {
                           <Plus className='h-3 w-3 text-white' />
                         </div>
                       </div>
-                      <p className='text-sm text-muted-foreground'>Upload image</p>
+                      <p className='text-sm text-muted-foreground'>
+                        Upload image
+                      </p>
                     </div>
 
                     {/* Form Fields */}
+                    <div className='mb-4 grid w-full grid-cols-2 gap-4'>
+                      <div className='space-y-2'>
+                        <Label
+                          htmlFor='username'
+                          className='text-sm font-medium'
+                        >
+                          Username
+                        </Label>
+                        <Input
+                          id='username'
+                          value={formData.username}
+                          onChange={(e) =>
+                            handleInputChange('username', e.target.value)
+                          }
+                          placeholder='student_username'
+                          className='h-10'
+                          required
+                        />
+                      </div>
+                      <div className='space-y-2'>
+                        <Label htmlFor='email' className='text-sm font-medium'>
+                          Email
+                        </Label>
+                        <Input
+                          id='email'
+                          type='email'
+                          value={formData.email}
+                          onChange={(e) =>
+                            handleInputChange('email', e.target.value)
+                          }
+                          placeholder='student@example.com'
+                          className='h-10'
+                          required
+                        />
+                      </div>
+                    </div>
+
                     <div className='mb-4 grid w-full grid-cols-2 gap-4'>
                       <div className='space-y-2'>
                         <Label htmlFor='name' className='text-sm font-medium'>
@@ -427,6 +458,24 @@ export default function StudentsPage() {
                           required
                         />
                       </div>
+                    </div>
+
+                    <div className='mb-4 w-full space-y-2'>
+                      <Label htmlFor='password' className='text-sm font-medium'>
+                        Password
+                      </Label>
+                      <Input
+                        id='password'
+                        type='password'
+                        value={formData.password}
+                        onChange={(e) =>
+                          handleInputChange('password', e.target.value)
+                        }
+                        placeholder='Minimum 8 characters'
+                        className='h-10'
+                        minLength={8}
+                        required
+                      />
                     </div>
 
                     <div className='mb-4 w-full space-y-2'>
@@ -522,8 +571,14 @@ export default function StudentsPage() {
                       >
                         Bekor qilish
                       </Button>
-                      <RoseButton type='submit' className='px-6 py-2'>
-                        Saqlash
+                      <RoseButton
+                        type='submit'
+                        className='px-6 py-2'
+                        disabled={createMutation.isPending}
+                      >
+                        {createMutation.isPending
+                          ? 'Saqlanmoqda...'
+                          : 'Saqlash'}
                       </RoseButton>
                     </div>
                   </form>
@@ -539,15 +594,15 @@ export default function StudentsPage() {
                 <CardTitle className='text-sm font-medium text-muted-foreground'>
                   Yangi
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 p-2'>
+                <div className='h-8 w-8 rounded-full bg-blue-100 p-2 dark:bg-blue-900/30'>
                   <Plus className='h-4 w-4 text-blue-600 dark:text-blue-400' />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold text-foreground'>
-                  12
+                  {studentsData.length}
                 </div>
-                <p className='text-xs text-muted-foreground'>Bu oy qo'shilgan</p>
+                <p className='text-xs text-muted-foreground'>Jami studentlar</p>
               </CardContent>
             </Card>
 
@@ -556,15 +611,19 @@ export default function StudentsPage() {
                 <CardTitle className='text-sm font-medium text-muted-foreground'>
                   To'lagan
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-green-100 dark:bg-green-900/30 p-2'>
+                <div className='h-8 w-8 rounded-full bg-green-100 p-2 dark:bg-green-900/30'>
                   <Plus className='h-4 w-4 text-green-600 dark:text-green-400' />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold text-foreground'>
-                  234
+                  {
+                    studentsData.filter(
+                      (student) => student.status === 'active'
+                    ).length
+                  }
                 </div>
-                <p className='text-xs text-muted-foreground'>To'lov qilgan</p>
+                <p className='text-xs text-muted-foreground'>Faol studentlar</p>
               </CardContent>
             </Card>
 
@@ -573,15 +632,21 @@ export default function StudentsPage() {
                 <CardTitle className='text-sm font-medium text-muted-foreground'>
                   Qarzdorlar
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/30 p-2'>
+                <div className='h-8 w-8 rounded-full bg-red-100 p-2 dark:bg-red-900/30'>
                   <Plus className='h-4 w-4 text-red-600 dark:text-red-400' />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold text-foreground'>
-                  8
+                  {
+                    studentsData.filter(
+                      (student) => student.status === 'inactive'
+                    ).length
+                  }
                 </div>
-                <p className='text-xs text-muted-foreground'>Debtors</p>
+                <p className='text-xs text-muted-foreground'>
+                  Nofaol studentlar
+                </p>
               </CardContent>
             </Card>
 
@@ -590,15 +655,21 @@ export default function StudentsPage() {
                 <CardTitle className='text-sm font-medium text-muted-foreground'>
                   O'sish
                 </CardTitle>
-                <div className='h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 p-2'>
+                <div className='h-8 w-8 rounded-full bg-purple-100 p-2 dark:bg-purple-900/30'>
                   <Plus className='h-4 w-4 text-purple-600 dark:text-purple-400' />
                 </div>
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold text-foreground'>
-                  +15%
+                  {
+                    studentsData.filter(
+                      (student) => student.paymentStatus === 'pending'
+                    ).length
+                  }
                 </div>
-                <p className='text-xs text-muted-foreground'>O'tgan oyga nisbatan</p>
+                <p className='text-xs text-muted-foreground'>
+                  Kutilayotgan to'lovlar
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -606,10 +677,23 @@ export default function StudentsPage() {
           {/* Students Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Students Table</CardTitle>
-              <CardDescription>
-                Total {studentsData.length} students
-              </CardDescription>
+              <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+                <div>
+                  <CardTitle>Students Table</CardTitle>
+                  <CardDescription>
+                    Total {studentsData.length} students
+                  </CardDescription>
+                </div>
+                <div className='relative w-full md:w-72'>
+                  <Search className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder='Search students...'
+                    className='pl-9'
+                  />
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -625,86 +709,110 @@ export default function StudentsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {studentsData.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell className='font-medium'>
-                        <Avatar
-                          className='h-8 w-8 cursor-pointer transition-opacity hover:opacity-80'
-                          onClick={() =>
-                            student.avatar &&
-                            handleAvatarPreview(student.avatar)
-                          }
-                        >
-                          <AvatarImage src={student.avatar || undefined} />
-                          <AvatarFallback className='bg-muted text-muted-foreground'>
-                            <User className='h-4 w-4' />
-                          </AvatarFallback>
-                        </Avatar>
-                      </TableCell>
-                      <TableCell className='font-medium'>
-                        {student.fullName}
-                      </TableCell>
-                      <TableCell>{student.phone}</TableCell>
-                      <TableCell>{student.group}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={cn(
-                            paymentStatusColors[
-                              student.paymentStatus as keyof typeof paymentStatusColors
-                            ],
-                            'dark:bg-opacity-20'
-                          )}
-                        >
-                          {student.paymentStatus === 'paid' && "To'langan"}
-                          {student.paymentStatus === 'pending' && 'Kutilmoqda'}
-                          {student.paymentStatus === 'overdue' && 'Qarzdor'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={cn(
-                            statusColors[
-                              student.status as keyof typeof statusColors
-                            ],
-                            'dark:bg-opacity-20'
-                          )}
-                        >
-                          {student.status === 'active' ? 'Faol' : 'Inactive'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className='text-right'>
-                        <div className='flex items-center justify-end space-x-2'>
-                          <Button
-                            variant='ghost'
-                            size='sm'
-                            onClick={() => handleViewStudent(student)}
-                            className='hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'
-                            title='View'
-                          >
-                            <Eye className='h-4 w-4' />
-                          </Button>
-                          <Button
-                            variant='ghost'
-                            size='sm'
-                            onClick={() => handleEditStudent(student)}
-                            className='hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400'
-                            title='Edit'
-                          >
-                            <Edit className='h-4 w-4' />
-                          </Button>
-                          <Button
-                            variant='ghost'
-                            size='sm'
-                            onClick={() => handleDeleteStudent(student)}
-                            className='text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-400'
-                            title='Delete'
-                          >
-                            <Trash2 className='h-4 w-4' />
-                          </Button>
-                        </div>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className='py-8 text-center'>
+                        Studentlar yuklanmoqda...
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : isError ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className='py-8 text-center text-red-600'
+                      >
+                        Studentlarni yuklab bo'lmadi
+                      </TableCell>
+                    </TableRow>
+                  ) : studentsData.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className='py-8 text-center'>
+                        Studentlar mavjud emas
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    studentsData.map((student) => (
+                      <TableRow key={student.id}>
+                        <TableCell className='font-medium'>
+                          <Avatar
+                            className='h-8 w-8 cursor-pointer transition-opacity hover:opacity-80'
+                            onClick={() =>
+                              student.avatar &&
+                              handleAvatarPreview(student.avatar)
+                            }
+                          >
+                            <AvatarImage src={student.avatar || undefined} />
+                            <AvatarFallback className='bg-muted text-muted-foreground'>
+                              <User className='h-4 w-4' />
+                            </AvatarFallback>
+                          </Avatar>
+                        </TableCell>
+                        <TableCell className='font-medium'>
+                          {student.fullName}
+                        </TableCell>
+                        <TableCell>{student.phone}</TableCell>
+                        <TableCell>{student.group}</TableCell>
+                        <TableCell>
+                          <Badge
+                            className={cn(
+                              paymentStatusColors[
+                                student.paymentStatus as keyof typeof paymentStatusColors
+                              ],
+                              'dark:bg-opacity-20'
+                            )}
+                          >
+                            {student.paymentStatus === 'paid' && "To'langan"}
+                            {student.paymentStatus === 'pending' &&
+                              'Kutilmoqda'}
+                            {student.paymentStatus === 'overdue' && 'Qarzdor'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={cn(
+                              statusColors[
+                                student.status as keyof typeof statusColors
+                              ],
+                              'dark:bg-opacity-20'
+                            )}
+                          >
+                            {student.status === 'active' ? 'Faol' : 'Inactive'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className='text-right'>
+                          <div className='flex items-center justify-end space-x-2'>
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              onClick={() => handleViewStudent(student)}
+                              className='hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400'
+                              title='View'
+                            >
+                              <Eye className='h-4 w-4' />
+                            </Button>
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              onClick={() => handleEditStudent(student)}
+                              className='hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/30 dark:hover:text-green-400'
+                              title='Edit'
+                            >
+                              <Edit className='h-4 w-4' />
+                            </Button>
+                            <Button
+                              variant='ghost'
+                              size='sm'
+                              onClick={() => handleDeleteStudent(student)}
+                              className='text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-400'
+                              title='Delete'
+                            >
+                              <Trash2 className='h-4 w-4' />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -730,7 +838,6 @@ export default function StudentsPage() {
           </div>
         </Main>
         <ToastContainer />
-
 
         {/* Image Preview Modal */}
         <Dialog open={isPreviewModalOpen} onOpenChange={setIsPreviewModalOpen}>

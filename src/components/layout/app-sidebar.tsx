@@ -65,7 +65,7 @@ export function AppSidebar() {
         avatar: studentProfile.avatar || '',
       }
     }
-    // Admin - get from localStorage
+    // Admin - get from localStorage    
     if (role === 'admin') {
       try {
         const raw = localStorage.getItem(adminProfileStorageKey)
@@ -99,7 +99,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser user={user} role={role} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

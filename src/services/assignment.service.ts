@@ -13,7 +13,7 @@ const ASSIGNMENTS_LIST_CREATE = '/api/assignments/list-cerate/'
 const ASSIGNMENTS_BY_ID = (id: number) => `/api/assignments/${id}/`
 const ASSIGNMENTS_GRADE = (id: number) => `/api/assignments/${id}/grade/`
 const ASSIGNMENTS_SUBMIT = (id: number) => `/api/assignments/${id}/submit/`
-
+const ASSIGNMENTS_STATUS = (id: number) => `/api/assignments/${id}/status/`
 export const getAssignments = (
   params?: AssignmentListParams
 ): Promise<Assignment[]> => {
@@ -55,4 +55,8 @@ export const submitAssignment = (
   payload: SubmitAssignmentPayload | FormData
 ): Promise<Submission> => {
   return apiClient.post<Submission>(ASSIGNMENTS_SUBMIT(id), payload)
+}
+
+export const getAssignmentStatus = (id: number): Promise<any> => {
+  return apiClient.get<any>(ASSIGNMENTS_STATUS(id))
 }

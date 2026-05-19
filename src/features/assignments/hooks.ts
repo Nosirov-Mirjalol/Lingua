@@ -1,11 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { getAssignments } from '@/api/service/teacher/assignment.service'
+import {
+  createAssignment,
+  deleteAssignment,
+  getAssignmentById,
+  getAssignments,
+  updateAssignment,
+} from '@/api/service/teacher/assignment.service'
 import type {
-  Assignment,
   AssignmentListParams,
   CreateAssignmentPayload,
   UpdateAssignmentPayload,
 } from '@/api/service/teacher/assignment.type'
+
+type RetryError = {
+  response?: {
+    status?: number
+  }
+}
 
 export const useAssignments = (params?: AssignmentListParams) => {
   return useQuery({
@@ -17,7 +28,7 @@ export const useAssignments = (params?: AssignmentListParams) => {
       if (
         error &&
         'response' in error &&
-        (error.response as any)?.status === 404
+        (error as RetryError).response?.status === 404
       ) {
         // eslint-disable-next-line no-console
         console.error('404 Error detected, stopping retry')
@@ -31,7 +42,7 @@ export const useAssignments = (params?: AssignmentListParams) => {
 export const useAssignmentById = (id: number) => {
   return useQuery({
     queryKey: ['assignment', id],
-    queryFn: () => apiClient.get<Assignment>(`${ASSIGNMENTS}${id}/`),
+    queryFn: () => getAssignmentById(id),
     enabled: !!id,
   })
 }
@@ -40,8 +51,7 @@ export const useCreateAssignment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: CreateAssignmentPayload) =>
-      apiClient.post<Assignment>(ASSIGNMENTS, payload),
+    mutationFn: (payload: CreateAssignmentPayload) => createAssignment(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] })
     },
@@ -58,7 +68,7 @@ export const useUpdateAssignment = () => {
     }: {
       id: number
       payload: UpdateAssignmentPayload
-    }) => apiClient.put<Assignment>(`${ASSIGNMENTS}${id}/`, payload),
+    }) => updateAssignment(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] })
     },
@@ -69,7 +79,7 @@ export const useDeleteAssignment = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => apiClient.delete(`${ASSIGNMENTS}${id}/`),
+    mutationFn: (id: number) => deleteAssignment(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments'] })
     },

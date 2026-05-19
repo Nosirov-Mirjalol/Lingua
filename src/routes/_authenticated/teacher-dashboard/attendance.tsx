@@ -10,6 +10,7 @@ import { useProfile } from '@/hooks/teacher/profile/useProfile'
 import { Calendar as CalendarPicker } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { RoseButton } from '@/components/ui/rose-button'
+import { ListPagination } from '@/components/list-pagination'
 
 export const Route = createFileRoute('/_authenticated/teacher-dashboard/attendance')({
   component: AttendancePage,
@@ -41,20 +42,24 @@ const STATUS_STYLES: Record<AttendanceStatus, string> = {
 const STATUSES: AttendanceStatus[] = ['present', 'absent', 'late']
 
 function AttendancePage() {
-  const [selectedGroupId, setSelectedGroupId] = useState(0)
+  const [filters, setFilters] = useState({
+    groupId: 0,
+    date: new Date(),
+    search: '',
+    page: 1,
+    pageSize: 10,
+  })
   const [groupOpen, setGroupOpen] = useState(false)
-  const [date, setDate] = useState<Date>(() => new Date())
-  const [searchQuery, setSearchQuery] = useState('')
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
-  
-  // students - ekrandagi o'zgarishlar uchun, savedStudents - faqat saqlangan (API) holat va statistika uchun
-  const [students, setStudents] = useState<AttendanceStudent[]>([])
-  const [savedStudents, setSavedStudents] = useState<AttendanceStudent[]>([])
+  const [modifications, setModifications] = useState<Record<number, {status?: AttendanceStatus, note?: string}>>({})
 
-  const isoDate = useMemo(() => toISODate(date), [date])
+  const isoDate = useMemo(() => toISODate(filters.date), [filters.date])
   const { data: profile } = useProfile()
   const { data: groups = [], isLoading: groupsLoading } = useTeacherGroups()
-  const { data: attendanceList = [] } = useAttendanceList()
+  const { data: attendanceList = [] } = useAttendanceList({
+    page: filters.page,
+    page_size: filters.pageSize,
+  })
 
   const filteredGroups = useMemo(() => {
     if (!profile?.id) return groups
@@ -62,17 +67,20 @@ function AttendancePage() {
   }, [groups, profile?.id])
 
   useEffect(() => {
-    if (filteredGroups.length && !filteredGroups.some(g => g.id === selectedGroupId)) {
-      setSelectedGroupId(filteredGroups[0].id)
+    if (
+      filteredGroups.length &&
+      !filteredGroups.some((g) => g.id === filters.groupId)
+    ) {
+      setFilters((prev) => ({ ...prev, groupId: filteredGroups[0].id }))
     }
-  }, [filteredGroups, selectedGroupId])
+  }, [filteredGroups, filters.groupId])
 
-  const groupId = selectedGroupId || filteredGroups[0]?.id || 0
+  const groupId = filters.groupId || filteredGroups[0]?.id || 0
   const groupData = filteredGroups.find((g) => g.id === groupId)
   const groupAttendanceMutation = useGroupAttendance(groupId)
 
   // API dan kelgan ma'lumotlarni yig'ish
-  const derivedStudents = useMemo<AttendanceStudent[]>(() => {
+  const savedStudents = useMemo<AttendanceStudent[]>(() => {
     if (!groupData) return []
     const byStudentId = new Map(
       attendanceList
@@ -91,11 +99,13 @@ function AttendancePage() {
     })
   }, [groupData, attendanceList, groupId, isoDate])
 
-  // Ma'lumotlar o'zgarganda statelarni yangilash
-  useEffect(() => {
-    setStudents(derivedStudents)
-    setSavedStudents(derivedStudents) // Statistika faqat shu saqlangan holatdan hisoblanadi
-  }, [derivedStudents])
+  // Joriy o'zgarishlarni qo'llash
+  const currentStudents = useMemo(() => {
+    return savedStudents.map((s) => ({
+      ...s,
+      ...modifications[s.studentId]
+    }))
+  }, [savedStudents, modifications])
 
   // Statistika faqat saqlangan (savedStudents) talabalardan hisoblanadi
   const stats = useMemo(() => {
@@ -108,9 +118,11 @@ function AttendancePage() {
   }, [savedStudents])
 
   const filteredStudents = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase()
-    return q ? students.filter((s) => s.name.toLowerCase().includes(q)) : students
-  }, [searchQuery, students])
+    const q = filters.search.trim().toLowerCase()
+    return q
+      ? currentStudents.filter((s) => s.name.toLowerCase().includes(q))
+      : currentStudents
+  }, [filters.search, currentStudents])
 
   const handleSave = async () => {
     if (saveState === 'saving' || !groupId) return
@@ -119,7 +131,7 @@ function AttendancePage() {
       await toast.promise(
         groupAttendanceMutation.mutateAsync({
           date: isoDate,
-          records: students.map((s) => ({
+          records: currentStudents.map((s) => ({
             student: s.studentId,
             status: s.status,
             note: s.note || undefined,
@@ -127,7 +139,7 @@ function AttendancePage() {
         }),
         { loading: 'Saving...', success: 'Saved', error: 'Error' }
       )
-      setSavedStudents(students) // Saqlash muvaffaqiyatli bo'lgach statistika yangilanadi
+      setModifications({}) // Saqlash muvaffaqiyatli bo'lgach o'zgarishlar tozalanadi
       setSaveState('saved')
       setTimeout(() => setSaveState('idle'), 1300)
     } catch {
@@ -153,9 +165,9 @@ function AttendancePage() {
           <input
             type='text'
             placeholder='Search student...'
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className='h-10 w-full rounded-lg bg-slate-100 dark:bg-slate-800 pr-4 pl-9 text-base focus:ring-1 focus:ring-rose-500 outline-none border-none'
+            value={filters.search}
+            onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+            className='h-10 w-full rounded-lg border-none bg-slate-100 pr-4 pl-9 text-base outline-none focus:ring-1 focus:ring-rose-500 dark:bg-slate-800'
           />
         </div>
       </div>
@@ -169,7 +181,7 @@ function AttendancePage() {
               <circle
                 cx='55' cy='55' r={radius} fill='none' stroke='#e11d48' strokeWidth={9}
                 strokeDasharray={circumference} strokeDashoffset={dashOffset}
-                strokeLinecap='round' className='transition-all duration-700 ease-out' // Animatsiya saqlandi
+                strokeLinecap='round' className='transition-all duration-700 ease-out'
               />
             </svg>
             <div className='absolute flex flex-col items-center'>
@@ -210,8 +222,13 @@ function AttendancePage() {
               <div className='absolute top-full left-0 z-20 mt-1 w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl'>
                 {filteredGroups.map((g) => (
                   <button
-                    key={g.id} type='button'
-                    onClick={() => { setSelectedGroupId(g.id); setGroupOpen(false) }}
+                    key={g.id}
+                    type='button'
+                    onClick={() => {
+                      setFilters(prev => ({ ...prev, groupId: g.id }))
+                      setModifications({})
+                      setGroupOpen(false)
+                    }}
                     className='flex w-full justify-between px-3 py-2 text-left text-base hover:bg-slate-50 dark:hover:bg-slate-800'
                   >
                     <span>{g.name}</span>
@@ -227,20 +244,36 @@ function AttendancePage() {
           <label className='mb-1 block text-xs font-bold text-slate-400 uppercase'>Session Date</label>
           <Popover>
             <PopoverTrigger asChild>
-              <button type='button' className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 text-base'>
-                <span className='flex items-center gap-2'><Calendar size={16} /> {formatDate(date)}</span>
+              <button
+                type='button'
+                className='flex h-10 w-full items-center justify-between rounded-lg border border-slate-200 bg-transparent px-3 text-base dark:border-slate-800'
+              >
+                <span className='flex items-center gap-2'>
+                  <Calendar size={16} /> {formatDate(filters.date)}
+                </span>
                 <ChevronDown size={16} />
               </button>
             </PopoverTrigger>
             <PopoverContent className='w-auto p-0'>
-              <CalendarPicker mode='single' selected={date} onSelect={(d) => d && setDate(d)} />
+              <CalendarPicker
+                mode='single'
+                selected={filters.date}
+                onSelect={(d) => {
+                  if (d) {
+                    setFilters(prev => ({ ...prev, date: d }))
+                    setModifications({})
+                  }
+                }}
+              />
             </PopoverContent>
           </Popover>
         </div>
 
         <RoseButton
-          type='button' onClick={handleSave} roseVariant='solid'
-          disabled={saveState === 'saving' || !groupId || students.length === 0}
+          type='button'
+          onClick={handleSave}
+          roseVariant='solid'
+          disabled={saveState === 'saving' || !groupId || currentStudents.length === 0}
           className='h-10 px-6 text-base font-medium'
         >
           {saveState === 'saving' ? <Loader2 size={18} className='animate-spin' /> : saveState === 'saved' ? <Check size={18} /> : 'Save Attendance'}
@@ -257,7 +290,6 @@ function AttendancePage() {
           filteredStudents.map((s, idx) => (
             <div key={s.studentId} className='flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm'>
               
-              {/* Ism va ma'lumotlar */}
               <div className='flex items-center justify-between md:w-auto md:flex-1'>
                 <div className='flex items-center gap-3'>
                   <div className='flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 dark:bg-rose-950 text-xs font-bold text-rose-700 dark:text-rose-300'>
@@ -270,15 +302,22 @@ function AttendancePage() {
                 <span className="text-xs font-bold text-slate-300 md:hidden">{String(idx + 1).padStart(2, '0')}</span>
               </div>
 
-              {/* Tugmalar va Note input */}
               <div className='flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto'>
                 <div className='flex gap-1 flex-1 sm:flex-initial'>
                   {STATUSES.map((st) => (
                     <button
-                      key={st} type='button'
-                      onClick={() => setStudents(prev => prev.map(p => p.studentId === s.studentId ? { ...p, status: st } : p))}
-                      className={`flex-1 md:w-24 rounded px-3 py-2 text-xs font-bold uppercase transition-all ${
-                        s.status === st ? STATUS_STYLES[st] : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                      key={st}
+                      type='button'
+                      onClick={() =>
+                        setModifications((prev) => ({
+                          ...prev,
+                          [s.studentId]: { ...prev[s.studentId], status: st }
+                        }))
+                      }
+                      className={`flex-1 rounded px-3 py-2 text-xs font-bold uppercase transition-all md:w-24 ${
+                        s.status === st
+                          ? STATUS_STYLES[st]
+                          : 'bg-slate-100 text-slate-400 dark:bg-slate-800'
                       }`}
                     >
                       {st}
@@ -287,8 +326,15 @@ function AttendancePage() {
                 </div>
 
                 <input
-                  type='text' value={s.note} placeholder='Add note...'
-                  onChange={(e) => setStudents(prev => prev.map(p => p.studentId === s.studentId ? { ...p, note: e.target.value } : p))}
+                  type='text'
+                  value={s.note}
+                  placeholder='Add note...'
+                  onChange={(e) =>
+                    setModifications((prev) => ({
+                      ...prev,
+                      [s.studentId]: { ...prev[s.studentId], note: e.target.value }
+                    }))
+                  }
                   disabled={s.status !== 'late'}
                   className='h-9 w-full sm:w-40 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-2 text-sm outline-none focus:ring-1 focus:ring-rose-500 disabled:opacity-30'
                 />
@@ -300,6 +346,17 @@ function AttendancePage() {
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {filteredStudents.length > 0 && (
+        <ListPagination
+          page={filters.page}
+          pageSize={filters.pageSize}
+          totalCount={filteredStudents.length}
+          onPageChange={(p) => setFilters(prev => ({ ...prev, page: p }))}
+          onPageSizeChange={(size) => setFilters(prev => ({ ...prev, pageSize: size, page: 1 }))}
+        />
+      )}
     </div>
   )
 }

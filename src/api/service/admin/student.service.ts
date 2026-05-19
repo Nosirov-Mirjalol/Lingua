@@ -1,52 +1,5 @@
 import { apiClient } from '@/api/client'
-import type { User, UserListResponse } from '@/api/service/teacher/user.type'
-import { AUTH } from '@/constants/apiEndPoints'
-
-/** GET /api/auth/user-list/ ba'zan [] yoki { users: [] } qaytaradi — sxema har doim to'g'ri emas */
-function normalizeUserListResponse(raw: unknown): UserListResponse {
-  if (Array.isArray(raw)) {
-    return {
-      count: raw.length,
-      next: null,
-      previous: null,
-      results: raw as User[],
-    }
-  }
-  if (raw && typeof raw === 'object') {
-    const o = raw as Record<string, unknown>
-    if (Array.isArray(o.results)) {
-      const list = o.results as User[]
-      return {
-        count: typeof o.count === 'number' ? o.count : list.length,
-        next: (o.next as string | null) ?? null,
-        previous: (o.previous as string | null) ?? null,
-        results: list,
-      }
-    }
-    if (Array.isArray(o.users)) {
-      const list = o.users as User[]
-      return { count: list.length, next: null, previous: null, results: list }
-    }
-    if (Array.isArray(o.data)) {
-      const list = o.data as User[]
-      return { count: list.length, next: null, previous: null, results: list }
-    }
-  }
-  return { count: 0, next: null, previous: null, results: [] }
-}
-
-export const getAdminStudents = (): Promise<UserListResponse> => {
-  return apiClient.get<unknown>(AUTH.USER_LIST).then(normalizeUserListResponse)
-}
-
-export const searchAdminStudents = (q: string): Promise<UserListResponse> => {
-  const search = q.trim()
-  return apiClient
-    .get<unknown>(AUTH.USER_LIST, {
-      params: search ? { search } : undefined,
-    })
-    .then(normalizeUserListResponse)
-}
+import type { User, ApiError } from '@/types/student'
 
 export type AdminStudentCreatePayload = {
   username: string
@@ -81,6 +34,29 @@ function parseCreatedUserId(body: unknown): number | null {
   return null
 }
 
+function buildFullName(firstName: string, lastName: string): string {
+  return `${firstName.trim()} ${lastName.trim()}`.replace(/\s+/g, ' ').trim()
+}
+
+export function getStudentApiErrorMessage(
+  error: unknown,
+  fallback = 'Xatolik yuz berdi'
+): string {
+  if (error instanceof Error && error.message) return error.message
+  const api = error as ApiError
+  if (api?.message) return String(api.message)
+  return fallback
+}
+
+function assertStudentId(studentId: number): void {
+  if (!Number.isFinite(studentId) || studentId <= 0) {
+    throw new Error("Student ID noto'g'ri")
+  }
+}
+
+/**
+ * Admin talaba yaratish — POST /api/auth/register/
+ */
 export const createAdminStudent = async (
   data: AdminStudentCreatePayload
 ): Promise<User> => {
@@ -121,29 +97,48 @@ export const createAdminStudent = async (
   if (newId != null) {
     try {
       await apiClient.patch<User>(`/api/auth/users/${newId}/`, {
-        email: data.email.trim(),
         first_name: data.first_name.trim(),
         last_name: data.last_name.trim(),
       })
     } catch {
-      /* POST da profil maydonlari bo'lsa yetarli bo'lishi mumkin */
+      // Ignored for now
     }
   }
 
   return created as User
 }
 
-export type AdminStudentUpdatePayload = Partial<
-  Omit<AdminStudentCreatePayload, 'password' | 'role'>
->
-
-export const updateAdminStudent = (
-  studentId: number,
-  data: AdminStudentUpdatePayload
-): Promise<User> => {
-  return apiClient.patch<User>(`/api/auth/users/${studentId}/`, data)
+/**
+ * Barcha talabalarni olish
+ */
+export const getAdminStudents = async (): Promise<User[]> => {
+  const data = await apiClient.get<User[]>('/api/auth/users/')
+  return (data || []).filter((u) => u.role === 'student')
 }
 
-export const deleteAdminStudent = (studentId: number): Promise<unknown> => {
-  return apiClient.delete<unknown>(`/api/auth/users/${studentId}/`)
+/**
+ * Talabani tahrirlash
+ */
+export const updateAdminStudent = async (
+  id: number,
+  data: Partial<AdminStudentCreatePayload>
+): Promise<User> => {
+  assertStudentId(id)
+  const payload: Record<string, unknown> = {}
+  if (data.first_name) payload.first_name = data.first_name.trim()
+  if (data.last_name) payload.last_name = data.last_name.trim()
+  if (data.email) payload.email = data.email.trim()
+  if (data.phone) {
+    const nine = extractNationalNine(data.phone)
+    if (nine) payload.phone = nine
+  }
+  return await apiClient.patch<User>(`/api/auth/users/${id}/`, payload)
+}
+
+/**
+ * Talabani o'chirish
+ */
+export const deleteAdminStudent = async (id: number): Promise<void> => {
+  assertStudentId(id)
+  await apiClient.delete(`/api/auth/users/${id}/`)
 }

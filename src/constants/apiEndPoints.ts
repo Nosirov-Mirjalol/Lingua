@@ -49,9 +49,11 @@ const API_ENDPOINTS = {
     GROUPS: '/api/messages/',
     GROUP_MESSAGES: (groupId: number) => `/api/messages/${groupId}/messages/`,
     SEND: (groupId: number) => `/api/messages/${groupId}/send/`,
+    MARK_READ: (groupId: number) => `/api/messages/${groupId}/read/`,
     DELETE: (groupId: number, messageId: number) =>
       `/api/messages/${groupId}/messages/${messageId}/`,
     UNREAD_COUNT: '/api/messages/unread-count/',
+    SEARCH: (query: string) => `/api/messages/search/?q=${query}`,
   },
   USER: {
     USER_ME: '/user',

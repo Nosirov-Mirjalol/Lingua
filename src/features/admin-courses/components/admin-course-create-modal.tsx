@@ -118,10 +118,10 @@ export function AdminCourseCreateModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='rounded-[32px] sm:max-w-[440px] p-8 border-none shadow-2xl'>
         <DialogHeader className="mb-6">
-          <DialogTitle className='text-2xl font-bold text-slate-900'>
+          <DialogTitle className='text-2xl font-bold text-foreground'>
             Yangi kurs qo'shish
           </DialogTitle>
-          <p className="text-sm text-slate-400 font-medium">O'quv dasturi uchun asosiy parametrlarni kiriting.</p>
+          <p className="text-sm text-muted-foreground font-medium">O'quv dasturi uchun asosiy parametrlarni kiriting.</p>
         </DialogHeader>
 
         <div className='space-y-6'>
@@ -133,7 +133,7 @@ export function AdminCourseCreateModal({
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder='IELTS Foundation'
-              className='h-12 rounded-2xl bg-slate-50 border-none px-4 text-sm font-bold'
+            className='h-12 rounded-2xl bg-muted border-none px-4 text-sm font-bold'
             />
           </div>
 
@@ -147,13 +147,13 @@ export function AdminCourseCreateModal({
                 setForm((p) => ({ ...p, description: e.target.value }))
               }
               placeholder='Kurs haqida qisqacha...'
-              className='rounded-2xl bg-slate-50 border-none px-4 text-sm font-medium min-h-[100px]'
+              className='rounded-2xl bg-muted border-none px-4 text-sm font-medium min-h-[100px]'
             />
           </div>
 
           <div className='grid grid-cols-2 gap-4'>
             <div className='space-y-2'>
-              <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Yo'nalish</Label>
+              <Label className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>Yo'nalish</Label>
               <Select
                 value={form.couser_objective}
                 onValueChange={(v) =>
@@ -163,7 +163,7 @@ export function AdminCourseCreateModal({
                   }))
                 }
               >
-                <SelectTrigger className='h-12 rounded-2xl bg-slate-50 border-none px-4 font-bold text-slate-700'>
+                <SelectTrigger className='h-12 rounded-2xl bg-muted border-none px-4 font-bold text-foreground'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -176,14 +176,14 @@ export function AdminCourseCreateModal({
               </Select>
             </div>
             <div className='space-y-2'>
-              <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Daraja</Label>
+              <Label className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>Daraja</Label>
               <Select
                 value={form.level}
                 onValueChange={(v) =>
                   setForm((p) => ({ ...p, level: v as AdminCourseLevel }))
                 }
               >
-                <SelectTrigger className='h-12 rounded-2xl bg-slate-50 border-none px-4 font-bold text-slate-700'>
+                <SelectTrigger className='h-12 rounded-2xl bg-muted border-none px-4 font-bold text-foreground'>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -199,7 +199,7 @@ export function AdminCourseCreateModal({
 
           <div className='grid grid-cols-2 gap-4'>
             <div className='space-y-2'>
-              <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+              <Label className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
                 Davomiyligi (oy)
               </Label>
               <Input
@@ -208,11 +208,11 @@ export function AdminCourseCreateModal({
                 onChange={(e) =>
                   setForm((p) => ({ ...p, duration_months: e.target.value }))
                 }
-                className='h-12 rounded-2xl bg-slate-50 border-none px-4 font-bold'
+                className='h-12 rounded-2xl bg-muted border-none px-4 font-bold'
               />
             </div>
             <div className='space-y-2'>
-              <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
+              <Label className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
                 Narxi (so'm)
               </Label>
               <Input
@@ -221,7 +221,7 @@ export function AdminCourseCreateModal({
                   setForm((p) => ({ ...p, price: e.target.value }))
                 }
                 placeholder='0'
-                className='h-12 rounded-2xl bg-slate-50 border-none px-4 font-bold'
+                className='h-12 rounded-2xl bg-muted border-none px-4 font-bold'
               />
             </div>
           </div>
@@ -230,7 +230,7 @@ export function AdminCourseCreateModal({
         <DialogFooter className='mt-8 gap-3 sm:gap-0'>
           <Button
             variant='ghost'
-            className='flex-1 h-12 rounded-full font-bold text-slate-400 hover:bg-slate-50'
+            className='flex-1 h-12 rounded-full font-bold text-muted-foreground hover:bg-muted'
             onClick={() => onOpenChange(false)}
             disabled={createMutation.isPending}
           >

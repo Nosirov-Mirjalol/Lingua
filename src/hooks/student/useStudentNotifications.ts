@@ -27,12 +27,18 @@ export const useStudentNotificationsList = () => {
 }
 
 /** O'qilmagan xabarlar sonini olish */
-export const useStudentUnreadCount = () => {
+export const useStudentUnreadCount = (
+  options: { enabled?: boolean } = {}
+) => {
+  const { enabled = true } = options
   return useQuery({
     queryKey: ['student', 'notifications', 'unread-count'],
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
-    refetchInterval: 2_000, // Dashboard ham 2 soniyada yangilanadi
+    enabled,
+    staleTime: 300_000, // 5 daqiqa
+    refetchInterval: 300_000, // 5 daqiqa
+    refetchOnWindowFocus: false,
   })
 }
 

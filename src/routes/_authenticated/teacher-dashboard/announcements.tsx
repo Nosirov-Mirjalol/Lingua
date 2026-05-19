@@ -55,7 +55,7 @@ function AnnouncementsPage() {
             <div className='flex items-start justify-between'>
               <div className='flex flex-1 gap-4'>
                 <div
-                  className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ${
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
                     announcement.priority === 'high' ? 'bg-[#b80035] dark:bg-rose-600' : 'bg-[#fff0f3] dark:bg-rose-950/50'
                   }`}
                 >

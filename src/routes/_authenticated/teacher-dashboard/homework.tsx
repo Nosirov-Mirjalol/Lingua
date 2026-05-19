@@ -1,18 +1,26 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import type { Assignment } from '@/types/assignment.types'
 import {
   BookOpen,
   Plus,
-  ChevronDown,
   PencilLine,
   Trash2,
   Eye,
   Check,
   Loader2,
+  Download,
+  FileText,
+  Image,
+  Paperclip,
+  ExternalLink,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useDeleteAssignment, useGetAssignments } from '@/hooks/useAssignments'
+import {
+  useDeleteAssignment,
+  useGetAssignments,
+  useGetAssignmentStatus,
+} from '@/hooks/useAssignments'
 import {
   Dialog,
   DialogContent,
@@ -28,7 +36,7 @@ import {
 import { RoseButton } from '@/components/ui/rose-button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AssignTaskModal } from '@/components/teacher/modals/AssignTaskModal'
-import { GroupDetailsModal } from '@/components/teacher/modals/GroupDetailsModal'
+import { ListPagination } from '@/components/list-pagination'
 
 interface AssignmentStatus {
   student_id: number
@@ -41,35 +49,367 @@ interface AssignmentStatus {
   file_answer: string | null
 }
 
-const fetchAssignmentStatus = async (assignmentId: number) => {
-  const token = localStorage.getItem('access_token')
-  const res = await fetch(
-    `http://185.190.143.64:8000/api/assignments/${assignmentId}/status/`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    }
-  )
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch assignment status (${res.status})`)
-  }
-
-  return (await res.json()) as AssignmentStatus[]
+const formatDate = (val: string | null) => {
+  if (!val) return '—'
+  const d = new Date(val)
+  return isNaN(d.getTime())
+    ? val
+    : d.toLocaleString('uz-UZ', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
 }
 
-const formatSubmittedAt = (value: string | null) => {
-  if (!value) return '—'
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return '—'
-  const dd = String(d.getDate()).padStart(2, '0')
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const yyyy = d.getFullYear()
-  const hh = String(d.getHours()).padStart(2, '0')
-  const min = String(d.getMinutes()).padStart(2, '0')
-  return `${dd}.${mm}.${yyyy} ${hh}:${min}`
+const getStatus = (item: Assignment) =>
+  (item.is_active ?? new Date(item.deadline).getTime() >= Date.now())
+    ? 'active'
+    : 'completed'
+
+const getFileUrl = (url: string | null) => {
+  if (!url) return ''
+  if (
+    url.startsWith('http://') ||
+    url.startsWith('https://') ||
+    url.startsWith('data:')
+  ) {
+    return url
+  }
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || ''
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`
+  return `${cleanBase}${cleanUrl}`
+}
+
+const getFileName = (url: string | null) => {
+  if (!url) return 'Fayl'
+  const decoded = decodeURIComponent(url)
+  return decoded.substring(decoded.lastIndexOf('/') + 1) || 'Fayl'
+}
+
+const getFileExtension = (url: string | null) => {
+  if (!url) return ''
+  const name = getFileName(url)
+  return name.substring(name.lastIndexOf('.') + 1).toLowerCase()
+}
+
+const getFileIcon = (url: string | null) => {
+  const ext = getFileExtension(url)
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) {
+    return <Image size={18} />
+  }
+  if (ext === 'pdf') {
+    return <FileText size={18} />
+  }
+  return <Paperclip size={18} />
+}
+
+function AssignmentDetailsModal({
+  open,
+  onOpenChange,
+  assignment,
+  data,
+  loading,
+}: any) {
+  const [tab, setTab] = useState<'topshirgan' | 'topshirmagan'>('topshirgan')
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  if (!assignment) return null
+  const submitted = data?.filter((x: any) => x.status === 'topshirgan') || []
+  const notSubmitted =
+    data?.filter((x: any) => x.status === 'topshirmagan') || []
+  const total = data?.length || 0
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className='max-w-3xl rounded-2xl border-none bg-white p-6 shadow-2xl dark:bg-slate-900'>
+          <DialogHeader>
+            <DialogTitle className='text-xl font-bold dark:text-white'>
+              {assignment.title}{' '}
+              <span className='text-sm text-gray-500'>
+                (Guruh ID: {assignment.group})
+              </span>
+            </DialogTitle>
+          </DialogHeader>
+
+          {loading ? (
+            <div className='flex justify-center py-10'>
+              <Loader2 className='animate-spin text-gray-500' />
+            </div>
+          ) : !data ? (
+            <p className='py-8 text-center text-gray-500'>Ma'lumot topilmadi</p>
+          ) : (
+            <div className='space-y-5'>
+              <div className='grid grid-cols-3 gap-3 rounded-2xl bg-gray-50 p-5 dark:bg-slate-800'>
+                <div className='text-center'>
+                  <p className='text-xs text-gray-500'>Jami</p>
+                  <p className='text-2xl font-bold'>{total}</p>
+                </div>
+                <div className='text-center text-emerald-600'>
+                  <p className='text-xs'>Topshirgan</p>
+                  <p className='text-2xl font-bold'>{submitted.length}</p>
+                </div>
+                <div className='text-center text-rose-600'>
+                  <p className='text-xs'>Topshirmagan</p>
+                  <p className='text-2xl font-bold'>{notSubmitted.length}</p>
+                </div>
+              </div>
+
+              {total > 0 && (
+                <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+                  <TabsList className='w-full bg-gray-100 p-1 dark:bg-slate-800'>
+                    <TabsTrigger value='topshirgan' className='flex-1'>
+                      Topshirgan ({submitted.length})
+                    </TabsTrigger>
+                    <TabsTrigger value='topshirmagan' className='flex-1'>
+                      Topshirmagan ({notSubmitted.length})
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent
+                    value='topshirgan'
+                    className='mt-4 max-h-[50vh] space-y-3 overflow-auto'
+                  >
+                    {submitted.map((s: AssignmentStatus) => (
+                      <div
+                        key={s.student_id}
+                        className='rounded-xl border bg-emerald-50/50 p-4 dark:border-slate-700 dark:bg-slate-800'
+                      >
+                        <div className='mb-2 flex items-start justify-between'>
+                          <div>
+                            <p className='font-bold dark:text-white'>
+                              {s.full_name || s.username}
+                            </p>
+                            <p className='text-xs text-gray-500'>
+                              ID: {s.student_id} • Topshirdi:{' '}
+                              {formatDate(s.submitted_at)}
+                            </p>
+                          </div>
+                          <span className='font-bold text-emerald-600'>
+                            Ball: {s.score ?? '—'}
+                          </span>
+                        </div>
+                        {s.text_answer && (
+                          <div className='mb-2'>
+                            <p className='mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase'>
+                              Yozma javob:
+                            </p>
+                            <p className='rounded-xl border bg-white p-2.5 text-sm dark:border-none dark:bg-slate-700 dark:text-slate-200'>
+                              {s.text_answer}
+                            </p>
+                          </div>
+                        )}
+                        {s.file_answer && (
+                          <div className='mt-3'>
+                            <p className='mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase'>
+                              Topshirilgan fayl:
+                            </p>
+                            <div className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-800'>
+                              <div className='flex min-w-0 flex-1 items-center gap-3'>
+                                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-slate-900 dark:text-emerald-400'>
+                                  {getFileIcon(s.file_answer)}
+                                </div>
+                                <div className='min-w-0 flex-1'>
+                                  <p className='truncate text-xs font-bold text-gray-700 dark:text-slate-200'>
+                                    {getFileName(s.file_answer)}
+                                  </p>
+                                  <p className='text-[10px] font-semibold text-gray-400 uppercase'>
+                                    {getFileExtension(s.file_answer)} format
+                                  </p>
+                                </div>
+                              </div>
+                              <div className='flex shrink-0 items-center gap-2'>
+                                <button
+                                  type='button'
+                                  onClick={() => setPreviewUrl(s.file_answer)}
+                                  className='flex items-center gap-1 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
+                                >
+                                  <Eye size={14} /> Ko'rish
+                                </button>
+                                <a
+                                  href={getFileUrl(s.file_answer)}
+                                  download
+                                  target='_blank'
+                                  rel='noreferrer'
+                                  className='flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold transition-all hover:bg-gray-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
+                                >
+                                  <Download size={14} /> Yuklab olish
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </TabsContent>
+
+                  <TabsContent
+                    value='topshirmagan'
+                    className='mt-4 max-h-[50vh] space-y-3 overflow-auto'
+                  >
+                    {notSubmitted.map((s: AssignmentStatus) => (
+                      <div
+                        key={s.student_id}
+                        className='rounded-xl border bg-rose-50/50 p-4 dark:border-slate-700 dark:bg-slate-800'
+                      >
+                        <p className='font-bold dark:text-white'>
+                          {s.full_name || s.username}
+                        </p>
+                        <p className='text-xs text-gray-500'>
+                          ID: {s.student_id}
+                        </p>
+                      </div>
+                    ))}
+                  </TabsContent>
+                </Tabs>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!previewUrl}
+        onOpenChange={(isOpen) => !isOpen && setPreviewUrl(null)}
+      >
+        <DialogContent className='max-w-4xl rounded-2xl border-none bg-white p-6 shadow-2xl dark:bg-slate-900 [&>button.absolute]:text-slate-400 dark:[&>button.absolute]:text-slate-500'>
+          <DialogHeader className='mb-4 flex flex-row items-center justify-between border-b pb-3 dark:border-slate-800'>
+            <DialogTitle className='max-w-[70%] truncate text-lg font-bold dark:text-white'>
+              {previewUrl ? getFileName(previewUrl) : "Fayl ko'rish"}
+            </DialogTitle>
+            {previewUrl && (
+              <a
+                href={getFileUrl(previewUrl)}
+                target='_blank'
+                rel='noreferrer'
+                className='mr-8 flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-all hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              >
+                <ExternalLink size={14} /> Yangi oynada ochish
+              </a>
+            )}
+          </DialogHeader>
+
+          <div className='flex max-h-[70vh] min-h-[50vh] items-center justify-center overflow-auto rounded-xl border bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-950'>
+            {previewUrl &&
+              (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(
+                getFileExtension(previewUrl)
+              ) ? (
+                <img
+                  src={getFileUrl(previewUrl)}
+                  alt='File Preview'
+                  className='max-h-[65vh] max-w-full rounded-lg object-contain shadow-sm'
+                />
+              ) : getFileExtension(previewUrl) === 'pdf' ? (
+                <iframe
+                  src={getFileUrl(previewUrl)}
+                  className='h-[65vh] w-full rounded-lg border-none'
+                  title='PDF Preview'
+                />
+              ) : (
+                <div className='py-10 text-center'>
+                  <div className='mb-4 flex justify-center text-emerald-600 dark:text-emerald-400'>
+                    {getFileIcon(previewUrl)}
+                  </div>
+                  <p className='text-sm font-semibold dark:text-white'>
+                    {getFileName(previewUrl)}
+                  </p>
+                  <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
+                    Ushbu fayl turini brauzerda to'g'ridan-to'g'ri ko'rib
+                    bo'lmaydi.
+                  </p>
+                  <a
+                    href={getFileUrl(previewUrl)}
+                    download
+                    className='mt-4 inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-rose-700'
+                  >
+                    <Download size={16} /> Yuklab olish
+                  </a>
+                </div>
+              ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+function HomeworkCard({ hw, onEdit, onDelete, onOpenDetails, loadingId }: any) {
+  const status = getStatus(hw)
+
+  return (
+    <div className='rounded-2xl border bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900'>
+      <div className='mb-4 flex items-start justify-between'>
+        <div className='rounded-xl bg-rose-50 p-3 text-rose-600 dark:bg-rose-950/50'>
+          <BookOpen size={24} />
+        </div>
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'}`}
+        >
+          {status === 'active' ? 'Faol' : 'Tugatilgan'}
+        </span>
+      </div>
+
+      <h3 className='text-lg font-bold dark:text-white'>{hw.title}</h3>
+      <p className='text-sm text-gray-500'>Guruh ID: {hw.group}</p>
+
+      <div className='mt-4 grid grid-cols-2 gap-2 text-sm'>
+        <div className='rounded-xl bg-gray-50 p-2 dark:bg-slate-800'>
+          <p className='text-[11px] text-gray-400'>Muddat</p>
+          <p className='font-medium dark:text-white'>
+            {formatDate(hw.deadline)}
+          </p>
+        </div>
+        <div className='rounded-xl bg-gray-50 p-2 dark:bg-slate-800'>
+          <p className='text-[11px] text-gray-400'>Maks ball</p>
+          <p className='font-medium dark:text-white'>{hw.max_score}</p>
+        </div>
+      </div>
+
+      <div className='mt-5 flex gap-2'>
+        <RoseButton
+          roseVariant='outline'
+          className='h-10 flex-1'
+          onClick={() => onEdit(hw)}
+        >
+          <PencilLine size={16} /> Tahrirlash
+        </RoseButton>
+        <RoseButton
+          roseVariant='outline'
+          className='h-10 flex-1'
+          onClick={() => onOpenDetails(hw)}
+          disabled={loadingId === hw.id}
+        >
+          {loadingId === hw.id ? (
+            <Loader2 size={16} className='animate-spin' />
+          ) : (
+            <Eye size={16} />
+          )}{' '}
+          Batafsil
+        </RoseButton>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <RoseButton
+              roseVariant='outline'
+              className='h-10 border-red-200 text-red-600 hover:bg-red-50'
+            >
+              <Trash2 size={16} />
+            </RoseButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              className='text-red-600'
+              onClick={() => onDelete(hw.id)}
+            >
+              <Check size={16} className='mr-2' /> O'chirishni tasdiqlash
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
 }
 
 export const Route = createFileRoute(
@@ -83,121 +423,49 @@ function HomeworkPage() {
   const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(
     null
   )
-  const [groupDetailsOpen, setGroupDetailsOpen] = useState(false)
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all')
-  const { data: assignments, isLoading } = useGetAssignments()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
+  const { data: assignments, isLoading } = useGetAssignments({
+    page,
+    page_size: pageSize,
+  })
   const deleteMutation = useDeleteAssignment()
 
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [detailsAssignment, setDetailsAssignment] = useState<Assignment | null>(
     null
   )
-  const [detailsLoadingId, setDetailsLoadingId] = useState<number | null>(null)
-  const [detailsLoading, setDetailsLoading] = useState(false)
-  const [detailsTab, setDetailsTab] = useState<'topshirgan' | 'topshirmagan'>(
-    'topshirgan'
-  )
-  const [detailsData, setDetailsData] = useState<AssignmentStatus[] | null>(
-    null
-  )
 
-  const formatDate = (value: string) => {
-    const date = new Date(value)
-    if (Number.isNaN(date.getTime())) return value
-    return date.toLocaleDateString('uz-UZ', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-  }
+  const { data: detailsData, isLoading: detailsLoading } =
+    useGetAssignmentStatus(detailsAssignment?.id ?? null)
 
-  const getStatus = useMemo(
+  const filteredAssignments = useMemo(
     () =>
-      (item: Assignment): 'active' | 'completed' => {
-        // Use is_active from API response, fallback to deadline check
-        const now = Date.now()
-        return item.is_active !== undefined
-          ? item.is_active
-            ? 'active'
-            : 'completed'
-          : new Date(item.deadline).getTime() >= now
-            ? 'active'
-            : 'completed'
-      },
-    []
-  )
-
-  const getProgressWidth = useCallback(
-    (item: Assignment) => {
-      const status = getStatus(item)
-      if (status === 'completed') return '100%'
-
-      const now = Date.now()
-      const deadline = new Date(item.deadline).getTime()
-      const timeRemaining = deadline - now
-      const weekInMs = 7 * 24 * 60 * 60 * 1000
-
-      if (timeRemaining <= 0) return '100%'
-
-      const progress = Math.max(
-        Math.min((timeRemaining / weekInMs) * 100, 10),
-        10
-      )
-
-      return `${Math.min(progress, 100)}%`
-    },
-    [getStatus]
+      (assignments ?? []).filter(
+        (hw) => filter === 'all' || getStatus(hw) === filter
+      ),
+    [assignments, filter]
   )
 
   const handleDelete = async (id: number) => {
     try {
       await deleteMutation.mutateAsync(id)
-      toast.success("Topshiriq o'chirildi")
+      toast.success("O'chirildi")
     } catch {
-      toast.error("Topshiriqni o'chirishda xatolik yuz berdi")
+      toast.error('Xatolik yuz berdi')
     }
   }
 
-  const handleEdit = (item: Assignment) => {
-    setEditingAssignment(item)
-    setModalOpen(true)
-  }
-
-  const handleOpenDetails = async (item: Assignment) => {
-    if (detailsLoadingId === item.id) return
+  const handleOpenDetails = (item: Assignment) => {
     setDetailsAssignment(item)
-    setDetailsData(null)
-    setDetailsTab('topshirgan')
     setDetailsOpen(true)
-    setDetailsLoadingId(item.id)
-    setDetailsLoading(true)
-
-    try {
-      const data = await fetchAssignmentStatus(item.id)
-      setDetailsData(data)
-    } catch {
-      toast.error('Topshiriq holatini yuklashda xatolik yuz berdi')
-      setDetailsOpen(false)
-    } finally {
-      setDetailsLoading(false)
-      setDetailsLoadingId((current) => (current === item.id ? null : current))
-    }
   }
-
-  const filteredAssignments = useMemo(
-    () =>
-      (assignments ?? []).filter((hw) => {
-        const status = getStatus(hw)
-        if (filter === 'active') return status === 'active'
-        if (filter === 'completed') return status === 'completed'
-        return true
-      }),
-    [assignments, filter, getStatus]
-  )
 
   return (
     <div>
-      <div className='mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center md:mb-8'>
+      <div className='mb-6 flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-bold text-gray-800 dark:text-white md:text-3xl'>
             Homework
@@ -207,370 +475,91 @@ function HomeworkPage() {
           </p>
         </div>
         <RoseButton
-          onClick={() => setModalOpen(true)}
-          className='flex w-full items-center justify-center gap-2 sm:w-auto'
+          onClick={() => {
+            setEditingAssignment(null)
+            setModalOpen(true)
+          }}
         >
-          <Plus size={18} />
-          Yangi vazifa
+          <Plus size={18} className='mr-2' /> Yangi vazifa
         </RoseButton>
       </div>
 
-      <AssignTaskModal
-        open={modalOpen}
-        onOpenChange={(open) => {
-          setModalOpen(open)
-          if (!open) {
-            setEditingAssignment(null)
-          }
-        }}
-        editingAssignment={editingAssignment}
-      />
-      <GroupDetailsModal
-        open={groupDetailsOpen}
-        onOpenChange={setGroupDetailsOpen}
-      />
+      <div className='mb-6 flex gap-2'>
+        {['all', 'active', 'completed'].map((f) => {
+          const isActive = filter === f
 
-      <Dialog
-        open={detailsOpen}
-        onOpenChange={(open) => {
-          setDetailsOpen(open)
-          if (!open) {
-            setDetailsAssignment(null)
-            setDetailsData(null)
-            setDetailsLoading(false)
-            setDetailsLoadingId(null)
-          }
-        }}
-      >
-        <DialogContent className='max-w-3xl rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_30px_60px_-15px_rgba(25,28,30,0.20)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] border-none'>
-          <DialogHeader>
-            <DialogTitle className='text-xl font-bold text-gray-800 dark:text-white'>
-              {detailsAssignment?.title ?? 'Topshiriq'}
-              {detailsAssignment ? (
-                <span className='ms-2 text-sm font-semibold text-gray-500 dark:text-gray-400'>
-                  (Guruh ID: {detailsAssignment.group})
-                </span>
-              ) : null}
-            </DialogTitle>
-          </DialogHeader>
-
-          {detailsLoading ? (
-            <div className='flex items-center justify-center gap-2 py-10 text-sm text-gray-600 dark:text-gray-400'>
-              <Loader2 size={18} className='animate-spin' />
-              Yuklanmoqda...
-            </div>
-          ) : detailsData ? (
-            (() => {
-              const total = detailsData.length
-              const submitted = detailsData.filter(
-                (x) => x.status === 'topshirgan'
-              ).length
-              const pct = total ? Math.round((submitted / total) * 100) : 0
-              const submittedList = detailsData.filter(
-                (x) => x.status === 'topshirgan'
-              )
-              const notSubmittedList = detailsData.filter(
-                (x) => x.status === 'topshirmagan'
-              )
-
-              return (
-                <div className='space-y-5'>
-                  <div className='rounded-2xl bg-gray-50 dark:bg-slate-800/50 p-4'>
-                    <div className='flex items-center justify-between gap-3'>
-                      <p className='text-sm font-semibold text-gray-800 dark:text-white'>
-                        {submitted} / {total} talaba topshirdi
-                      </p>
-                      <p className='text-xs font-semibold text-gray-500 dark:text-gray-400'>
-                        {pct}%
-                      </p>
-                    </div>
-                    <div className='mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700'>
-                      <div
-                        className='h-full bg-[#b80035]'
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {total === 0 ? (
-                    <p className='py-8 text-center text-sm text-gray-500'>
-                      Hali hech kim topshirmagan
-                    </p>
-                  ) : (
-                    <Tabs
-                      value={detailsTab}
-                      onValueChange={(v) =>
-                        setDetailsTab(v as 'topshirgan' | 'topshirmagan')
-                      }
-                    >
-                      <TabsList className='w-full rounded-2xl bg-gray-50 dark:bg-slate-800 p-1'>
-                        <TabsTrigger value='topshirgan' className='flex-1 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-white'>
-                          Topshirgan ({submittedList.length})
-                        </TabsTrigger>
-                        <TabsTrigger value='topshirmagan' className='flex-1 rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 dark:data-[state=active]:text-white'>
-                          Topshirmagan ({notSubmittedList.length})
-                        </TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value='topshirgan'>
-                        {submittedList.length === 0 ? (
-                          <p className='py-8 text-center text-sm text-gray-500'>
-                            Hali hech kim topshirmagan
-                          </p>
-                        ) : (
-                          <div className='max-h-[50vh] space-y-2 overflow-auto pr-1'>
-                            {submittedList.map((s) => (
-                              <div
-                                key={s.student_id}
-                                className='rounded-2xl bg-white dark:bg-slate-800 p-4 shadow-[0_18px_35px_-14px_rgba(25,28,30,0.10)] dark:shadow-none'
-                              >
-                                <div className='flex items-start justify-between gap-3'>
-                                  <div className='min-w-0'>
-                                    <p className='truncate text-sm font-bold text-gray-800 dark:text-white'>
-                                      {s.full_name || s.username}
-                                    </p>
-                                    <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                                      Submitted:{' '}
-                                      {formatSubmittedAt(s.submitted_at)}
-                                    </p>
-                                  </div>
-                                  <span className='shrink-0 rounded-full bg-emerald-100 dark:bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400'>
-                                    Topshirgan
-                                  </span>
-                                </div>
-                                <div className='mt-3 grid grid-cols-2 gap-2 text-sm'>
-                                  <div className='rounded-xl bg-gray-50 dark:bg-slate-700/50 px-3 py-2'>
-                                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500 uppercase'>
-                                      Ball
-                                    </p>
-                                    <p className='mt-1 font-semibold text-gray-800 dark:text-white'>
-                                      {s.score ?? '—'}
-                                    </p>
-                                  </div>
-                                  <div className='rounded-xl bg-gray-50 dark:bg-slate-700/50 px-3 py-2'>
-                                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500 uppercase'>
-                                      Javob
-                                    </p>
-                                    <p className='mt-1 truncate font-semibold text-gray-800 dark:text-white'>
-                                      {s.text_answer || s.file_answer
-                                        ? 'Mavjud'
-                                        : '—'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-
-                      <TabsContent value='topshirmagan'>
-                        {notSubmittedList.length === 0 ? (
-                          <p className='py-8 text-center text-sm text-gray-500'>
-                            Hamma topshirgan
-                          </p>
-                        ) : (
-                          <div className='max-h-[50vh] space-y-2 overflow-auto pr-1'>
-                            {notSubmittedList.map((s) => (
-                              <div
-                                key={s.student_id}
-                                className='rounded-2xl bg-white dark:bg-slate-800 p-4 shadow-[0_18px_35px_-14px_rgba(25,28,30,0.10)] dark:shadow-none'
-                              >
-                                <div className='flex items-start justify-between gap-3'>
-                                  <div className='min-w-0'>
-                                    <p className='truncate text-sm font-bold text-gray-800 dark:text-white'>
-                                      {s.full_name || s.username}
-                                    </p>
-                                    <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                                      Submitted: —
-                                    </p>
-                                  </div>
-                                  <span className='shrink-0 rounded-full bg-rose-100 dark:bg-rose-950 px-3 py-1 text-xs font-semibold text-rose-700 dark:text-rose-400'>
-                                    Topshirmagan
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </TabsContent>
-                    </Tabs>
-                  )}
-                </div>
-              )
-            })()
-          ) : (
-            <p className='py-8 text-center text-sm text-gray-500'>
-              Holat topilmadi
-            </p>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Filters */}
-      <div className='mb-6 flex flex-wrap items-center gap-2 md:gap-4'>
-        <button
-          onClick={() => setFilter('all')}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-            filter === 'all'
-              ? 'bg-[#fff0f3] dark:bg-rose-950/50 text-[#b80035] dark:text-rose-400'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          Barchasi
-        </button>
-        <button
-          onClick={() => setFilter('active')}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-            filter === 'active'
-              ? 'bg-[#fff0f3] dark:bg-rose-950/50 text-[#b80035] dark:text-rose-400'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          Faol
-        </button>
-        <button
-          onClick={() => setFilter('completed')}
-          className={`rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
-            filter === 'completed'
-              ? 'bg-[#fff0f3] dark:bg-rose-950/50 text-[#b80035] dark:text-rose-400'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          Tugatilgan
-        </button>
+          return (
+            <RoseButton
+              key={f}
+              onClick={() => setFilter(f as any)}
+              roseVariant={isActive ? 'solid' : 'ghost'}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold ${
+                isActive
+                  ? ''
+                  : 'text-slate-600 hover:bg-rose-50/50 dark:text-slate-400 dark:hover:bg-rose-950/30'
+              }`}
+            >
+              {f === 'all'
+                ? 'Barchasi'
+                : f === 'active'
+                  ? 'Faol'
+                  : 'Tugatilgan'}
+            </RoseButton>
+          )
+        })}
       </div>
 
-      {/* Homework Cards */}
-      <div className='grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-2'>
+      <div className='grid grid-cols-1 gap-4 lg:grid-cols-2'>
         {isLoading ? (
-          <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 text-sm text-gray-500 dark:text-gray-400 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none'>
-            Topshiriqlar yuklanmoqda...
-          </div>
+          <p className='text-gray-500'>Yuklanmoqda...</p>
         ) : filteredAssignments.length === 0 ? (
-          <div className='rounded-2xl bg-white dark:bg-slate-900 p-6 text-sm text-gray-500 dark:text-gray-400 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none'>
-            Hozircha topshiriqlar mavjud emas.
-          </div>
+          <p className='text-gray-500'>Topshiriqlar yo'q</p>
         ) : (
-          filteredAssignments.map((hw) => {
-            const status = getStatus(hw)
-            return (
-              <div
-                key={hw.id}
-                className='rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-[0_20px_40px_-10px_rgba(25,28,30,0.06)] dark:shadow-none border border-transparent dark:border-slate-800'
-              >
-                <div className='mb-4 flex items-start justify-between'>
-                  <div className='rounded-xl bg-[#fff0f3] dark:bg-rose-950/50 p-3 text-[#b80035] dark:text-rose-400'>
-                    <BookOpen size={24} />
-                  </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      status === 'active'
-                        ? 'bg-green-100 dark:bg-emerald-950 text-green-700 dark:text-emerald-400'
-                        : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-400'
-                    }`}
-                  >
-                    {status === 'active' ? 'Faol' : 'Tugatilgan'}
-                  </span>
-                </div>
-                <h3 className='text-lg font-bold text-gray-800 dark:text-white'>{hw.title}</h3>
-                <p className='mt-1 text-sm text-gray-500 dark:text-gray-400'>
-                  Guruh ID: {hw.group}
-                </p>
-                <div className='mt-4 grid grid-cols-2 gap-2 text-sm'>
-                  <div
-                    className={`rounded-xl px-3 py-2 ${
-                      status === 'completed' ? 'bg-red-50 dark:bg-rose-950/20' : 'bg-gray-50 dark:bg-slate-800/50'
-                    }`}
-                  >
-                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500 uppercase'>
-                      Muddat
-                    </p>
-                    <p
-                      className={`mt-1 font-medium ${
-                        status === 'completed'
-                          ? 'text-red-700 dark:text-rose-400'
-                          : 'text-gray-700 dark:text-slate-200'
-                      }`}
-                    >
-                      {formatDate(hw.deadline)}
-                    </p>
-                    {status === 'completed' && (
-                      <p className='mt-1 text-xs text-red-600 dark:text-rose-500'>
-                        Deadline o'tgan
-                      </p>
-                    )}
-                  </div>
-                  <div className='rounded-xl bg-gray-50 dark:bg-slate-800/50 px-3 py-2'>
-                    <p className='text-[11px] font-semibold tracking-wide text-gray-400 dark:text-slate-500 uppercase'>
-                      Maks ball
-                    </p>
-                    <p className='mt-1 font-medium text-gray-700 dark:text-slate-200'>
-                      Maks ball: {hw.max_score}
-                    </p>
-                  </div>
-                </div>
-                <div className='mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-slate-700'>
-                  <div
-                    className='h-full bg-[#b80035]'
-                    style={{
-                      width: getProgressWidth(hw),
-                    }}
-                  />
-                </div>
-                <div className='mt-5 flex flex-wrap items-center gap-2'>
-                  <RoseButton
-                    roseVariant='outline'
-                    className='h-10 rounded-xl border-gray-300 dark:border-slate-700 px-3 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
-                    onClick={() => handleEdit(hw)}
-                  >
-                    <PencilLine size={16} />
-                    Tahrirlash
-                  </RoseButton>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <RoseButton
-                        roseVariant='outline'
-                        className='h-10 rounded-xl border-red-200 dark:border-rose-900/50 px-3 text-red-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-950/30'
-                      >
-                        <Trash2 size={16} />
-                        O&apos;chirish
-                        <ChevronDown size={15} />
-                      </RoseButton>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align='start'
-                      className='w-52 rounded-xl p-1'
-                    >
-                      <DropdownMenuItem
-                        variant='destructive'
-                        className='rounded-lg'
-                        onClick={() => handleDelete(hw.id)}
-                      >
-                        <Check size={16} />
-                        O&apos;chirishni tasdiqlash
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <RoseButton
-                    roseVariant='outline'
-                    className='h-10 rounded-xl border-gray-300 dark:border-slate-700 px-3 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'
-                    onClick={() => handleOpenDetails(hw)}
-                    disabled={detailsLoadingId === hw.id}
-                  >
-                    {detailsLoadingId === hw.id ? (
-                      <Loader2 size={16} className='animate-spin' />
-                    ) : (
-                      <Eye size={16} />
-                    )}
-                    Batafsil
-                  </RoseButton>
-                </div>
-              </div>
-            )
-          })
+          filteredAssignments.map((hw) => (
+            <HomeworkCard
+              key={hw.id}
+              hw={hw}
+              onEdit={(h: any) => {
+                setEditingAssignment(h)
+                setModalOpen(true)
+              }}
+              onDelete={handleDelete}
+              onOpenDetails={handleOpenDetails}
+              loadingId={
+                detailsLoading && detailsAssignment?.id === hw.id ? hw.id : null
+              }
+            />
+          ))
         )}
       </div>
+
+      {assignments && assignments.length > 0 && (
+        <div className='mt-6'>
+          <ListPagination
+            page={page}
+            pageSize={pageSize}
+            totalCount={assignments.length}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => {
+              setPageSize(s)
+              setPage(1)
+            }}
+          />
+        </div>
+      )}
+
+      <AssignTaskModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        editingAssignment={editingAssignment}
+      />
+      <AssignmentDetailsModal
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        assignment={detailsAssignment}
+        data={detailsData}
+        loading={detailsLoading}
+      />
     </div>
   )
 }

@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState, useEffect } from 'react'
-import { Calendar, CheckCircle, Clock, Paperclip, UploadCloud, AlertCircle } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { Calendar, CheckCircle, Clock, Paperclip, UploadCloud, AlertCircle, BookOpen, ClipboardList } from 'lucide-react'
 import { useStudentHomework, useSubmitHomework } from '@/hooks/student/useStudentPortal'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'

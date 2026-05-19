@@ -9,7 +9,7 @@ import { StudentGrowth } from './components/student-growth'
 
 export default function Dashboard() {
   return (
-    <div className='min-h-screen bg-slate-50 dark:bg-slate-950'>
+    <div className='min-h-screen bg-background'>
       <AdminHeader fixed>
         <ConfigDrawer />
       </AdminHeader>
@@ -17,13 +17,13 @@ export default function Dashboard() {
       <Main>
         {/* ── Welcome ── */}
         <div className='mb-7'>
-          <p className='mb-1 text-xs font-semibold tracking-widest text-[#b80035] uppercase dark:text-rose-400'>
+          <p className='mb-1 text-xs font-semibold tracking-widest text-primary uppercase'>
             Admin paneli
           </p>
-          <h1 className='text-2xl font-bold text-slate-900 md:text-3xl dark:text-white'>
+          <h1 className='text-2xl font-bold text-foreground md:text-3xl'>
             Xush kelibsiz, Admin!
           </h1>
-          <p className='mt-1.5 text-sm text-slate-500 dark:text-slate-400'>
+          <p className='mt-1.5 text-sm text-muted-foreground'>
             O&apos;quv markaz holati va asosiy ko&apos;rsatkichlar.
           </p>
         </div>

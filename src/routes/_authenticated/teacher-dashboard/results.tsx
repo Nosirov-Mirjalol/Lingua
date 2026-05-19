@@ -18,6 +18,11 @@ export const Route = createFileRoute(
 
 function ResultsPage() {
   const [open, setOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editingResult, setEditingResult] = useState<any>(null)
+  const [editScore, setEditScore] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   return (
     <div>
@@ -201,11 +206,76 @@ function ResultsPage() {
                       result.status.slice(1)}
                   </span>
                 </td>
+                <td className='py-4'>
+                  <button
+                    onClick={() => {
+                      setEditingResult(result)
+                      setEditScore(result.score)
+                      setEditOpen(true)
+                    }}
+                    className='flex items-center gap-1 text-sm font-semibold text-[#b80035] hover:underline dark:text-rose-400'
+                  >
+                    <PencilLine size={14} />
+                    Edit
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      <ListPagination
+        page={page}
+        pageSize={pageSize}
+        totalCount={4}
+        onPageChange={setPage}
+        onPageSizeChange={(size) => {
+          setPageSize(size)
+          setPage(1)
+        }}
+      />
+
+      {/* Edit Result Modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className='max-w-md rounded-2xl border-none bg-white p-6 shadow-[0_30px_60px_-15px_rgba(25,28,30,0.20)] dark:bg-slate-900 dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]'>
+          <DialogHeader>
+            <DialogTitle className='text-xl font-bold text-gray-800 dark:text-white'>
+              Edit Result
+            </DialogTitle>
+          </DialogHeader>
+          <div className='space-y-4 pt-4'>
+            <div>
+              <Label htmlFor='score'>Score</Label>
+              <Input
+                id='score'
+                value={editScore}
+                onChange={(e) => setEditScore(e.target.value)}
+                placeholder='Enter score (e.g., 95%)'
+                className='mt-1'
+              />
+            </div>
+            <div className='flex justify-end gap-3 pt-4'>
+              <RoseButton
+                roseVariant='outline'
+                onClick={() => setEditOpen(false)}
+              >
+                Cancel
+              </RoseButton>
+              <RoseButton
+                roseVariant='solid'
+                onClick={() => {
+                  // Update logic here
+                  setEditOpen(false)
+                }}
+              >
+                Save
+              </RoseButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

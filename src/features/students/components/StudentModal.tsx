@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { User } from 'lucide-react'
 import type { Student } from '../index'
 
@@ -7,7 +7,7 @@ interface StudentModalProps {
   isOpen: boolean
   onClose: () => void
   action: 'edit' | 'delete' | 'detail'
-  onConfirm: (student: Student) => void
+  onConfirm: (student: Student) => void | Promise<void>
 }
 
 export const StudentModal = ({
@@ -22,33 +22,35 @@ export const StudentModal = ({
     phone: student?.phone || '',
     group: student?.group || '',
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    setFormData({
+      fullName: student?.fullName || '',
+      phone: student?.phone || '',
+      group: student?.group || '',
+    })
+  }, [student])
 
   // Update form when student changes for edit mode
   const handleInputChange = (field: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  // Reset form data when student changes
-  if (student && action === 'edit' && !formData.fullName) {
-    setFormData({
-      fullName: student.fullName,
-      phone: student.phone,
-      group: student.group,
-    })
-  }
-
   if (!isOpen || !student) return null
 
-  const handleConfirm = () => {
-    if (action === 'delete') {
-      // Handle delete logic
-      onConfirm(student)
-    } else if (action === 'edit') {
-      // Handle edit logic
-      const updatedStudent = { ...student, ...formData }
-      onConfirm(updatedStudent)
+  const handleConfirm = async () => {
+    try {
+      setIsSubmitting(true)
+      if (action === 'delete') {
+        await onConfirm(student)
+      } else if (action === 'edit') {
+        const updatedStudent = { ...student, ...formData }
+        await onConfirm(updatedStudent)
+      }
+    } finally {
+      setIsSubmitting(false)
     }
-    onClose()
   }
 
   const renderContent = () => {
@@ -384,6 +386,7 @@ export const StudentModal = ({
         >
           <button
             onClick={onClose}
+            disabled={isSubmitting}
             style={{
               padding: '8px 16px',
               border: '1px solid var(--border-color, #d1d5db)',
@@ -392,7 +395,7 @@ export const StudentModal = ({
               color: 'var(--text-color, #6b7280)',
               fontSize: 14,
               fontWeight: 500,
-              cursor: 'pointer',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
             }}
           >
             {action === 'detail' ? 'Close' : 'Cancel'}
@@ -400,6 +403,7 @@ export const StudentModal = ({
           {action !== 'detail' && (
             <button
               onClick={handleConfirm}
+              disabled={isSubmitting}
               style={{
                 padding: '8px 16px',
                 border: 'none',
@@ -411,10 +415,14 @@ export const StudentModal = ({
                 color: '#fff',
                 fontSize: 14,
                 fontWeight: 500,
-                cursor: 'pointer',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
               }}
             >
-              {action === 'delete' ? 'Delete' : 'Save'}
+              {isSubmitting
+                ? 'Saving...'
+                : action === 'delete'
+                  ? 'Delete'
+                  : 'Save'}
             </button>
           )}
         </div>

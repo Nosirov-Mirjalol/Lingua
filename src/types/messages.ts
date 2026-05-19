@@ -29,8 +29,8 @@ export interface Message {
   message_type: 'text' | 'file' | 'image'
   file_url: string | null
   image_url: string | null
-  is_read: boolean | string
-  read_count: number | string
+  is_read: boolean
+  read_count: number
   is_own?: boolean
   created_at: string
 }
