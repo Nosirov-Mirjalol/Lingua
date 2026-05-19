@@ -30,8 +30,10 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
+import { ListPagination } from '@/components/list-pagination'
 import { NotificationCard } from '@/components/shared/NotificationCard'
 import { useBroadcastList, useSendBroadcast } from './hooks'
+import type { BroadcastTargetRole } from './types'
 
 export default function NotificationsPage() {
   const { data: apiNotifications, isLoading, error } = useBroadcastList()
@@ -50,16 +52,17 @@ export default function NotificationsPage() {
           id?: unknown
           title?: unknown
           message?: unknown
-          type?: unknown
           created_at?: unknown
           is_read?: unknown
+          target_role?: unknown
         }
         const createdAt = item.created_at
         return {
           id: String(item.id || ''),
           title: String(item.title || ''),
           message: String(item.message || ''),
-          type: (item.type as Notification['type']) || 'info',
+          target_role:
+            (item.target_role as BroadcastTargetRole | undefined) || 'all',
           timestamp: createdAt
             ? new Date(createdAt as string | number)
             : fallbackTimestamp,
@@ -73,6 +76,8 @@ export default function NotificationsPage() {
   }, [apiNotifications, error])
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
@@ -80,7 +85,7 @@ export default function NotificationsPage() {
   const [formData, setFormData] = useState({
     title: '',
     message: '',
-    type: 'info' as Notification['type'],
+    target_role: 'all' as BroadcastTargetRole,
   })
 
   const filtered = useMemo(() => {
@@ -95,14 +100,28 @@ export default function NotificationsPage() {
     })
   }, [notifications, searchTerm, activeTab, deletedIds])
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const safePage = Math.min(page, totalPages)
+
+  const paginatedNotifications = useMemo(() => {
+    const start = (safePage - 1) * pageSize
+    return filtered.slice(start, start + pageSize)
+  }, [filtered, safePage, pageSize])
+
   const handleCreate = async () => {
     try {
       await sendBroadcastMutation.mutateAsync(formData)
       setIsCreateModalOpen(false)
-      setFormData({ title: '', message: '', type: 'info' })
+      setFormData({ title: '', message: '', target_role: 'all' })
     } catch {
       toast.error('Xatolik yuz berdi')
     }
+  }
+
+  const roleLabel: Record<BroadcastTargetRole, string> = {
+    all: 'ALL',
+    teacher: 'TEACHER',
+    student: 'STUDENT',
   }
 
   return (
@@ -165,14 +184,14 @@ export default function NotificationsPage() {
                     </div>
                     <div className='space-y-1'>
                       <Label className='text-xs font-bold text-slate-500 dark:text-slate-400'>
-                        Tur
+                        Kimga
                       </Label>
                       <Select
-                        value={formData.type}
+                        value={formData.target_role}
                         onValueChange={(v) =>
                           setFormData({
                             ...formData,
-                            type: v as Notification['type'],
+                            target_role: v as BroadcastTargetRole,
                           })
                         }
                       >
@@ -180,11 +199,9 @@ export default function NotificationsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value='info'>Ma'lumot (Info)</SelectItem>
-                          <SelectItem value='warning'>
-                            Ogohlantirish (Warning)
-                          </SelectItem>
-                          <SelectItem value='error'>Xatolik (Error)</SelectItem>
+                          <SelectItem value='teacher'>Teacher</SelectItem>
+                          <SelectItem value='student'>Student</SelectItem>
+                          <SelectItem value='all'>All</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -222,7 +239,10 @@ export default function NotificationsPage() {
                   ].map((tab) => (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id as 'all' | 'unread')}
+                      onClick={() => {
+                        setActiveTab(tab.id as 'all' | 'unread')
+                        setPage(1)
+                      }}
                       className={cn(
                         'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-all',
                         activeTab === tab.id
@@ -244,59 +264,80 @@ export default function NotificationsPage() {
                     <Input
                       placeholder='Qidirish...'
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value)
+                        setPage(1)
+                      }}
                       className='h-10 w-full rounded-lg border-slate-200 bg-slate-50/50 pl-10 focus:bg-white dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-950'
                     />
                   </div>
                 </div>
 
-                <ScrollArea className='min-h-0 flex-1'>
-                  {isLoading ? (
-                    <div className='flex h-40 items-center justify-center'>
-                      <Loader2 className='animate-spin text-slate-200 dark:text-slate-700' />
-                    </div>
-                  ) : error ? (
-                    <div className='flex h-40 flex-col items-center justify-center gap-2'>
-                      <p className='text-sm font-bold text-slate-500 dark:text-slate-400'>
-                        Xatolik yuz berdi
-                      </p>
-                      <p className='text-xs text-slate-400 dark:text-slate-500'>
-                        Server bilan bog'lanishda muammo
-                      </p>
-                    </div>
-                  ) : (
-                    <div className='divide-y divide-slate-50 dark:divide-slate-800'>
-                      {filtered.map((n) => (
-                        <div key={n.id} className='group relative'>
-                          <NotificationCard
-                            title={n.title}
-                            message={n.message}
-                            time={format(n.timestamp, 'dd.MM.yyyy HH:mm')}
-                            isRead={n.read}
-                          />
-                          <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4'>
-                            <div className='pointer-events-auto flex items-center gap-2'>
-                              <Badge
-                                variant='outline'
-                                className='h-4 border-slate-100 text-[9px] font-bold text-slate-400 dark:border-slate-700 dark:text-slate-500'
-                              >
-                                {n.type.toUpperCase()}
-                              </Badge>
-                              <Button
-                                variant='ghost'
-                                size='icon'
-                                className='h-8 w-8 rounded-lg text-slate-300 opacity-0 group-hover:opacity-100 hover:text-rose-500 dark:text-slate-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
-                                onClick={() => setDeleteId(n.id)}
-                              >
-                                <Trash2 className='h-4 w-4' />
-                              </Button>
+                <div className='min-h-0 flex-1'>
+                  <ScrollArea className='h-full'>
+                    {isLoading ? (
+                      <div className='flex h-40 items-center justify-center'>
+                        <Loader2 className='animate-spin text-slate-200 dark:text-slate-700' />
+                      </div>
+                    ) : error ? (
+                      <div className='flex h-40 flex-col items-center justify-center gap-2'>
+                        <p className='text-sm font-bold text-slate-500 dark:text-slate-400'>
+                          Xatolik yuz berdi
+                        </p>
+                        <p className='text-xs text-slate-400 dark:text-slate-500'>
+                          Server bilan bog'lanishda muammo
+                        </p>
+                      </div>
+                    ) : (
+                      <div className='divide-y divide-slate-50 dark:divide-slate-800'>
+                        {paginatedNotifications.map((n) => (
+                          <div key={n.id} className='group relative'>
+                            <NotificationCard
+                              title={n.title}
+                              message={n.message}
+                              time={format(n.timestamp, 'dd.MM.yyyy HH:mm')}
+                              isRead={n.read}
+                            />
+                            <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4'>
+                              <div className='pointer-events-auto flex items-center gap-2'>
+                                <Badge
+                                  variant='outline'
+                                  className='h-4 border-slate-100 text-[9px] font-bold text-slate-400 dark:border-slate-700 dark:text-slate-500'
+                                >
+                                  {roleLabel[n.target_role]}
+                                </Badge>
+                                <Button
+                                  variant='ghost'
+                                  size='icon'
+                                  className='h-8 w-8 rounded-lg text-slate-300 opacity-0 group-hover:opacity-100 hover:text-rose-500 dark:text-slate-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
+                                  onClick={() => setDeleteId(n.id)}
+                                >
+                                  <Trash2 className='h-4 w-4' />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+
+                  {!isLoading && !error && filtered.length > 0 && (
+                    <div className='border-t border-slate-100 px-4 py-4 dark:border-slate-800'>
+                      <ListPagination
+                        page={safePage}
+                        pageSize={pageSize}
+                        totalCount={filtered.length}
+                        onPageChange={setPage}
+                        onPageSizeChange={(nextPageSize) => {
+                          setPageSize(nextPageSize)
+                          setPage(1)
+                        }}
+                        className='mt-0'
+                      />
                     </div>
                   )}
-                </ScrollArea>
+                </div>
               </div>
             </div>
           </div>
