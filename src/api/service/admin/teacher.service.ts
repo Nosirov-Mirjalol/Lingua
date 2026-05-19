@@ -21,7 +21,10 @@ export type AdminTeacherCreatePayload = {
 }
 
 export type AdminTeacherUpdatePayload = Partial<
-  Pick<AdminTeacher, 'username' | 'full_name' | 'phone' | 'learning_goal' | 'avatar'>
+  Pick<
+    AdminTeacher,
+    'username' | 'full_name' | 'phone' | 'learning_goal' | 'avatar'
+  >
 >
 
 export const getAdminTeachers = (): Promise<AdminTeacher[]> => {
@@ -43,13 +46,25 @@ export const createAdminTeacher = (
     throw new Error("Email formati noto'g'ri")
   }
 
+  // Phone number validation
+  if (data.phone && data.phone.trim()) {
+    const phone = data.phone.trim()
+    // Allow formats: +998901234567, 998901234567, 901234567
+    const phoneRegex = /^(\+998|998)?[0-9]{9}$/
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+      throw new Error(
+        "Telefon raqami noto'g'ri formatda. Masalan: +998901234567"
+      )
+    }
+  }
+
   const fullName = data.full_name.trim().replace(/\s+/g, ' ')
   const password = data.password.trim()
   const payload = {
     username: data.username.trim(),
     email: data.email.trim(),
     full_name: fullName,
-    phone: data.phone?.trim() || undefined,
+    phone: data.phone?.trim().replace(/\s/g, '') || undefined,
     learning_goal: data.learning_goal?.trim() || undefined,
     password,
     password2: password,
