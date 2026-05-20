@@ -182,13 +182,7 @@ export const useStudentProfile = () => {
           ? `${AUTH.PROFILE_GET}&${cacheBuster}` 
           : `${AUTH.PROFILE_GET}?${cacheBuster}`
 
-        const response = await apiClient.get<unknown>(url, {
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-          }
-        })
+        const response = await apiClient.get<unknown>(url)
         const profileData = unwrapSingle<any>(response)
         
         if (profileData) {

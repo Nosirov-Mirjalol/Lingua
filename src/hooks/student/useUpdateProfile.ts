@@ -7,7 +7,7 @@ export const useUpdateStudentProfile = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (data: UpdateProfileRequest) => updateStudentProfile(data),
+    mutationFn: (data: UpdateProfileRequest | FormData) => updateStudentProfile(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['student', 'profile'] })
       toast.success('Profile successfully updated!')

@@ -6,7 +6,7 @@ import type {
 } from '@/api/service/teacher/profile.type'
 
 export const updateStudentProfile = (
-  data: UpdateProfileRequest
+  data: UpdateProfileRequest | FormData
 ): Promise<UpdateProfileResponse> => {
   return apiClient.put<UpdateProfileResponse>(AUTH.PROFILE_UPDATE, data)
 }

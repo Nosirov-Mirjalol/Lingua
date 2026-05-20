@@ -7,18 +7,31 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RoseButton } from '@/components/ui/rose-button'
 
+const defaultProfileImage = new URL('../assets/custom/profileImages.jpg', import.meta.url).href
+
 export function StudentProfilePage() {
   const { data: profile, isLoading } = useStudentProfile()
 
   const updateProfileMutation = useUpdateStudentProfile()
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
 
   const previewUrl = useMemo(() => {
     if (selectedFile) return URL.createObjectURL(selectedFile)
-    return profile?.avatar ?? null
+
+    const avatar = profile?.avatar
+    if (avatar && avatar !== 'string' && avatar.trim()) {
+      return avatar
+    }
+
+    return defaultProfileImage
   }, [profile?.avatar, selectedFile])
+
+  const [imageSrc, setImageSrc] = useState<string>(previewUrl)
+
+  useEffect(() => {
+    setImageSrc(previewUrl)
+  }, [previewUrl])
 
   useEffect(() => {
     if (!selectedFile) return
@@ -26,6 +39,12 @@ export function StudentProfilePage() {
       if (previewUrl) URL.revokeObjectURL(previewUrl)
     }
   }, [previewUrl, selectedFile])
+
+  const handleImageError = () => {
+    if (imageSrc !== defaultProfileImage) {
+      setImageSrc(defaultProfileImage)
+    }
+  }
 
   const {
     register,
@@ -50,65 +69,27 @@ export function StudentProfilePage() {
     }
   }, [profile, reset])
 
-  const uploadToUploadcare = async (file: File): Promise<string> => {
-    const pubKey = import.meta.env.VITE_UPLOADCARE_PUBLIC_KEY
-    if (!pubKey) throw new Error('VITE_UPLOADCARE_PUBLIC_KEY not found')
-
-    const formData = new FormData()
-    formData.append('UPLOADCARE_PUB_KEY', pubKey)
-    formData.append('UPLOADCARE_STORE', 'auto')
-    formData.append('file', file)
-
-    const res = await fetch('https://upload.uploadcare.com/base/', {
-      method: 'POST',
-      body: formData,
-    })
-
-    const data = await res.json()
-    if (!data.file) throw new Error('Uploadcare error')
-
-    return `https://4yypsqu6p6.ucarecd.net/${data.file}/`
-  }
-
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) setSelectedFile(file)
   }
 
   const onSubmit = async (data: any) => {
-    let finalAvatarUrl = data.avatar || profile?.avatar || ''
-
-    if (selectedFile) {
-      setIsUploading(true)
-      try {
-        finalAvatarUrl = await uploadToUploadcare(selectedFile)
-        setValue('avatar', finalAvatarUrl, { shouldDirty: true })
-      } catch (error) {
-        setIsUploading(false)
-        console.error('Avatar upload failed', error)
-        // Let user know
-        // eslint-disable-next-line no-undef
-        ;(await import('sonner')).toast.error('Avatar upload failed')
-        return
-      }
-      setIsUploading(false)
-    }
-
-    // Build payload only with fields that are present to avoid sending empty strings
-    const payload: Record<string, unknown> = {}
-    if (data.username !== undefined) payload.username = data.username
-    if (data.full_name !== undefined) payload.full_name = data.full_name
-    if (finalAvatarUrl) payload.avatar = finalAvatarUrl
-    if (data.timezone !== undefined) payload.timezone = data.timezone
-    if (data.bio !== undefined) payload.bio = data.bio
-    if (data.learning_goal !== undefined) payload.learning_goal = data.learning_goal
-
     try {
-      await updateProfileMutation.mutateAsync(payload as any)
+      const formData = new FormData()
+      if (data.username !== undefined) formData.append('username', data.username)
+      if (data.full_name !== undefined) formData.append('full_name', data.full_name)
+      if (data.timezone !== undefined) formData.append('timezone', data.timezone)
+      if (data.bio !== undefined) formData.append('bio', data.bio)
+      if (data.learning_goal !== undefined) formData.append('learning_goal', data.learning_goal)
+      if (selectedFile) {
+        formData.append('avatar', selectedFile)
+      }
+
+      await updateProfileMutation.mutateAsync(formData)
+      setSelectedFile(null)
     } catch (error) {
       console.error('Profile update failed', error)
-      // eslint-disable-next-line no-undef
-      ;(await import('sonner')).toast.error('Failed to update profile. See console.')
     }
   }
 
@@ -128,7 +109,7 @@ export function StudentProfilePage() {
     )
   }
 
-  const isFormDisabled = updateProfileMutation.isPending || isUploading
+  const isFormDisabled = updateProfileMutation.isPending
 
   return (
     <div className='mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8'>
@@ -146,14 +127,24 @@ export function StudentProfilePage() {
           <div className='flex flex-col items-center rounded-xl border border-primary/10 bg-card p-6 text-card-foreground shadow-sm'>
             <div className='group relative mb-4'>
               <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-primary'>
-                {previewUrl ? (
-                  <img src={previewUrl} alt='' className='h-full w-full object-cover' />
+                {imageSrc ? (
+                  <img
+                    src={imageSrc}
+                    alt='Profile picture'
+                    onError={handleImageError}
+                    className='h-full w-full object-cover'
+                  />
                 ) : (
                   <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
                     <UserIcon size={48} />
                   </div>
                 )}
               </div>
+              {updateProfileMutation.isPending && (
+                <div className='absolute inset-0 z-10 flex items-center justify-center rounded-full bg-black/30'>
+                  <Loader2 className='animate-spin text-white' size={24} />
+                </div>
+              )}
               <label className='absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-background bg-[#b80035] text-white shadow-sm transition-transform hover:scale-105'>
                 <Camera size={16} />
                 <input
@@ -239,7 +230,7 @@ export function StudentProfilePage() {
                   {isFormDisabled ? (
                     <>
                       <Loader2 size={16} className='mr-2 animate-spin' />
-                      {isUploading ? 'Uploading...' : 'Saving...'}
+                      {selectedFile ? 'Uploading...' : 'Saving...'}
                     </>
                   ) : (
                     <>

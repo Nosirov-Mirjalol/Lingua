@@ -1,6 +1,7 @@
 import type {
   Assignment,
   AssignmentListParams,
+  AssignmentUploadResponse,
   CreateAssignmentPayload,
   GradeAssignmentPayload,
   Submission,
@@ -13,6 +14,7 @@ const ASSIGNMENTS_LIST_CREATE = '/api/assignments/list-cerate/'
 const ASSIGNMENTS_BY_ID = (id: number) => `/api/assignments/${id}/`
 const ASSIGNMENTS_GRADE = (id: number) => `/api/assignments/${id}/grade/`
 const ASSIGNMENTS_SUBMIT = (id: number) => `/api/assignments/${id}/submit/`
+const ASSIGNMENTS_UPLOAD = '/api/assignments/upload/'
 const ASSIGNMENTS_STATUS = (id: number) => `/api/assignments/${id}/status/`
 export const getAssignments = (
   params?: AssignmentListParams
@@ -48,6 +50,14 @@ export const gradeAssignment = (
   payload: GradeAssignmentPayload
 ): Promise<Submission> => {
   return apiClient.put<Submission>(ASSIGNMENTS_GRADE(id), payload)
+}
+
+export const uploadAssignmentFile = (
+  file: File
+): Promise<AssignmentUploadResponse> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return apiClient.post<AssignmentUploadResponse>(ASSIGNMENTS_UPLOAD, formData)
 }
 
 export const submitAssignment = (

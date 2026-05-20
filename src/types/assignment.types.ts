@@ -9,8 +9,16 @@ export interface Assignment {
   attachment: string | null
   submission_type: 'text' | 'file'
   is_submitted?: boolean
+  submitted_at?: string | null
   created_at: string
   is_active: boolean
+}
+
+export interface AssignmentUploadResponse {
+  file_path: string
+  file_url: string
+  file_name: string
+  file_size: number
 }
 
 export interface Submission {
@@ -20,8 +28,10 @@ export interface Submission {
   student: string
   text_answer: string
   file_answer: string
+  file_url?: string
   score: number
   submitted_at: string
+  is_submitted: boolean
 }
 
 export type AssignmentListParams = {
@@ -46,4 +56,5 @@ export type SubmitAssignmentPayload = {
   assignment: number
   text_answer?: string
   file_answer?: string | File
+  file_path?: string
 }

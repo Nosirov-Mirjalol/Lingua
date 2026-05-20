@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
-import { Calendar, CheckCircle, Clock, Paperclip, UploadCloud, AlertCircle, BookOpen, ClipboardList } from 'lucide-react'
+import { Calendar, CheckCircle, Clock, Paperclip, UploadCloud, AlertCircle} from 'lucide-react'
 import { useStudentHomework, useSubmitHomework } from '@/hooks/student/useStudentPortal'
+import { uploadAssignmentFile } from '@/services/assignment.service'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,6 +25,7 @@ export default function StudentHomeworkPage() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [textAnswer, setTextAnswer] = useState('')
+  const [submissionMeta, setSubmissionMeta] = useState<Record<number, { is_submitted: boolean; submitted_at: string }>>({})
   const submitMutation = useSubmitHomework()
 
   // Stable 'now' for purity
@@ -35,6 +37,16 @@ export default function StudentHomeworkPage() {
     () => assignments.find((assignment) => assignment.id === effectiveActiveId) ?? null,
     [effectiveActiveId, assignments]
   )
+
+  const activeSubmission = activeAssignment
+    ? submissionMeta[activeAssignment.id] ??
+      (activeAssignment.is_submitted && activeAssignment.submitted_at
+        ? { is_submitted: true, submitted_at: activeAssignment.submitted_at }
+        : undefined)
+    : undefined
+
+  const hasSubmitted = activeSubmission?.is_submitted ?? false
+  const submittedAt = activeSubmission?.submitted_at
 
   const getStatus = (assignment: Assignment): 'Pending' | 'Submitted' | 'Late' => {
     if (assignment.is_submitted || !assignment.is_active) return 'Submitted'
@@ -82,7 +94,7 @@ export default function StudentHomeworkPage() {
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!activeAssignment) return
 
     if (activeAssignment.submission_type === 'file' && !selectedFile) {
@@ -95,35 +107,44 @@ export default function StudentHomeworkPage() {
       return
     }
 
-    let payload: any
+    try {
+      let submitForm = new FormData()
+      submitForm.append('assignment', String(activeAssignment.id))
 
-    if (selectedFile) {
-      const formData = new FormData()
-      formData.append('assignment', String(activeAssignment.id))
-      // Backend may require text_answer even if empty
-      formData.append('text_answer', textAnswer || 'Biriktirilgan fayl') 
-      formData.append('file_answer', selectedFile)
-      payload = formData
-    } else {
-      payload = {
-        assignment: activeAssignment.id,
-        text_answer: textAnswer.trim() ? textAnswer : 'Javob matni yo\'q'
-      }
-    }
-
-    submitMutation.mutate({ id: activeAssignment.id, payload }, {
-      onSuccess: () => {
-        toast.success('Vazifa muvaffaqiyatli topshirildi!')
-        setSelectedFile(null)
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ''
+      if (activeAssignment.submission_type === 'file' && selectedFile) {
+        const uploadResponse = await uploadAssignmentFile(selectedFile)
+        submitForm.append('file_path', uploadResponse.file_path)
+        if (textAnswer.trim()) {
+          submitForm.append('text_answer', textAnswer.trim())
         }
-        setTextAnswer('')
-      },
-      onError: (error: any) => {
-        toast.error(error?.message || 'Vazifani topshirishda xatolik yuz berdi.')
+      } else {
+        submitForm.append('text_answer', textAnswer.trim())
       }
-    })
+
+      const response = await submitMutation.mutateAsync({
+        id: activeAssignment.id,
+        payload: submitForm,
+      })
+
+      if (response?.is_submitted) {
+        setSubmissionMeta((prev) => ({
+          ...prev,
+          [activeAssignment.id]: {
+            is_submitted: true,
+            submitted_at: response.submitted_at,
+          },
+        }))
+      }
+
+      toast.success('Vazifa muvaffaqiyatli topshirildi!')
+      setSelectedFile(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      setTextAnswer('')
+    } catch (error: any) {
+      toast.error(error?.message || 'Vazifani topshirishda xatolik yuz berdi.')
+    }
   }
 
   return (
@@ -214,7 +235,7 @@ export default function StudentHomeworkPage() {
 
         <Card className='shadow-sm border-primary/20 transition-all hover:border-primary/30 hover:shadow-md'>
           {isLoading ? (
-            <CardContent className='flex h-[400px] items-center justify-center'>
+            <CardContent className='flex h-100 items-center justify-center'>
               <div className="flex flex-col items-center gap-4">
                 <Skeleton className="h-8 w-64" />
                 <Skeleton className="h-4 w-48" />
@@ -313,13 +334,17 @@ export default function StudentHomeworkPage() {
                         Topshirish portali
                       </h3>
 
-                      {activeAssignment.is_submitted || getStatus(activeAssignment) === 'Submitted' ? (
+                      {hasSubmitted || getStatus(activeAssignment) === 'Submitted' ? (
                         <div className="flex flex-col items-center justify-center py-8 text-center text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
                           <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-3">
                             <CheckCircle className="w-6 h-6" />
                           </div>
                           <p className="font-medium text-sm">Siz bu vazifani topshirgansiz ✅</p>
-                          <p className="text-xs mt-1 opacity-80">Tez orada ustozingiz vazifani ko‘rib chiqadi.</p>
+                          {submittedAt ? (
+                            <p className="text-xs mt-1 text-muted-foreground">Topshirildi: {formatDate(submittedAt)}</p>
+                          ) : (
+                            <p className="text-xs mt-1 opacity-80">Tez orada ustozingiz vazifani ko‘rib chiqadi.</p>
+                          )}
                         </div>
                       ) : (
                         <>
@@ -399,7 +424,7 @@ export default function StudentHomeworkPage() {
               </CardContent>
             </>
           ) : (
-            <CardContent className='flex h-[300px] items-center justify-center text-muted-foreground'>
+            <CardContent className='flex h-75 items-center justify-center text-muted-foreground'>
               Vazifa tanlanmagan.
             </CardContent>
           )}
