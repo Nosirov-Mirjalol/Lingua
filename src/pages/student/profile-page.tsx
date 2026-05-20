@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
-import { Loader2, Save, Camera, User as UserIcon } from 'lucide-react'
+import { Loader2, Save, Camera, User as UserIcon, Settings } from 'lucide-react'
 import { useStudentProfile } from '@/hooks/student/useStudentPortal'
 import { useUpdateStudentProfile } from '@/hooks/student/useUpdateProfile'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RoseButton } from '@/components/ui/rose-button'
+import { StudentPageHeader } from '@/components/student/common/student-page-header'
 
 const defaultProfileImage = new URL('../assets/custom/profileImages.jpg', import.meta.url).href
 
@@ -95,15 +96,15 @@ export function StudentProfilePage() {
   if (isLoading) {
     return (
       <div className='flex min-h-100 items-center justify-center'>
-        <Loader2 className='animate-spin text-rose-500' size={40} />
+        <Loader2 className='animate-spin text-primary' size={40} />
       </div>
     )
   }
 
   if (!profile) {
     return (
-      <div className='rounded-xl border border-rose-200 bg-rose-50 p-6 text-center text-rose-600'>
-        Failed to load profile. Please refresh the page.
+      <div className='rounded-xl border border-primary/20 bg-primary/5 p-6 text-center text-primary font-medium'>
+        Profil ma'lumotlarini yuklab bo'lmadi. Sahifani yangilang.
       </div>
     )
   }
@@ -111,21 +112,19 @@ export function StudentProfilePage() {
   const isFormDisabled = updateProfileMutation.isPending
 
   return (
-    <div className='mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8'>
-      <div className='mb-8'>
-        <h1 className='text-3xl font-bold tracking-tight text-gray-900 dark:text-white'>
-          My Profile
-        </h1>
-        <p className='mt-2 text-sm text-gray-500 dark:text-gray-400'>
-          Update your personal details and public profile.
-        </p>
-      </div>
+    <div className='mx-auto max-w-7xl space-y-8'>
+      <StudentPageHeader
+        title='Mening profilim'
+        description='Shaxsiy ma’lumotlaringizni va profil sozlamalarini yangilang.'
+        eyebrow='Sozlamalar'
+        icon={<Settings size={18} />}
+      />
 
-      <div className='flex flex-col gap-8 md:flex-row'>
-        <div className='w-full md:w-1/3 lg:w-1/4'>
-          <div className='flex flex-col items-center rounded-xl border border-primary/10 bg-card p-6 text-card-foreground shadow-sm'>
-            <div className='group relative mb-4'>
-              <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-primary'>
+      <div className='grid gap-8 lg:grid-cols-[300px_1fr]'>
+        <aside className='space-y-6'>
+          <div className='flex flex-col items-center rounded-3xl border border-primary/20 bg-card p-8 text-card-foreground shadow-sm transition-all hover:border-primary/30'>
+            <div className='group relative mb-6'>
+              <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-primary/10 transition-colors group-hover:border-primary/20'>
                 {imageSrc ? (
                   <img
                     src={imageSrc}
@@ -140,12 +139,12 @@ export function StudentProfilePage() {
                 )}
               </div>
               {updateProfileMutation.isPending && (
-                <div className='absolute inset-0 z-10 flex items-center justify-center rounded-full bg-black/30'>
+                <div className='absolute inset-0 z-10 flex items-center justify-center rounded-full bg-black/30 backdrop-blur-[2px]'>
                   <Loader2 className='animate-spin text-white' size={24} />
                 </div>
               )}
-              <label className='absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-background bg-[#b80035] text-white shadow-sm transition-transform hover:scale-105'>
-                <Camera size={16} />
+              <label className='absolute right-1 bottom-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110 active:scale-95'>
+                <Camera size={18} />
                 <input
                   type='file'
                   style={{ display: 'none' }}
@@ -156,44 +155,60 @@ export function StudentProfilePage() {
               </label>
             </div>
 
-            <h2 className='text-lg font-semibold text-foreground dark:text-white'>
+            <h2 className='text-xl font-bold text-foreground'>
               {profile.full_name || profile.username || 'User'}
             </h2>
-            <span className='mt-1 text-sm text-muted-foreground dark:text-slate-400'>Student</span>
+            <span className='mt-1 text-sm font-semibold uppercase tracking-wider text-primary/60'>Talaba</span>
           </div>
-        </div>
+        </aside>
 
-        <div className='w-full md:w-2/3 lg:w-3/4'>
-          <div className='rounded-xl border border-primary/10 bg-card text-card-foreground shadow-sm'>
-            <form id='profile-form' onSubmit={handleSubmit(onSubmit)} className='space-y-6 p-6 sm:p-8'>
-              <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
+        <section>
+          <div className='rounded-3xl border border-primary/20 bg-card p-6 shadow-sm transition-all hover:border-primary/30 md:p-8'>
+            <form id='profile-form' onSubmit={handleSubmit(onSubmit)} className='space-y-8'>
+              <div className='grid gap-6 sm:grid-cols-2'>
                 <div className='space-y-2'>
-                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
-                    Full name
+                  <label className='text-sm font-bold uppercase tracking-wide text-primary/70'>
+                    To'liq ism
                   </label>
-                  <Input {...register('full_name')} placeholder='To‘liq ismingizni kiriting' disabled={isFormDisabled} />
+                  <Input 
+                    {...register('full_name')} 
+                    placeholder='To‘liq ismingizni kiriting' 
+                    disabled={isFormDisabled}
+                    className='rounded-xl border-primary/20 bg-background/50 focus:border-primary/40 focus:ring-primary/10'
+                  />
                   {errors.full_name && <p className='text-[0.8rem] text-destructive'>{String(errors.full_name.message ?? '')}</p>}
                 </div>
 
                 <div className='space-y-2'>
-                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
-                    Username
+                  <label className='text-sm font-bold uppercase tracking-wide text-primary/70'>
+                    Foydalanuvchi nomi
                   </label>
-                  <Input {...register('username')} placeholder='Foydalanuvchi nomingizni kiriting' disabled={isFormDisabled} />
+                  <Input 
+                    {...register('username')} 
+                    placeholder='Foydalanuvchi nomingizni kiriting' 
+                    disabled={isFormDisabled} 
+                    className='rounded-xl border-primary/20 bg-background/50 focus:border-primary/40 focus:ring-primary/10'
+                  />
                   {errors.username && <p className='text-[0.8rem] text-destructive'>{String(errors.username.message ?? '')}</p>}
                 </div>
 
                 <div className='space-y-2'>
-                  <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
-                    Timezone
+                  <label className='text-sm font-bold uppercase tracking-wide text-primary/70'>
+                    Vaqt zonasi
                   </label>
-                  <Input {...register('timezone')} placeholder='Mamlakat/shaҳar formatida kiriting' disabled={isFormDisabled} defaultValue={profile?.timezone || ''} />
+                  <Input 
+                    {...register('timezone')} 
+                    placeholder='Mamlakat/shaҳar formatida kiriting' 
+                    disabled={isFormDisabled} 
+                    defaultValue={profile?.timezone || ''} 
+                    className='rounded-xl border-primary/20 bg-background/50 focus:border-primary/40 focus:ring-primary/10'
+                  />
                   {errors.timezone && <p className='text-[0.8rem] text-destructive'>{String(errors.timezone.message ?? '')}</p>}
                 </div>
               </div>
 
               <div className='space-y-2'>
-                <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
+                <label className='text-sm font-bold uppercase tracking-wide text-primary/70'>
                   Bio
                 </label>
                 <Textarea
@@ -201,47 +216,47 @@ export function StudentProfilePage() {
                   rows={4}
                   placeholder='O‘zingiz haqida qisqacha yozing'
                   disabled={isFormDisabled}
-                  className='resize-none placeholder:text-slate-500 dark:placeholder:text-slate-400'
+                  className='resize-none rounded-xl border-primary/20 bg-background/50 placeholder:text-muted-foreground focus:border-primary/40 focus:ring-primary/10'
                 />
               </div>
 
               <div className='space-y-2'>
-                <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
-                  Learning Goal
+                <label className='text-sm font-bold uppercase tracking-wide text-primary/70'>
+                  O'quv maqsadi
                 </label>
                 <Textarea
                   {...register('learning_goal')}
                   rows={3}
                   placeholder='O‘qish maqsadingizni yozing'
                   disabled={isFormDisabled}
-                  className='resize-none placeholder:text-slate-500 dark:placeholder:text-slate-400'
+                  className='resize-none rounded-xl border-primary/20 bg-background/50 placeholder:text-muted-foreground focus:border-primary/40 focus:ring-primary/10'
                 />
               </div>
 
-              <div className='flex justify-end border-t border-slate-100 dark:border-slate-800 pt-4'>
+              <div className='flex justify-start pt-4'>
                 <RoseButton
                   type='submit'
                   form='profile-form'
                   roseVariant='solid'
                   disabled={(!isDirty && !selectedFile) || isFormDisabled}
-                  className='w-full sm:w-auto bg-rose-600 text-white shadow-lg hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-200'
+                  className='w-full sm:w-auto min-w-160px rounded-2xl bg-primary px-8 py-6 text-base font-bold text-primary-foreground shadow-lg hover:bg-primary/90 hover:shadow-primary/20 focus-visible:ring-2 focus-visible:ring-primary/20 active:scale-[0.98] transition-all'
                 >
                   {isFormDisabled ? (
                     <>
-                      <Loader2 size={16} className='mr-2 animate-spin' />
-                      {selectedFile ? 'Uploading...' : 'Saving...'}
+                      <Loader2 size={18} className='mr-2 animate-spin' />
+                      {selectedFile ? 'Yuklanmoqda...' : 'Saqlanmoqda...'}
                     </>
                   ) : (
                     <>
-                      <Save size={16} className='mr-2' />
-                      Save Changes
+                      <Save size={18} className='mr-2' />
+                      Saqlash
                     </>
                   )}
                 </RoseButton>
               </div>
             </form>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   )

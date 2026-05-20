@@ -179,7 +179,7 @@ export function MessagesPage() {
           selectedGroupId && 'hidden sm:flex'
         )}>
           {/* List Header va Inputlar uchun ota blok klasslariga tuzatish berildi */}
-          <div className='flex-1 overflow-y-auto p-4 custom-chat-sidebar **:text-current'>
+          <div className='flex-1 min-h-0 overflow-y-auto p-4 custom-chat-sidebar'>
             <ChatListHeader
               title='Student Chat'
               count={groups.length}
@@ -298,7 +298,7 @@ export function MessagesPage() {
                   </div>
                 )}
               </div>
-              <div ref={messagesContainerRef} className='flex-1 overflow-y-auto bg-slate-500/2 p-4 sm:p-6'>
+              <div ref={messagesContainerRef} className='flex-1 min-h-0 overflow-y-auto bg-slate-500/2 p-4 sm:p-6'>
                 <div className='flex flex-col gap-5'>
                   {messagesLoading ? (
                     Array.from({ length: 3 }).map((_, i) => (
@@ -367,14 +367,12 @@ export function MessagesPage() {
                   )}
                 </div>
               </div>
-
-              {/* Message Composer */}
               <div className='border-t border-slate-100 bg-white/50 p-3 dark:border-slate-800/60 dark:bg-transparent backdrop-blur-sm sm:p-4'>
                 <form onSubmit={handleSubmit(onSubmit)} className='flex items-end gap-3'>
                   <textarea
                     rows={1}
                     placeholder='Xabar yozing...'
-                    className='min-h-11 w-full flex-1 resize-none rounded-2xl border border-transparent bg-slate-500/5 px-4 py-3 text-sm text-current outline-none transition-all placeholder:opacity-50 focus:border-slate-500/20 focus:bg-slate-500/10'
+                    className='min-h-14 w-full flex-1 resize-none rounded-2xl border border-transparent bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-slate-300 focus:bg-white dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-slate-600 dark:focus:bg-slate-950'
                     {...register('content')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
