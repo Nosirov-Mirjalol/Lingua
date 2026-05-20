@@ -23,12 +23,16 @@ export interface StudentDashboardStats {
 
 export interface StudentScheduleItem {
   id: number
-  day: string
+  day?: string
   time: string
   title: string
-  location: string
-  instructor: string
-  status: 'Upcoming' | 'Live' | 'Completed'
+  location?: string
+  instructor?: string
+  status: string
+  week_days_type?: string
+  week_days_names?: string[]
+  start_date?: string
+  end_date?: string
 }
 
 export interface StudentAssignment {
