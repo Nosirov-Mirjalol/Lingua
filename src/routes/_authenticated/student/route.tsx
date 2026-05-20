@@ -52,7 +52,7 @@ function StudentLayout() {
           >
             <DashboardNavbar />
             <StudentGuard>
-              <main className='min-w-0 flex-1 px-4 py-4 md:px-8 md:py-6 md:pb-6'>
+              <main className='mx-auto w-full max-w-7xl min-w-0 flex-1 px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10'>
                 <Suspense fallback={<StudentRouteFallback />}>
                   <Outlet />
                 </Suspense>

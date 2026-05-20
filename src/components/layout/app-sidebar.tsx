@@ -53,14 +53,14 @@ export function AppSidebar() {
   const user = useMemo(() => {
     if (role === 'teacher' && teacherProfile) {
       return {
-        name: teacherProfile.full_name || teacherProfile.username || 'Teacher',
+        name: teacherProfile.full_name || teacherProfile.username || 'Ustoz',
         email: teacherProfile.email || '',
         avatar: teacherProfile.avatar || '',
       }
     }
     if (role === 'student' && studentProfile) {
       return {
-        name: studentProfile.full_name || studentProfile.username || 'Student',
+        name: studentProfile.full_name || studentProfile.username || 'Talaba',
         email: studentProfile.email || '',
         avatar: studentProfile.avatar || '',
       }
@@ -82,7 +82,7 @@ export function AppSidebar() {
       }
     }
     return {
-      name: 'User',
+      name: 'Foydalanuvchi',
       email: '',
       avatar: '',
     }

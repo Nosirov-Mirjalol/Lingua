@@ -16,13 +16,18 @@ export interface StudentNotificationAPI {
 // ─── REST Hooks ───────────────────────────────────────────────────────────────
 
 /** Barcha bildirishnomalarni olish */
-export const useStudentNotificationsList = () => {
+export const useStudentNotificationsList = (
+  options: { enabled?: boolean } = {}
+) => {
+  const { enabled = true } = options
   return useQuery({
     queryKey: ['student', 'notifications'],
     queryFn: () =>
       apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
-    staleTime: 2_000,
-    refetchInterval: 2_000, // 2 soniya - ultra tezkor polling
+    enabled,
+    staleTime: 300_000, // 5 daqiqa
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -70,16 +75,38 @@ export const useStudentMarkAllRead = () => {
   })
 }
 
+export const useStudentDeleteNotifications = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (ids: number[]) =>
+      Promise.all(
+        ids.map((id) =>
+          apiClient.delete<void>(NOTIFICATIONS.DELETE(id))
+        )
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+    },
+  })
+}
+
 // ─── WebSocket Hook ───────────────────────────────────────────────────────────
 
 function getWsBaseUrl(): string {
   const httpBase = import.meta.env.VITE_API_BASE_URL || ''
-  if (httpBase) {
+
+  if (
+    httpBase &&
+    (httpBase.startsWith('http://') || httpBase.startsWith('https://'))
+  ) {
     return httpBase
       .replace(/\/+$/, '')
       .replace(/^http:/, 'ws:')
       .replace(/^https:/, 'wss:')
   }
+
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${protocol}//${window.location.host}`
 }
@@ -97,63 +124,68 @@ function getAccessToken(): string {
  * WebSocket orqali real-time notification olish.
  * Yangi xabar kelganda query cache invalidate qilinadi.
  */
-export const useNotificationWebSocket = () => {
+export const useNotificationWebSocket = (
+  options: { enabled?: boolean } = {}
+) => {
+  const { enabled = true } = options
   const queryClient = useQueryClient()
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reconnectAttemptRef = useRef(0)
-  const MAX_RECONNECT_ATTEMPTS = 10
+  const isConnectingRef = useRef(false)
+  const MAX_RECONNECT_ATTEMPTS = 5
 
   const invalidateNotifications = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-    queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+    queryClient.invalidateQueries({
+      queryKey: ['student', 'notifications', 'unread-count'],
+    })
   }, [queryClient])
 
   const connect = useCallback(() => {
+    if (isConnectingRef.current) return
+    
+    // Agar allaqachon ulanayotgan bo'lsa yoki ulanib bo'lgan bo'lsa, tegmaymiz
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.CONNECTING || wsRef.current.readyState === WebSocket.OPEN)) {
+      return
+    }
+
     const token = getAccessToken()
     if (!token) return
 
-    // Oldingi ulanishni yopish
-    if (wsRef.current) {
-      wsRef.current.onclose = null
-      wsRef.current.close()
-    }
-
     const wsBase = getWsBaseUrl()
-    // Ba'zi serverlarda /ws/ siz, ba'zilarida /ws/ bilan ishlaydi. 
-    // Ikkala holatni ham tekshirib ko'rish uchun path'ni o'zgartirdik.
     const wsUrl = `${wsBase}/ws/notifications/?token=${token}`
 
     try {
+      isConnectingRef.current = true
       const ws = new WebSocket(wsUrl)
 
       ws.onopen = () => {
+        isConnectingRef.current = false
         reconnectAttemptRef.current = 0
       }
 
       ws.onmessage = (event) => {
-        // Har qanday xabar kelganda ma'lumotlarni yangilaymiz (xavfsizlik uchun)
         invalidateNotifications()
-
         try {
-          const data = JSON.parse(event.data)
-          console.log('WS Notification received:', data)
+          JSON.parse(event.data)
         } catch {
-          // JSON bo'lmasa ham invalidateNotifications() tepadagi qatorda chaqirildi
+          // JSON emas
         }
       }
 
       ws.onclose = (event) => {
+        isConnectingRef.current = false
         wsRef.current = null
 
-        // Serverdan 4000+ code bilan yopilsa qayta ulanmaymiz (auth xato)
+        // Auth xatosi bo'lsa qayta ulanmaymiz
         if (event.code >= 4000) return
 
-        // Exponential backoff bilan qayta ulanish
+        // Xatolik bo'lsa spam qilmaslik uchun juda uzoq vaqt kutamiz (masalan 30-60 sekund)
         if (reconnectAttemptRef.current < MAX_RECONNECT_ATTEMPTS) {
           const delay = Math.min(
-            1000 * Math.pow(2, reconnectAttemptRef.current),
-            30_000
+            30_000 * Math.pow(2, reconnectAttemptRef.current),
+            300_000 // Max 5 daqiqa
           )
           reconnectAttemptRef.current += 1
           reconnectTimerRef.current = setTimeout(connect, delay)
@@ -161,16 +193,18 @@ export const useNotificationWebSocket = () => {
       }
 
       ws.onerror = () => {
-        // onerror dan keyin onclose avtomatik chaqiriladi
+        isConnectingRef.current = false
       }
 
       wsRef.current = ws
     } catch {
-      // WebSocket yaratishda xatolik (invalid URL, etc.)
+      isConnectingRef.current = false
     }
   }, [invalidateNotifications])
 
   useEffect(() => {
+    if (!enabled) return
+
     connect()
 
     return () => {
@@ -182,5 +216,5 @@ export const useNotificationWebSocket = () => {
         wsRef.current.close()
       }
     }
-  }, [connect])
+  }, [connect, enabled])
 }

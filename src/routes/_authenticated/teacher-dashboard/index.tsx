@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/popover'
 import { DashboardCard } from '@/components/dashboard-card'
 import { useUnreadCount } from '@/features/notifications/hooks'
+import { RoseButton } from '@/components/ui/rose-button'
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
 
@@ -280,7 +281,7 @@ function DashboardPage() {
 
   return (
     <>
-      <div className='mb-7'>
+      <div className='mb-7 py-3'>
         <p className='mb-1 text-xs font-semibold tracking-widest text-[#b80035] uppercase dark:text-rose-400'>
           O'qituvchi paneli
         </p>
@@ -361,7 +362,7 @@ function DashboardPage() {
             </h2>
             <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
-                <button className='flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-[#b80035] hover:bg-rose-50 dark:text-rose-400'>
+                <RoseButton roseVariant='outline' roseSize='sm'>
                   <CalendarDays size={14} />
                   {calendarDate
                     ? calendarDate.toLocaleDateString('uz-UZ', {
@@ -369,7 +370,7 @@ function DashboardPage() {
                         month: 'short',
                       })
                     : 'Sana'}
-                </button>
+                </RoseButton>
               </PopoverTrigger>
               <PopoverContent className='w-auto border-0 p-0' align='end'>
                 <Calendar

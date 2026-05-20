@@ -16,6 +16,7 @@ export interface ApiError {
 
 const PUBLIC_AUTH_PATHS = [
   '/api/auth/login/',
+  '/api/auth/register/',
   '/api/auth/forgot-password/',
   '/api/auth/verfiy-password/',
 ]
@@ -37,8 +38,6 @@ function getStoredAccessToken() {
   const fromLocal = localStorage.getItem('access_token') ?? ''
   return fromLocal
 }
-
-/** Django REST Framework 400: { "field": ["msg"], "detail": "..." } */
 function formatDrfErrorDetail(data: unknown): string | null {
   if (data == null) return null
   if (typeof data === 'string') {
@@ -49,7 +48,6 @@ function formatDrfErrorDetail(data: unknown): string | null {
 
   const o = data as Record<string, unknown>
   const parts: string[] = []
-
   const pushDetail = (v: unknown) => {
     if (typeof v === 'string' && v.trim()) parts.push(v.trim())
     else if (Array.isArray(v))
@@ -84,8 +82,6 @@ class ApiClient {
   private client: AxiosInstance
   constructor() {
     const envBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim()
-
-    // If VITE_API_BASE_URL is empty, use '' so vite proxy handles /api/* requests
     const baseURL = envBaseUrl || ''
 
     this.client = axios.create({
@@ -99,8 +95,8 @@ class ApiClient {
     this.setupInterceptors()
   }
 
+
   private setupInterceptors(): void {
-    // har bir apiga so'rov ketishidan oldin ishlaydigan function
     this.client.interceptors.request.use(
       (config) => {
         if (!shouldAttachAuthHeader(config.url)) {
@@ -110,24 +106,21 @@ class ApiClient {
           }
           return config
         }
-
         const token = getStoredAccessToken()
-
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
         }
         return config
       },
       (error: unknown) => {
+
         return Promise.reject(error)
       }
     )
-    // Reponse interceptors
 
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError<ApiError>) => {
-        // Server javob qaytargan bo'lsa
         if (error.response) {
           const { status, data } = error.response
 
@@ -155,20 +148,9 @@ class ApiClient {
             success: false,
             data: responseData,
           }
-
-          // 401 — token eskirgan yoki noto'g'ri
           if (status === 401) {
-            const requestUrl = String(error.config?.url ?? '')
-            const isPublicAuthRequest = PUBLIC_AUTH_PATHS.some((path) =>
-              requestUrl.includes(path)
-            )
-            // Register endpointni ham redirect qilmaslik
-            const isRegisterRequest = requestUrl.includes('/api/auth/register/')
-
-            if (!isPublicAuthRequest && !isRegisterRequest) {
-              useUserStore.getState().actions.clearUserInfoAndToken()
-              window.location.href = '/sign-in'
-            }
+            useUserStore.getState().actions.clearUserInfoAndToken()
+            window.location.href = '/sign-in'
           }
 
           const msg = String(
@@ -176,15 +158,11 @@ class ApiClient {
               ''
           )
           const isStaticResourceNoise = msg.includes('No static resource')
-
-          // 500 — server ichki xatosi (noto'g'ri URL / static handler — toast chiqarmaymiz)
           if (status === 500 && !isStaticResourceNoise) {
             toast.error(
               "Server vaqtincha ishlamayapti, qaytadan urinib ko'ring"
             )
           }
-
-          // 404 — endpoint topilmadi (ko'pincha baseURL/proxy noto'g'ri)
           if (status === 404) {
             const base = (this.client.defaults.baseURL ?? '').toString()
             const hint =
@@ -196,8 +174,6 @@ class ApiClient {
 
           return Promise.reject(apiError)
         }
-
-        // Server javob bermagan — tarmoq xatosi
         return Promise.reject({
           message: "Tarmoq xatosi — serverga ulanib bo'lmadi",
           status: 0,
@@ -206,8 +182,6 @@ class ApiClient {
       }
     )
   }
-
-  // HTTP metodlar
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response: AxiosResponse<T> = await this.client.get(url, config)
 
@@ -218,7 +192,14 @@ class ApiClient {
     data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.post(url, data, config)
+    const requestConfig = { ...(config ?? {}) }
+    if (data instanceof FormData) {
+      requestConfig.headers = {
+        ...(config?.headers as Record<string, unknown> | undefined),
+        'Content-Type': undefined,
+      }
+    }
+    const response: AxiosResponse<T> = await this.client.post(url, data, requestConfig)
     return response.data
   }
   async put<T>(
@@ -226,7 +207,14 @@ class ApiClient {
     data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.put(url, data, config)
+    const requestConfig = { ...(config ?? {}) }
+    if (data instanceof FormData) {
+      requestConfig.headers = {
+        ...(config?.headers as Record<string, unknown> | undefined),
+        'Content-Type': undefined,
+      }
+    }
+    const response: AxiosResponse<T> = await this.client.put(url, data, requestConfig)
     return response.data
   }
   async patch<T>(
@@ -234,11 +222,14 @@ class ApiClient {
     data?: unknown,
     config?: AxiosRequestConfig
   ): Promise<T> {
-    const response: AxiosResponse<T> = await this.client.patch(
-      url,
-      data,
-      config
-    )
+    const requestConfig = { ...(config ?? {}) }
+    if (data instanceof FormData) {
+      requestConfig.headers = {
+        ...(config?.headers as Record<string, unknown> | undefined),
+        'Content-Type': undefined,
+      }
+    }
+    const response: AxiosResponse<T> = await this.client.patch(url, data, requestConfig)
     return response.data
   }
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {

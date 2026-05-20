@@ -218,7 +218,12 @@ export function Chats() {
             <ScrollArea className='flex-1 px-4 md:px-0'>
               <div className='flex flex-col gap-1 py-2'>
                 {filteredChatList.map((chatUsr) => {
+<<<<<<< HEAD
                   const { id, profile, messages, fullName, status } = chatUsr
+=======
+                  const { id, profile, messages, fullName, status } =
+                    chatUsr
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
                   const lastConvo = messages[0]
                   const isSelected = selectedUserId === id
                   const lastMsg =
@@ -406,12 +411,15 @@ export function Chats() {
                               {date}
                             </span>
                             <div className='h-[1px] flex-1 bg-border' />
+<<<<<<< HEAD
 
                             <div className='h-px flex-1 bg-border' />
                             <span className='text-[11px] font-bold tracking-wider text-muted-foreground uppercase'>
                               {date}
                             </span>
                             <div className='h-px flex-1 bg-border' />
+=======
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
                           </div>
 
                           <div className='flex flex-col gap-3'>
@@ -425,11 +433,15 @@ export function Chats() {
                                     key={`${msg.timestamp}-${idx}`}
                                     className={cn(
                                       'group flex w-full flex-col',
+<<<<<<< HEAD
                                       isMe ? 'items-end' : 'items-start',
                                       'relative max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm md:max-w-[70%]',
                                       isMe
                                         ? 'rounded-tr-none bg-rose-600 text-white shadow-rose-200 dark:shadow-none'
                                         : 'rounded-tl-none bg-card text-foreground ring-1 ring-border'
+=======
+                                      isMe ? 'items-end' : 'items-start'
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
                                     )}
                                   >
                                     <div
@@ -563,7 +575,11 @@ export function Chats() {
                   <Button
                     type='submit'
                     size='icon'
+<<<<<<< HEAD
                     className='h-[52px] w-[52px] shrink-0 rounded-2xl bg-rose-600 shadow-lg shadow-rose-200 transition-all hover:bg-rose-700 hover:shadow-rose-300 active:scale-95 disabled:opacity-50 dark:shadow-none dark:hover:shadow-none'
+=======
+                    className='h-[52px] w-[52px] shrink-0 rounded-2xl bg-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary/90 hover:shadow-primary/30 active:scale-95 disabled:opacity-50'
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
                     disabled={!messageText.trim()}
                   >
                     <Send className='h-5 w-5' />
@@ -579,7 +595,11 @@ export function Chats() {
               action={
                 <Button
                   onClick={() => setCreateConversationDialog(true)}
+<<<<<<< HEAD
                   className='mt-8 rounded-xl bg-rose-600 px-8 py-6 text-base font-semibold shadow-lg shadow-rose-200 hover:bg-rose-700 dark:shadow-none'
+=======
+                  className='mt-8 rounded-xl bg-primary px-8 py-6 text-base font-semibold shadow-lg shadow-primary/20 hover:bg-primary/90'
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
                 >
                   Send Message
                 </Button>

@@ -49,6 +49,4 @@ export interface MyAttendanceItem {
 export interface AttendanceListParams {
   ordering?: string
   search?: string
-  page?: number
-  page_size?: number
 }

@@ -1,27 +1,27 @@
+<<<<<<< HEAD
 import { client } from '@/api/client'
 import { type Homework, type HomeworkMessage } from '@/types/student'
+=======
+import { apiClient } from '@/api/client'
+import { Homework, HomeworkMessage } from '@/types/student'
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
 
 export const homeworkService = {
   getHomeworkList: async (): Promise<Homework[]> => {
-    const { data } = await client.get('/api/student/homework')
-    return data
+    return await apiClient.get<Homework[]>('/api/student/homework')
   },
   getMessages: async (id: string): Promise<HomeworkMessage[]> => {
-    const { data } = await client.get(`/api/student/homework/${id}/messages`)
-    return data
+    return await apiClient.get<HomeworkMessage[]>(`/api/student/homework/${id}/messages`)
   },
   sendMessage: async (id: string, content: string): Promise<HomeworkMessage> => {
-    const { data } = await client.post(`/api/student/homework/${id}/messages`, { content })
-    return data
+    return await apiClient.post<HomeworkMessage>(`/api/student/homework/${id}/messages`, { content })
   },
   submitHomework: async (id: string, file: File): Promise<void> => {
     const formData = new FormData()
     formData.append('file', file)
-    await client.post(`/api/student/homework/${id}/submit`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    await apiClient.post(`/api/student/homework/${id}/submit`, formData)
   },
   markAsRead: async (id: string): Promise<void> => {
-    await client.patch(`/api/student/homework/${id}/read`)
+    await apiClient.patch(`/api/student/homework/${id}/read`)
   },
 }

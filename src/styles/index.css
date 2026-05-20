@@ -62,15 +62,15 @@
 }
 
 .lp-primary-bg {
-  background-color: var(--primary);
+  background-color: #b80035;
 }
 
 .lp-primary-text {
-  color: var(--primary);
+  color: #b80035;
 }
 
 .lp-primary-border {
-  border-color: var(--primary);
+  border-color: #b80035;
 }
 
 .lp-messages-shell {

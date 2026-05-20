@@ -1,7 +1,11 @@
 import type {
   Assignment,
   AssignmentListParams,
+<<<<<<< HEAD
   AssignmentStatus,
+=======
+  AssignmentUploadResponse,
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
   CreateAssignmentPayload,
   GradeAssignmentPayload,
   Submission,
@@ -14,11 +18,18 @@ const ASSIGNMENTS_LIST_CREATE = '/api/assignments/list-create/'
 const ASSIGNMENTS_BY_ID = (id: number) => `/api/assignments/${id}/`
 const ASSIGNMENTS_GRADE = (id: number) => `/api/assignments/${id}/grade/`
 const ASSIGNMENTS_SUBMIT = (id: number) => `/api/assignments/${id}/submit/`
+const ASSIGNMENTS_UPLOAD = '/api/assignments/upload/'
 const ASSIGNMENTS_STATUS = (id: number) => `/api/assignments/${id}/status/`
 export const getAssignments = (
   params?: AssignmentListParams
 ): Promise<Assignment[]> => {
   return apiClient.get<Assignment[]>(ASSIGNMENTS_LIST_CREATE, { params })
+}
+
+export const getMyAssignments = (
+  params?: AssignmentListParams
+): Promise<Assignment[]> => {
+  return apiClient.get<Assignment[]>('/api/assignments/my/', { params })
 }
 
 export const createAssignment = (
@@ -45,9 +56,17 @@ export const gradeAssignment = (
   return apiClient.put<Submission>(ASSIGNMENTS_GRADE(id), payload)
 }
 
+export const uploadAssignmentFile = (
+  file: File
+): Promise<AssignmentUploadResponse> => {
+  const formData = new FormData()
+  formData.append('file', file)
+  return apiClient.post<AssignmentUploadResponse>(ASSIGNMENTS_UPLOAD, formData)
+}
+
 export const submitAssignment = (
   id: number,
-  payload: SubmitAssignmentPayload
+  payload: SubmitAssignmentPayload | FormData
 ): Promise<Submission> => {
   return apiClient.post<Submission>(ASSIGNMENTS_SUBMIT(id), payload)
 }

@@ -22,28 +22,28 @@ export type SidebarRole = 'admin' | 'teacher' | 'student'
 
 export const studentSidebarData: SidebarData = {
   user: {
-    name: 'Student',
+    name: 'Talaba',
     email: '',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
     {
-      name: 'LinguaPro Student',
+      name: 'LinguaPro Talaba',
       logo: CustomLogo,
-      plan: 'STUDENT PORTAL',
+      plan: 'TALABA PORTALI',
     },
   ],
   navGroups: [
     {
-      title: 'Workspace',
+      title: 'Ish maydoni',
       items: [
-        { title: 'Overview', url: '/student', icon: LayoutDashboard },
-        { title: 'Schedule', url: '/student/schedule', icon: CalendarDays },
-        { title: 'Homework', url: '/student/homework', icon: ClipboardList },
-        { title: 'Messages', url: '/student/messages', icon: MessageSquare },
-        { title: 'Chats', url: '/student-chats', icon: MessageSquare },
-        { title: 'My Group', url: '/student/groups', icon: BookOpen },
-        { title: 'Profile', url: '/student/profile', icon: User },
+        { title: 'Bosh sahifa', url: '/student', icon: LayoutDashboard },
+        { title: 'Dars jadvali', url: '/student/schedule', icon: CalendarDays },
+        { title: 'Uy vazifalari', url: '/student/homework', icon: ClipboardList },
+        { title: 'Xabarlar', url: '/student/messages', icon: MessageSquare },
+        { title: 'Chatlar', url: '/student-chats', icon: MessageSquare },
+        { title: 'Mening guruhim', url: '/student/groups', icon: BookOpen },
+        { title: 'Profil', url: '/student/profile', icon: User },
       ],
     },
   ],
@@ -183,6 +183,16 @@ export const roleSidebarData: Record<SidebarRole, SidebarData> = {
           url: item.url,
           icon: item.icon,
         })),
+      },
+      {
+        title: 'Account',
+        items: [
+          {
+            title: 'Profile',
+            url: '/teacher-dashboard/profile',
+            icon: User,
+          },
+        ],
       },
     ],
   },

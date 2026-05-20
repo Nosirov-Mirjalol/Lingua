@@ -1,60 +1,5 @@
-import { apiClient, type ApiError } from '@/api/client'
-import type { User, UserListResponse } from '@/api/service/teacher/user.type'
-import { AUTH } from '@/constants/apiEndPoints'
-
-/** GET /api/auth/user-list/ ba'zan [] yoki { users: [] } qaytaradi */
-function normalizeUserListResponse(raw: unknown): UserListResponse {
-  if (Array.isArray(raw)) {
-    return {
-      count: raw.length,
-      next: null,
-      previous: null,
-      results: raw as User[],
-    }
-  }
-  if (raw && typeof raw === 'object') {
-    const o = raw as Record<string, unknown>
-    if (Array.isArray(o.results)) {
-      const list = o.results as User[]
-      return {
-        count: typeof o.count === 'number' ? o.count : list.length,
-        next: (o.next as string | null) ?? null,
-        previous: (o.previous as string | null) ?? null,
-        results: list,
-      }
-    }
-    if (Array.isArray(o.users)) {
-      const list = o.users as User[]
-      return { count: list.length, next: null, previous: null, results: list }
-    }
-    if (Array.isArray(o.data)) {
-      const list = o.data as User[]
-      return { count: list.length, next: null, previous: null, results: list }
-    }
-  }
-  return { count: 0, next: null, previous: null, results: [] }
-}
-
-export const getAdminStudents = (): Promise<UserListResponse> => {
-  return apiClient.get<unknown>(AUTH.USER_LIST).then(normalizeUserListResponse)
-}
-
-export const searchAdminStudents = (
-  q: string,
-  page = 1,
-  pageSize = 10
-): Promise<UserListResponse> => {
-  const search = q.trim()
-  return apiClient
-    .get<unknown>(AUTH.USER_LIST, {
-      params: {
-        ...(search ? { search } : {}),
-        page,
-        page_size: pageSize,
-      },
-    })
-    .then(normalizeUserListResponse)
-}
+import { apiClient } from '@/api/client'
+import type { User, ApiError } from '@/types/student'
 
 export type AdminStudentCreatePayload = {
   username: string
@@ -66,16 +11,8 @@ export type AdminStudentCreatePayload = {
   role: 'student'
 }
 
-export type AdminStudentUpdatePayload = {
-  username?: string
-  first_name: string
-  last_name: string
-  phone?: string
-  is_active?: boolean
-}
-
-/** +998 dan keyin 9 ta raqam */
-export function extractNationalNine(phone?: string): string | undefined {
+/** +998 dan keyin 9 ta raqam (masalan 901234567) — API sxemasi maxLength 9 */
+function extractNationalNine(phone?: string): string | undefined {
   if (!phone?.trim() || phone.trim() === '+998') return undefined
   let digits = phone.replace(/\D/g, '')
   if (digits.startsWith('998')) digits = digits.slice(3)
@@ -86,19 +23,15 @@ export function extractNationalNine(phone?: string): string | undefined {
   return digits
 }
 
-/** API dan kelgan 9 raqamni ko'rinish formatiga */
-export function formatPhoneDisplay(phone?: string | null): string {
-  if (!phone?.trim()) return '+998'
-  let digits = phone.replace(/\D/g, '')
-  if (digits.startsWith('998')) digits = digits.slice(3)
-  if (digits.length === 0) return '+998'
-  const d = digits.slice(0, 9)
-  let formatted = '+998'
-  if (d.length > 0) formatted += ' ' + d.slice(0, 2)
-  if (d.length > 2) formatted += ' ' + d.slice(2, 5)
-  if (d.length > 5) formatted += ' ' + d.slice(5, 7)
-  if (d.length > 7) formatted += ' ' + d.slice(7, 9)
-  return formatted
+function parseCreatedUserId(body: unknown): number | null {
+  if (!body || typeof body !== 'object') return null
+  const r = body as Record<string, unknown>
+  const rawId = r.id ?? (r.user && typeof r.user === 'object'
+    ? (r.user as Record<string, unknown>).id
+    : undefined)
+  if (typeof rawId === 'number' && Number.isFinite(rawId)) return rawId
+  if (typeof rawId === 'string' && /^\d+$/.test(rawId)) return Number(rawId)
+  return null
 }
 
 function buildFullName(firstName: string, lastName: string): string {
@@ -142,125 +75,70 @@ export const createAdminStudent = async (
     throw new Error("Email formati noto'g'ri")
 
   const nine = data.phone ? extractNationalNine(data.phone) : undefined
-  const firstName = data.first_name.trim()
-  const lastName = data.last_name.trim()
-  const fullName = buildFullName(firstName, lastName)
 
   const registerPayload: Record<string, unknown> = {
     username: data.username.trim(),
     email: data.email.trim(),
-    first_name: firstName,
-    last_name: lastName,
-    full_name: fullName,
+    first_name: data.first_name.trim(),
+    last_name: data.last_name.trim(),
     password,
     password2: password,
     role: 'student',
   }
+  /** Sxema: telefon 9 ta milliy raqam (masalan 901234567) */
   if (nine) registerPayload.phone = nine
 
-  try {
-    const created = await apiClient.post<unknown>(
-      '/api/auth/register/',
-      registerPayload
-    )
-    return created as User
-  } catch (error) {
-    const status = (error as ApiError)?.status
-    if (status === 401) {
-      throw new Error(
-        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring (admin hisobi bilan).",
-        { cause: error }
-      )
+  const created = await apiClient.post<unknown>(
+    '/api/auth/register/',
+    registerPayload
+  )
+
+  const newId = parseCreatedUserId(created)
+  if (newId != null) {
+    try {
+      await apiClient.patch<User>(`/api/auth/users/${newId}/`, {
+        first_name: data.first_name.trim(),
+        last_name: data.last_name.trim(),
+      })
+    } catch {
+      // Ignored for now
     }
-    throw new Error(
-      getStudentApiErrorMessage(error, 'Student yaratishda xatolik'),
-      { cause: error }
-    )
   }
+
+  return created as User
 }
 
 /**
- * Admin talabani yangilash — PATCH /api/auth/my-profile-update/
- * (admin: body da `id` orqali boshqa userni yangilash)
+ * Barcha talabalarni olish
+ */
+export const getAdminStudents = async (): Promise<User[]> => {
+  const data = await apiClient.get<User[]>('/api/auth/users/')
+  return (data || []).filter((u) => u.role === 'student')
+}
+
+/**
+ * Talabani tahrirlash
  */
 export const updateAdminStudent = async (
-  studentId: number,
-  data: AdminStudentUpdatePayload
+  id: number,
+  data: Partial<AdminStudentCreatePayload>
 ): Promise<User> => {
-  assertStudentId(studentId)
-
-  const firstName = data.first_name?.trim()
-  const lastName = data.last_name?.trim()
-  if (!firstName) throw new Error('Ism kiritilmadi')
-  if (!lastName) throw new Error('Familiya kiritilmadi')
-
-  const fullName = buildFullName(firstName, lastName)
-  const payload: Record<string, unknown> = {
-    first_name: firstName,
-    last_name: lastName,
+  assertStudentId(id)
+  const payload: Record<string, unknown> = {}
+  if (data.first_name) payload.first_name = data.first_name.trim()
+  if (data.last_name) payload.last_name = data.last_name.trim()
+  if (data.email) payload.email = data.email.trim()
+  if (data.phone) {
+    const nine = extractNationalNine(data.phone)
+    if (nine) payload.phone = nine
   }
-
-  if (data.username?.trim()) payload.username = data.username.trim()
-
-  if (data.phone !== undefined) {
-    if (!data.phone.trim() || data.phone.trim() === '+998') {
-      payload.phone = null
-    } else {
-      payload.phone = extractNationalNine(data.phone)
-    }
-  }
-
-  if (data.is_active !== undefined) payload.is_active = data.is_active
-
-  const profilePayload = {
-    ...payload,
-    id: studentId,
-    full_name: fullName,
-  }
-
-  try {
-    return await apiClient.patch<User>(AUTH.PROFILE_UPDATE, profilePayload)
-  } catch (error) {
-    const status = (error as ApiError)?.status
-    if (status === 401) {
-      throw new Error(
-        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring.",
-        {
-          cause: error,
-        }
-      )
-    }
-    throw new Error(
-      getStudentApiErrorMessage(error, 'Student yangilashda xatolik'),
-      { cause: error }
-    )
-  }
+  return await apiClient.patch<User>(`/api/auth/users/${id}/`, payload)
 }
 
 /**
- * Admin talabani o'chirish — DELETE /api/auth/profile-delete/{id}/
+ * Talabani o'chirish
  */
-export const deleteAdminStudent = async (studentId: number): Promise<void> => {
-  assertStudentId(studentId)
-
-  try {
-    await apiClient.delete<unknown>(AUTH.PROFILE_DELETE(studentId))
-  } catch (error) {
-    const status = (error as ApiError)?.status
-    if (status === 401) {
-      throw new Error(
-        "Sessiya tugagan yoki ruxsat yo'q. Qayta tizimga kiring.",
-        {
-          cause: error,
-        }
-      )
-    }
-    if (status === 404) {
-      throw new Error('Student topilmadi', { cause: error })
-    }
-    throw new Error(
-      getStudentApiErrorMessage(error, "Student o'chirishda xatolik"),
-      { cause: error }
-    )
-  }
+export const deleteAdminStudent = async (id: number): Promise<void> => {
+  assertStudentId(id)
+  await apiClient.delete(`/api/auth/users/${id}/`)
 }

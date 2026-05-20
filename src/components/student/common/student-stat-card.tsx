@@ -13,7 +13,7 @@ export function StudentStatCard({
   icon,
 }: StudentStatCardProps) {
   return (
-    <Card>
+    <Card className='border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
       <CardContent className='space-y-4'>
         <div className='flex items-center justify-between text-muted-foreground'>
           <p className='text-sm font-medium'>{title}</p>

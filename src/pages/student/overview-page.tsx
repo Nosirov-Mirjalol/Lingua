@@ -26,62 +26,65 @@ export function StudentOverviewPage() {
   const quickActions = dashboard?.quickActions ?? []
 
   return (
-    <div className='max-w-7xl space-y-6'>
+    <div className='mx-auto max-w-7xl space-y-6'>
       <section className='mb-7'>
         <StudentPageHeader
-          title={`Welcome back, ${profile?.username ?? 'Learner'}`}
-          description='Your personal student portal is ready. Keep the momentum going.'
+          title={`Xush kelibsiz, ${profile?.username ?? 'O‘quvchi'}`}
+          description='Sizning shaxsiy talaba portalingiz tayyor. O‘qishda davom eting.'
         />
       </section>
 
-      <section className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
+      <section className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <StudentStatCard
-          title='Upcoming lessons'
+          title='Kelgusi darslar'
           value={dashboard?.stats.upcomingLessons ?? '-'}
-          icon={<CalendarDays className='h-5 w-5' />}
+          icon={<CalendarDays className='h-5 w-5 text-primary' />}
         />
         <StudentStatCard
-          title='Course completion'
+          title='Kurs yakunlanishi'
           value={`${dashboard?.stats.progress ?? 0}%`}
-          icon={<BookOpen className='h-5 w-5' />}
+          icon={<BookOpen className='h-5 w-5 text-primary' />}
         />
         <StudentStatCard
-          title='Hours studied'
+          title='O‘qilgan soatlar'
           value={dashboard?.stats.completedHours ?? '-'}
-          icon={<ClipboardList className='h-5 w-5' />}
+          icon={<ClipboardList className='h-5 w-5 text-primary' />}
         />
         <StudentStatCard
-          title='Unread messages'
+          title='O‘qilmagan xabarlar'
           value={dashboard?.stats.unreadMessages ?? '-'}
-          icon={<MessageSquare className='h-5 w-5' />}
+          icon={<MessageSquare className='h-5 w-5 text-primary' />}
         />
       </section>
 
-      <section className='grid gap-4 xl:grid-cols-[1.5fr_1fr]'>
-        <Card>
+      <section className='grid gap-4 lg:grid-cols-[1.5fr_1fr]'>
+        <Card className='overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
           <CardHeader>
-            <CardTitle>Today's learning highlight</CardTitle>
+            <CardTitle className='text-primary'>Bugungi asosiy ko‘rsatkichlar</CardTitle>
             <CardDescription>
-              Keep your next milestone visible and on track.
+              Navbatdagi marrangizni kuzatib boring.
             </CardDescription>
           </CardHeader>
           <CardContent className='grid gap-4'>
             <div className='space-y-4'>
-              <StudentInfoTile title='Next lesson' value={profile?.nextLesson ?? '-'} muted />
+              <StudentInfoTile title='Navbatdagi dars' value={profile?.nextLesson ?? '-'} muted />
               <div className='flex flex-col gap-3 sm:flex-row'>
-                <StudentInfoTile title='Active course' value={profile?.activeCourse ?? '-'} />
-                <StudentInfoTile title='Streak' value={`${profile?.streak ?? 0} days`} />
-                <StudentInfoTile title='Attendance' value={`${profile?.attendance ?? 0}%`} />
+                <StudentInfoTile title='Faol kurs' value={profile?.activeCourse ?? '-'} />
+                <StudentInfoTile title='Davomiylik' value={`${profile?.streak ?? 0} kun`} />
+                <StudentInfoTile title='Davomat' value={`${profile?.attendance ?? 0}%`} />
               </div>
             </div>
             <div className='grid gap-3 md:grid-cols-2'>
               {highlights.map((highlight) => (
                 <div
                   key={highlight.title}
-                  className='rounded-3xl border bg-card p-4'
+                  className='rounded-3xl border border-primary/20 bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md'
                 >
-                  <p className='text-xs uppercase tracking-[0.18em] text-muted-foreground'>
-                    {highlight.title}
+                  <p className='text-xs uppercase tracking-[0.18em] text-primary/70 font-bold'>
+                    {highlight.title === 'Next lesson' ? 'Navbatdagi dars' : 
+                     highlight.title === 'Active course' ? 'Faol kurs' : 
+                     highlight.title === 'Streak' ? 'Davomiylik' : 
+                     highlight.title === 'Attendance' ? 'Davomat' : highlight.title}
                   </p>
                   <p className='mt-2 text-base font-semibold text-foreground'>
                     {highlight.value}
@@ -92,56 +95,66 @@ export function StudentOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className='space-y-4'>
+        <Card className='space-y-4 overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
           <CardHeader>
-            <CardTitle>Quick actions</CardTitle>
-            <CardDescription>Jump into the most important next steps.</CardDescription>
+            <CardTitle className='text-primary'>Tezkor harakatlar</CardTitle>
+            <CardDescription>Eng muhim keyingi qadamlarga o‘ting.</CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
             {quickActions.map((action) => (
-              <div
-                key={action.label}
-                className='flex items-center justify-between rounded-3xl border bg-card p-4'
-              >
+                <div
+                  key={action.label}
+                  className='flex items-center justify-between rounded-3xl border border-primary/20 bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md cursor-pointer group'
+                >
                 <div>
-                  <p className='font-medium text-foreground'>{action.label}</p>
-                  <p className='text-sm text-muted-foreground'>{action.description}</p>
+                  <p className='font-bold text-foreground group-hover:text-primary transition-colors'>
+                    {action.label === 'View Schedule' ? 'Jadvalni ko‘rish' : 
+                     action.label === 'Check Homework' ? 'Vazifalarni tekshirish' : 
+                     action.label === 'Messages' ? 'Xabarlar' : action.label}
+                  </p>
+                  <p className='text-sm text-muted-foreground'>
+                    {action.description === 'See your upcoming classes' ? 'Kelgusi darslaringizni ko‘ring' : 
+                     action.description === 'View assigned tasks' ? 'Tayinlangan vazifalarni ko‘ring' : 
+                     action.description === 'Read teacher feedback' ? 'Ustoz fikrlarini o‘qing' : action.description}
+                  </p>
                 </div>
-                <ArrowRight className='h-5 w-5 text-muted-foreground' />
+                <ArrowRight className='h-5 w-5 text-primary/50 group-hover:text-primary group-hover:translate-x-1 transition-all' />
               </div>
             ))}
-            <StudentInfoTile title='Goal' value={profile?.goal ?? '-'} muted />
+            <div className='mt-4'>
+              <StudentInfoTile title='Maqsad' value={profile?.learning_goal ?? '-'} muted />
+            </div>
           </CardContent>
         </Card>
       </section>
 
       <section className='grid gap-4 lg:grid-cols-3'>
-        <Card className='lg:col-span-2'>
+        <Card className='lg:col-span-2 overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
           <CardHeader>
-            <CardTitle>Continue where you left off</CardTitle>
-            <CardDescription>Resume your most recent modules.</CardDescription>
+            <CardTitle className='text-primary'>To‘xtagan joyingizdan davom eting</CardTitle>
+            <CardDescription>Oxirgi modullaringizni yakunlang.</CardDescription>
           </CardHeader>
           <CardContent className='space-y-4'>
             <div className='grid gap-3 sm:grid-cols-2'>
-              <ProgressTile title='Pronunciation Lab' value='78%' />
-              <ProgressTile title='Grammar Workshop' value='65%' />
+              <ProgressTile title='Talaffuz laboratoriyasi' value='78%' />
+              <ProgressTile title='Grammatika bo‘yicha seminar' value='65%' />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className='overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
           <CardHeader>
-            <CardTitle>Keep an eye on</CardTitle>
+            <CardTitle className='text-primary'>E’tibor bering</CardTitle>
           </CardHeader>
-          <CardContent className='space-y-3'>
-            <Badge className='rounded-full border bg-muted text-muted-foreground'>
-              New module available
+          <CardContent className='flex flex-wrap gap-2'>
+            <Badge className='rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10'>
+              Yangi modul mavjud
             </Badge>
             <Badge className='rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'>
-              Feedback ready
+              Fikr-mulohaza tayyor
             </Badge>
             <Badge className='rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'>
-              Live class tomorrow
+              Ertaga jonli dars
             </Badge>
           </CardContent>
         </Card>
@@ -154,7 +167,7 @@ function ProgressTile({ title, value }: { title: string; value: string }) {
   const numericValue = Number.parseInt(value, 10) || 0
 
   return (
-    <div className='rounded-3xl border bg-muted/50 p-4'>
+    <div className='rounded-3xl border border-primary/20 bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md'>
       <p className='text-sm text-muted-foreground'>{title}</p>
       <div className='mt-3 flex items-center gap-3'>
         <p className='text-2xl font-semibold text-foreground'>{value}</p>

@@ -6,7 +6,6 @@ const API_ENDPOINTS = {
     USER_LIST: '/api/auth/user-list/',
     PROFILE_GET: '/api/auth/my-profile-list/',
     PROFILE_UPDATE: '/api/auth/my-profile-update/',
-    PROFILE_DELETE: (userId: number) => `/api/auth/profile-delete/${userId}/`,
   },
   ATTENDANCE: {
     LIST: '/api/attendance/list',
@@ -28,7 +27,9 @@ const API_ENDPOINTS = {
     REMOVE_STUDENT: (groupId: number, studentId: number) =>
       `/api/groups/${groupId}/remove-student/${studentId}/`,
     SCHEDULE: '/api/groups/schedule/',
+    MY_SCHEDULE: '/api/groups/my-schedule/',
     TODAY_SCHEDULE: '/api/groups/today-schedule/',
+    TEACHER_LIST: '/api/groups/teachers-list/',
   },
   COURSE: {
     CREATE: '/api/courses/create/',
@@ -38,6 +39,7 @@ const API_ENDPOINTS = {
   },
   NOTIFICATIONS: {
     MY: '/api/notifications/my/',
+    DELETE: (id: number) => `/api/notifications/my/${id}/delete/`,
     MARK_READ: (id: number) => `/api/notifications/${id}/read/`,
     MARK_ALL_READ: '/api/notifications/read-all/',
     UNREAD_COUNT: '/api/notifications/unread-count/',
@@ -52,20 +54,26 @@ const API_ENDPOINTS = {
     DELETE: (groupId: number, messageId: number) =>
       `/api/messages/${groupId}/messages/${messageId}/`,
     UNREAD_COUNT: '/api/messages/unread-count/',
+    SEARCH: (query: string) => `/api/messages/search/?q=${query}`,
   },
   USER: {
     USER_ME: '/user',
   },
   STUDENT: {
-    ASSIGNED_GROUPS: '/api/groups/my/',
+    ASSIGNED_GROUPS: '/api/groups/my-groups/',
   },
   ASSIGNMENTS: {
     LIST: '/api/assignments/',
+    MY: '/api/assignments/my/',
     BY_ID: (id: number) => `/api/assignments/${id}/`,
     SUBMIT: (id: number) => `/api/assignments/${id}/submit/`,
     GRADE: (id: number) => `/api/assignments/${id}/grade/`,
+<<<<<<< HEAD
     STATUS: (id: number) => `/api/assignments/${id}/status/`,
   },
+=======
+  }
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
 }
 
 export const {

@@ -1,61 +1,34 @@
 import { apiClient } from '@/api/client'
-import { AUTH } from '@/constants/apiEndPoints'
+import { AUTH, GROUP } from '@/constants/apiEndPoints'
 
-export type AdminTeacher = {
+export interface AdminTeacher {
   id: number
   username: string
-  email: string
-  first_name: string
-  last_name: string
-  role?: 'teacher' | 'student' | 'admin'
-  phone?: string
-  is_active?: boolean
-  created_at?: string
+  full_name: string
+  phone: string
+  avatar: string
+  learning_goal: string
 }
 
 export type AdminTeacherCreatePayload = {
   username: string
   email: string
-  first_name: string
-  last_name: string
+  full_name: string
   phone?: string
+  learning_goal?: string
   password: string
   role?: 'teacher'
 }
 
 export type AdminTeacherUpdatePayload = Partial<
-  Omit<AdminTeacherCreatePayload, 'password' | 'role'>
-> & {
-  is_active?: boolean
-}
-
-function normalizeTeacherListResponse(raw: unknown): AdminTeacher[] {
-  if (Array.isArray(raw)) {
-    return raw as AdminTeacher[]
-  }
-  if (raw && typeof raw === 'object') {
-    const o = raw as Record<string, unknown>
-    if (Array.isArray(o.results)) {
-      return o.results as AdminTeacher[]
-    }
-    if (Array.isArray(o.users)) {
-      return o.users as AdminTeacher[]
-    }
-    if (Array.isArray(o.data)) {
-      return o.data as AdminTeacher[]
-    }
-  }
-  return []
-}
+  Pick<
+    AdminTeacher,
+    'username' | 'full_name' | 'phone' | 'learning_goal' | 'avatar'
+  >
+>
 
 export const getAdminTeachers = (): Promise<AdminTeacher[]> => {
-  return apiClient.get<unknown>(AUTH.USER_LIST).then((res) => {
-    const list = normalizeTeacherListResponse(res)
-    return list.filter((user) => {
-      const role = user.role != null ? String(user.role).toLowerCase() : ''
-      return role === 'teacher'
-    })
-  })
+  return apiClient.get<AdminTeacher[]>(GROUP.TEACHER_LIST)
 }
 
 export const createAdminTeacher = (
@@ -64,8 +37,7 @@ export const createAdminTeacher = (
   // Validation
   if (!data.username?.trim()) throw new Error('Username kiritilmadi')
   if (!data.email?.trim()) throw new Error('Email kiritilmadi')
-  if (!data.first_name?.trim()) throw new Error('Ism kiritilmadi')
-  if (!data.last_name?.trim()) throw new Error('Familiya kiritilmadi')
+  if (!data.full_name?.trim()) throw new Error("To'liq ism kiritilmadi")
   if (!data.password?.trim()) throw new Error('Parol kiritilmadi')
 
   // Email format validation
@@ -74,16 +46,26 @@ export const createAdminTeacher = (
     throw new Error("Email formati noto'g'ri")
   }
 
-  const firstName = data.first_name.trim()
-  const lastName = data.last_name.trim()
+  // Phone number validation
+  if (data.phone && data.phone.trim()) {
+    const phone = data.phone.trim()
+    // Allow formats: +998901234567, 998901234567, 901234567
+    const phoneRegex = /^(\+998|998)?[0-9]{9}$/
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+      throw new Error(
+        "Telefon raqami noto'g'ri formatda. Masalan: +998901234567"
+      )
+    }
+  }
+
+  const fullName = data.full_name.trim().replace(/\s+/g, ' ')
   const password = data.password.trim()
   const payload = {
     username: data.username.trim(),
     email: data.email.trim(),
-    first_name: firstName,
-    last_name: lastName,
-    full_name: `${firstName} ${lastName}`.replace(/\s+/g, ' ').trim(),
-    phone: data.phone?.trim() || undefined,
+    full_name: fullName,
+    phone: data.phone?.trim().replace(/\s/g, '') || undefined,
+    learning_goal: data.learning_goal?.trim() || undefined,
     password,
     password2: password,
     role: 'teacher' as const,
@@ -101,28 +83,19 @@ export const updateAdminTeacher = (
   if (data.username !== undefined) {
     updatePayload.username = data.username.trim()
   }
-  if (data.email !== undefined) {
-    updatePayload.email = data.email.trim()
-  }
-  if (data.first_name !== undefined) {
-    updatePayload.first_name = data.first_name.trim()
-  }
-  if (data.last_name !== undefined) {
-    updatePayload.last_name = data.last_name.trim()
+  if (data.full_name !== undefined) {
+    updatePayload.full_name = data.full_name.trim()
   }
   if (data.phone !== undefined) {
     updatePayload.phone = data.phone.trim()
   }
-  if (data.is_active !== undefined) {
-    updatePayload.is_active = data.is_active
+  if (data.learning_goal !== undefined) {
+    updatePayload.learning_goal = data.learning_goal.trim()
+  }
+  if (data.avatar !== undefined) {
+    updatePayload.avatar = data.avatar.trim()
   }
   updatePayload.id = teacherId
-  if (updatePayload.first_name || updatePayload.last_name) {
-    updatePayload.full_name =
-      `${String(updatePayload.first_name ?? '').trim()} ${String(updatePayload.last_name ?? '').trim()}`
-        .replace(/\s+/g, ' ')
-        .trim()
-  }
 
   return apiClient.patch<AdminTeacher>(AUTH.PROFILE_UPDATE, updatePayload)
 }
