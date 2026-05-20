@@ -280,7 +280,7 @@ function DashboardPage() {
 
   return (
     <>
-      <div className='mb-7'>
+      <div className='mb-7 py-3'>
         <p className='mb-1 text-xs font-semibold tracking-widest text-[#b80035] uppercase dark:text-rose-400'>
           O'qituvchi paneli
         </p>

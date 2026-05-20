@@ -122,7 +122,7 @@ function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className='flex min-h-[400px] items-center justify-center'>
+      <div className='flex min-h-100 items-center justify-center'>
         <Loader2 className='animate-spin text-rose-500' size={40} />
       </div>
     )

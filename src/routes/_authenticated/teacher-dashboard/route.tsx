@@ -34,7 +34,7 @@ function TeacherDashboardLayout() {
             )}
           >
             <DashboardNavbar />
-            <main className='min-w-0 flex-1 overflow-hidden px-3 py-2 md:px-8 md:py-3 lg:px-12 lg:py-8'>
+            <main className='min-w-0 flex-1 overflow-hidden px-3 py-2 md:px-8 md:py-3 lg:px-12'>
               <Outlet />
             </main>
           </SidebarInset>
