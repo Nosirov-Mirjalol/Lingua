@@ -170,7 +170,7 @@ export function MessagesPage() {
   }
 
   return (
-    <div className='mx-auto h-full w-full max-w-7xl p-4 sm:p-6 lg:p-8 text-slate-900 dark:text-white/95'>
+    <div className='mx-auto h-full w-full max-w-7xl p-4 sm:p-6 lg:px-8 lg:py-3 text-slate-900 dark:text-white/95'>
       <div className='flex h-[calc(100vh-8rem)] min-h-125 w-full overflow-hidden rounded-2xl border border-primary/20 transition-all hover:border-primary/30 hover:shadow-md bg-white shadow-sm dark:bg-slate-950/40 backdrop-blur-md'>
         
         {/* Sidebar */}

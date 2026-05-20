@@ -153,7 +153,7 @@ function AttendancePage() {
   const dashOffset = circumference - (Math.max(0, Math.min(100, stats.pct)) / 100) * circumference
 
   return (
-    <div className='mx-auto max-w-7xl space-y-4 p-4 text-slate-900 dark:text-slate-100'>
+    <div className='mx-auto max-w-7xl space-y-4 p-4 text-slate-900 py-5 dark:text-slate-100'>
       {/* Header */}
       <div className='flex flex-wrap items-center justify-between gap-4'>
         <div>

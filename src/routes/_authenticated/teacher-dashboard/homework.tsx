@@ -465,7 +465,7 @@ function HomeworkPage() {
 
   return (
     <div>
-      <div className='mb-6 flex items-center justify-between'>
+      <div className='mb-6 py-5 flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-bold text-gray-800 dark:text-white md:text-3xl'>
             Homework
