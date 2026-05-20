@@ -184,6 +184,16 @@ export const roleSidebarData: Record<SidebarRole, SidebarData> = {
           icon: item.icon,
         })),
       },
+      {
+        title: 'Account',
+        items: [
+          {
+            title: 'Profile',
+            url: '/teacher-dashboard/profile',
+            icon: User,
+          },
+        ],
+      },
     ],
   },
   student: studentSidebarData,

@@ -56,7 +56,6 @@ import { Route as AuthenticatedTeacherDashboardNotificationsRouteImport } from '
 import { Route as AuthenticatedTeacherDashboardMessagesRouteImport } from './routes/_authenticated/teacher-dashboard/messages'
 import { Route as AuthenticatedTeacherDashboardHomeworkRouteImport } from './routes/_authenticated/teacher-dashboard/homework'
 import { Route as AuthenticatedTeacherDashboardGroupsRouteImport } from './routes/_authenticated/teacher-dashboard/groups'
-import { Route as AuthenticatedTeacherDashboardChatsRouteImport } from './routes/_authenticated/teacher-dashboard/chats'
 import { Route as AuthenticatedTeacherDashboardAttendanceRouteImport } from './routes/_authenticated/teacher-dashboard/attendance'
 import { Route as AuthenticatedTeacherDashboardAnnouncementsRouteImport } from './routes/_authenticated/teacher-dashboard/announcements'
 import { Route as AuthenticatedStudentScheduleRouteImport } from './routes/_authenticated/student/schedule'
@@ -333,12 +332,6 @@ const AuthenticatedTeacherDashboardGroupsRoute =
     path: '/groups',
     getParentRoute: () => AuthenticatedTeacherDashboardRouteRoute,
   } as any)
-const AuthenticatedTeacherDashboardChatsRoute =
-  AuthenticatedTeacherDashboardChatsRouteImport.update({
-    id: '/chats',
-    path: '/chats',
-    getParentRoute: () => AuthenticatedTeacherDashboardRouteRoute,
-  } as any)
 const AuthenticatedTeacherDashboardAttendanceRoute =
   AuthenticatedTeacherDashboardAttendanceRouteImport.update({
     id: '/attendance',
@@ -475,7 +468,6 @@ export interface FileRoutesByFullPath {
   '/student/schedule': typeof AuthenticatedStudentScheduleRoute
   '/teacher-dashboard/announcements': typeof AuthenticatedTeacherDashboardAnnouncementsRoute
   '/teacher-dashboard/attendance': typeof AuthenticatedTeacherDashboardAttendanceRoute
-  '/teacher-dashboard/chats': typeof AuthenticatedTeacherDashboardChatsRoute
   '/teacher-dashboard/groups': typeof AuthenticatedTeacherDashboardGroupsRouteWithChildren
   '/teacher-dashboard/homework': typeof AuthenticatedTeacherDashboardHomeworkRoute
   '/teacher-dashboard/messages': typeof AuthenticatedTeacherDashboardMessagesRoute
@@ -536,7 +528,6 @@ export interface FileRoutesByTo {
   '/student/schedule': typeof AuthenticatedStudentScheduleRoute
   '/teacher-dashboard/announcements': typeof AuthenticatedTeacherDashboardAnnouncementsRoute
   '/teacher-dashboard/attendance': typeof AuthenticatedTeacherDashboardAttendanceRoute
-  '/teacher-dashboard/chats': typeof AuthenticatedTeacherDashboardChatsRoute
   '/teacher-dashboard/homework': typeof AuthenticatedTeacherDashboardHomeworkRoute
   '/teacher-dashboard/messages': typeof AuthenticatedTeacherDashboardMessagesRoute
   '/teacher-dashboard/notifications': typeof AuthenticatedTeacherDashboardNotificationsRoute
@@ -603,7 +594,6 @@ export interface FileRoutesById {
   '/_authenticated/student/schedule': typeof AuthenticatedStudentScheduleRoute
   '/_authenticated/teacher-dashboard/announcements': typeof AuthenticatedTeacherDashboardAnnouncementsRoute
   '/_authenticated/teacher-dashboard/attendance': typeof AuthenticatedTeacherDashboardAttendanceRoute
-  '/_authenticated/teacher-dashboard/chats': typeof AuthenticatedTeacherDashboardChatsRoute
   '/_authenticated/teacher-dashboard/groups': typeof AuthenticatedTeacherDashboardGroupsRouteWithChildren
   '/_authenticated/teacher-dashboard/homework': typeof AuthenticatedTeacherDashboardHomeworkRoute
   '/_authenticated/teacher-dashboard/messages': typeof AuthenticatedTeacherDashboardMessagesRoute
@@ -669,7 +659,6 @@ export interface FileRouteTypes {
     | '/student/schedule'
     | '/teacher-dashboard/announcements'
     | '/teacher-dashboard/attendance'
-    | '/teacher-dashboard/chats'
     | '/teacher-dashboard/groups'
     | '/teacher-dashboard/homework'
     | '/teacher-dashboard/messages'
@@ -730,7 +719,6 @@ export interface FileRouteTypes {
     | '/student/schedule'
     | '/teacher-dashboard/announcements'
     | '/teacher-dashboard/attendance'
-    | '/teacher-dashboard/chats'
     | '/teacher-dashboard/homework'
     | '/teacher-dashboard/messages'
     | '/teacher-dashboard/notifications'
@@ -796,7 +784,6 @@ export interface FileRouteTypes {
     | '/_authenticated/student/schedule'
     | '/_authenticated/teacher-dashboard/announcements'
     | '/_authenticated/teacher-dashboard/attendance'
-    | '/_authenticated/teacher-dashboard/chats'
     | '/_authenticated/teacher-dashboard/groups'
     | '/_authenticated/teacher-dashboard/homework'
     | '/_authenticated/teacher-dashboard/messages'
@@ -1174,13 +1161,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeacherDashboardGroupsRouteImport
       parentRoute: typeof AuthenticatedTeacherDashboardRouteRoute
     }
-    '/_authenticated/teacher-dashboard/chats': {
-      id: '/_authenticated/teacher-dashboard/chats'
-      path: '/chats'
-      fullPath: '/teacher-dashboard/chats'
-      preLoaderRoute: typeof AuthenticatedTeacherDashboardChatsRouteImport
-      parentRoute: typeof AuthenticatedTeacherDashboardRouteRoute
-    }
     '/_authenticated/teacher-dashboard/attendance': {
       id: '/_authenticated/teacher-dashboard/attendance'
       path: '/attendance'
@@ -1375,7 +1355,6 @@ const AuthenticatedTeacherDashboardGroupsRouteWithChildren =
 interface AuthenticatedTeacherDashboardRouteRouteChildren {
   AuthenticatedTeacherDashboardAnnouncementsRoute: typeof AuthenticatedTeacherDashboardAnnouncementsRoute
   AuthenticatedTeacherDashboardAttendanceRoute: typeof AuthenticatedTeacherDashboardAttendanceRoute
-  AuthenticatedTeacherDashboardChatsRoute: typeof AuthenticatedTeacherDashboardChatsRoute
   AuthenticatedTeacherDashboardGroupsRoute: typeof AuthenticatedTeacherDashboardGroupsRouteWithChildren
   AuthenticatedTeacherDashboardHomeworkRoute: typeof AuthenticatedTeacherDashboardHomeworkRoute
   AuthenticatedTeacherDashboardMessagesRoute: typeof AuthenticatedTeacherDashboardMessagesRoute
@@ -1392,8 +1371,6 @@ const AuthenticatedTeacherDashboardRouteRouteChildren: AuthenticatedTeacherDashb
       AuthenticatedTeacherDashboardAnnouncementsRoute,
     AuthenticatedTeacherDashboardAttendanceRoute:
       AuthenticatedTeacherDashboardAttendanceRoute,
-    AuthenticatedTeacherDashboardChatsRoute:
-      AuthenticatedTeacherDashboardChatsRoute,
     AuthenticatedTeacherDashboardGroupsRoute:
       AuthenticatedTeacherDashboardGroupsRouteWithChildren,
     AuthenticatedTeacherDashboardHomeworkRoute:

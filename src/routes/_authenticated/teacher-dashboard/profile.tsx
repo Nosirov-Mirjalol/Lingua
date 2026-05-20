@@ -5,7 +5,6 @@ import { Loader2, Save, Camera, User } from 'lucide-react'
 import { useProfile } from '@/hooks/teacher/profile/useProfile'
 import { useUpdateProfile } from '@/hooks/teacher/profile/useUpdateProfile'
 import { Input } from '@/components/ui/input'
-// Shadcn Textarea qo'shildi
 import { RoseButton } from '@/components/ui/rose-button'
 import { Textarea } from '@/components/ui/textarea'
 
@@ -24,50 +23,19 @@ type ProfileForm = {
   learning_goal: string
 }
 
-// Uploadcare Hook
-const useUploadAvatar = () => {
-  const [isUploading, setIsUploading] = useState(false)
-
-  const uploadToUploadcare = async (file: File): Promise<string> => {
-    setIsUploading(true)
-    try {
-      const pubKey = import.meta.env.VITE_UPLOADCARE_PUBLIC_KEY
-      if (!pubKey) throw new Error('VITE_UPLOADCARE_PUBLIC_KEY topilmadi!')
-
-      const formData = new FormData()
-      formData.append('UPLOADCARE_PUB_KEY', pubKey)
-      formData.append('UPLOADCARE_STORE', 'auto')
-      formData.append('file', file)
-
-      const res = await fetch('https://upload.uploadcare.com/base/', {
-        method: 'POST',
-        body: formData,
-      })
-
-      const data = await res.json()
-      if (!data.file) throw new Error('Uploadcare xatosi yuz berdi')
-
-      return `https://4yypsqu6p6.ucarecd.net/${data.file}/`
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  return { uploadToUploadcare, isUploading }
-}
-
 function ProfilePage() {
   const { data: profile, isLoading, isError } = useProfile()
   const updateProfileMutation = useUpdateProfile()
-  const { uploadToUploadcare, isUploading } = useUploadAvatar()
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
+  // Mahalliy (local) preview uchun URL yaratish
   const previewUrl = useMemo(() => {
     if (selectedFile) return URL.createObjectURL(selectedFile)
     return profile?.avatar ?? null
   }, [profile?.avatar, selectedFile])
 
+  // Xotira sizib chiqishini (memory leak) oldini olish
   useEffect(() => {
     if (!selectedFile || !previewUrl) return
     return () => {
@@ -85,6 +53,7 @@ function ProfilePage() {
     mode: 'onBlur',
   })
 
+  // Ma'lumotlar kelganda formani to'ldirish
   useEffect(() => {
     if (profile) {
       reset({
@@ -106,18 +75,26 @@ function ProfilePage() {
   }
 
   const onSubmit = async (data: ProfileForm) => {
-    let finalAvatarUrl = data.avatar
+    const formData = new FormData()
 
+    // Matnli maydonlarni qo'shish
+    formData.append('full_name', data.full_name)
+    formData.append('username', data.username)
+    formData.append('timezone', data.timezone)
+    formData.append('bio', data.bio)
+    formData.append('learning_goal', data.learning_goal)
+
+    // Agar yangi avatar tanlangan bo'lsa, uni fayl sifatida qo'shamiz
     if (selectedFile) {
-      try {
-        finalAvatarUrl = await uploadToUploadcare(selectedFile)
-        setValue('avatar', finalAvatarUrl, { shouldDirty: true })
-      } catch (_error) {
-        return
-      }
+      formData.append('avatar', selectedFile)
     }
 
-    updateProfileMutation.mutate({ ...data, avatar: finalAvatarUrl })
+    // Mutatsiyani chaqirish
+    updateProfileMutation.mutate(formData as any, {
+      onSuccess: () => {
+        setSelectedFile(null)
+      },
+    })
   }
 
   if (isLoading) {
@@ -136,7 +113,7 @@ function ProfilePage() {
     )
   }
 
-  const isFormDisabled = updateProfileMutation.isPending || isUploading
+  const isFormDisabled = updateProfileMutation.isPending
 
   return (
     <div className='mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8'>
@@ -152,7 +129,7 @@ function ProfilePage() {
       <div className='flex flex-col gap-8 md:flex-row'>
         {/* Chap ustun: Avatar */}
         <div className='w-full md:w-1/3 lg:w-1/4'>
-          <div className='flex flex-col items-center rounded-xl border border-slate-200 dark:border-slate-800 bg-card dark:bg-slate-900 p-6 text-card-foreground shadow-sm'>
+          <div className='flex flex-col items-center rounded-xl border border-slate-200 bg-card p-6 text-card-foreground shadow-sm dark:border-slate-800 dark:bg-slate-900'>
             <div className='group relative mb-4'>
               <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-muted'>
                 {previewUrl ? (
@@ -167,7 +144,7 @@ function ProfilePage() {
                   </div>
                 )}
               </div>
-              <label className='absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-background dark:border-slate-800 bg-[#b80035] text-white shadow-sm transition-transform hover:scale-105'>
+              <label className='absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-background bg-[#b80035] text-white shadow-sm transition-transform hover:scale-105 dark:border-slate-800'>
                 <Camera size={16} />
                 <input
                   type='file'
@@ -181,13 +158,15 @@ function ProfilePage() {
             <h2 className='text-lg font-semibold text-foreground dark:text-white'>
               {profile.full_name || profile.username || 'User'}
             </h2>
-            <span className='mt-1 text-sm text-muted-foreground dark:text-slate-400'>Teacher</span>
+            <span className='mt-1 text-sm text-muted-foreground dark:text-slate-400'>
+              Teacher
+            </span>
           </div>
         </div>
 
         {/* O'ng ustun: Forma */}
         <div className='w-full md:w-2/3 lg:w-3/4'>
-          <div className='rounded-xl border border-slate-200 dark:border-slate-800 bg-card dark:bg-slate-900 text-card-foreground shadow-sm'>
+          <div className='rounded-xl border border-slate-200 bg-card text-card-foreground shadow-sm dark:border-slate-800 dark:bg-slate-900'>
             <form
               id='profile-form'
               onSubmit={handleSubmit(onSubmit)}
@@ -241,7 +220,7 @@ function ProfilePage() {
                     })}
                     placeholder='continent/city'
                     disabled={isFormDisabled}
-                    defaultValue={profile?.timezone || 'Asia/Karshi'}
+                    defaultValue={profile?.timezone || 'Asia/Tashkent'}
                     onChange={(e) =>
                       setValue('timezone', e.target.value, {
                         shouldDirty: true,
@@ -283,7 +262,7 @@ function ProfilePage() {
                 />
               </div>
 
-              <div className='flex justify-end border-t border-slate-100 dark:border-slate-800 pt-4'>
+              <div className='flex justify-end border-t border-slate-100 pt-4 dark:border-slate-800'>
                 <RoseButton
                   type='submit'
                   form='profile-form'
@@ -293,7 +272,7 @@ function ProfilePage() {
                   {isFormDisabled ? (
                     <>
                       <Loader2 size={16} className='mr-2 animate-spin' />
-                      {isUploading ? 'Uploading...' : 'Saving...'}
+                      Saving...
                     </>
                   ) : (
                     <>
