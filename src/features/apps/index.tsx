@@ -89,7 +89,7 @@ export function Apps() {
         <ConfigDrawer />
       </Header>
 
-      <Main>
+      <Main className='bg-background'>
         {/* Filter / Search toolbar */}
         <div className='mb-4 flex items-center justify-between gap-4'>
           <div className='flex items-center gap-2'>

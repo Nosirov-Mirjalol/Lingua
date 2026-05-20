@@ -3,8 +3,11 @@ import { Link } from '@tanstack/react-router'
 import {
   Edit,
   Eye,
+  BellRing,
+  Loader2,
   Plus,
   Search,
+  Send,
   Trash2,
   User as UserIcon,
   X,
@@ -24,6 +27,7 @@ import {
 } from '@/hooks/admin/students/useCreateAdminStudent'
 import { useDeleteAdminStudent } from '@/hooks/admin/students/useDeleteAdminStudent'
 import { useUpdateAdminStudent } from '@/hooks/admin/students/useUpdateAdminStudent'
+import { useBroadcastList, useSendBroadcast } from '@/features/notifications/hooks'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -45,6 +49,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RoseButton } from '@/components/ui/rose-button'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Table,
   TableBody,
@@ -69,6 +74,12 @@ interface StudentFormData {
   role: 'student'
   is_active: boolean
   avatar?: File | null
+}
+
+type StudentNotificationForm = {
+  title: string
+  message: string
+  type: 'info' | 'warning' | 'error'
 }
 
 const getInitialFormData = (): StudentFormData => ({
@@ -103,8 +114,12 @@ export default function AdminStudentsPage() {
 
   const createMutation = useCreateAdminStudent()
   const deleteMutation = useDeleteAdminStudent()
+  const { data: broadcastNotifications = [], isLoading: notificationsLoading } =
+    useBroadcastList()
+  const sendBroadcastMutation = useSendBroadcast()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null)
   const [formData, setFormData] = useState<StudentFormData>(getInitialFormData)
   const [avatarPreview, setAvatarPreview] = useState<string>('')
@@ -134,6 +149,17 @@ export default function AdminStudentsPage() {
     phone: '+998',
     is_active: true,
   })
+
+  const [notificationForm, setNotificationForm] =
+    useState<StudentNotificationForm>({
+      title: '',
+      message: '',
+      type: 'info',
+    })
+
+  const recentNotifications = Array.isArray(broadcastNotifications)
+    ? broadcastNotifications.slice(0, 3)
+    : []
 
   const hasAccessToken = (): boolean => {
     if (typeof window === 'undefined') return false
@@ -299,6 +325,38 @@ export default function AdminStudentsPage() {
     })
   }
 
+  const handleSendNotification = () => {
+    const title = notificationForm.title.trim()
+    const message = notificationForm.message.trim()
+
+    if (!title) {
+      toast.error('Notification sarlavhasi kiritilishi shart')
+      return
+    }
+
+    if (!message) {
+      toast.error('Notification matni kiritilishi shart')
+      return
+    }
+
+    toast.promise(
+      sendBroadcastMutation.mutateAsync({
+        title,
+        message,
+        type: notificationForm.type,
+      }),
+      {
+        loading: 'Notification yuborilmoqda...',
+        success: () => {
+          setIsNotificationModalOpen(false)
+          setNotificationForm({ title: '', message: '', type: 'info' })
+          return 'Notification studentlarga yuborildi'
+        },
+        error: 'Notification yuborishda xatolik',
+      }
+    )
+  }
+
   const handleCancel = () => {
     resetForm()
     setIsModalOpen(false)
@@ -380,7 +438,7 @@ export default function AdminStudentsPage() {
           <ConfigDrawer />
         </Header>
 
-        <Main>
+        <Main className='bg-background'>
           <div
             style={{
               fontSize: 11,
@@ -402,13 +460,111 @@ export default function AdminStudentsPage() {
                   All students information and payment status
                 </p>
               </div>
-              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogTrigger asChild>
-                  <RoseButton className='rounded-2xl' onClick={openCreateModal}>
-                    <Plus className='mr-2 h-4 w-4' />
-                    Add Student
-                  </RoseButton>
-                </DialogTrigger>
+              <div className='flex items-center gap-2'>
+                <Dialog
+                  open={isNotificationModalOpen}
+                  onOpenChange={setIsNotificationModalOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button variant='outline' className='rounded-2xl'>
+                      <BellRing className='mr-2 h-4 w-4' />
+                      Notification
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className='sm:max-w-lg'>
+                    <DialogHeader>
+                      <DialogTitle>Studentlarga notification yuborish</DialogTitle>
+                    </DialogHeader>
+                    <div className='space-y-4'>
+                      <div className='space-y-2'>
+                        <Label htmlFor='notification-title'>Sarlavha</Label>
+                        <Input
+                          id='notification-title'
+                          value={notificationForm.title}
+                          onChange={(e) =>
+                            setNotificationForm((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
+                          placeholder='Masalan: Yangi dars jadvali'
+                        />
+                      </div>
+                      <div className='space-y-2'>
+                        <Label htmlFor='notification-message'>Xabar</Label>
+                        <Textarea
+                          id='notification-message'
+                          value={notificationForm.message}
+                          onChange={(e) =>
+                            setNotificationForm((prev) => ({
+                              ...prev,
+                              message: e.target.value,
+                            }))
+                          }
+                          placeholder='Studentlarga ko‘rinadigan xabar matni'
+                          rows={5}
+                        />
+                      </div>
+                      <div className='grid grid-cols-3 gap-2'>
+                        {(['info', 'warning', 'error'] as const).map((type) => (
+                          <Button
+                            key={type}
+                            type='button'
+                            variant={
+                              notificationForm.type === type
+                                ? 'default'
+                                : 'outline'
+                            }
+                            onClick={() =>
+                              setNotificationForm((prev) => ({
+                                ...prev,
+                                type,
+                              }))
+                            }
+                            className='capitalize'
+                          >
+                            {type}
+                          </Button>
+                        ))}
+                      </div>
+                      <div className='rounded-xl border bg-muted/40 p-3 text-xs text-muted-foreground'>
+                        Bu xabar barcha student foydalanuvchilarga broadcast
+                        notification sifatida yuboriladi.
+                      </div>
+                      <div className='flex justify-end gap-2'>
+                        <Button
+                          variant='outline'
+                          onClick={() => setIsNotificationModalOpen(false)}
+                        >
+                          Bekor qilish
+                        </Button>
+                        <RoseButton
+                          onClick={handleSendNotification}
+                          disabled={sendBroadcastMutation.isPending}
+                        >
+                          {sendBroadcastMutation.isPending ? (
+                            <Loader2 className='h-4 w-4 animate-spin' />
+                          ) : (
+                            <>
+                              <Send className='mr-2 h-4 w-4' />
+                              Yuborish
+                            </>
+                          )}
+                        </RoseButton>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                  <DialogTrigger asChild>
+                    <RoseButton
+                      className='rounded-2xl'
+                      onClick={openCreateModal}
+                    >
+                      <Plus className='mr-2 h-4 w-4' />
+                      Add Student
+                    </RoseButton>
+                  </DialogTrigger>
                 <DialogContent
                   className='max-h-[90vh] overflow-y-auto sm:max-w-lg'
                   showCloseButton={false}
@@ -611,12 +767,13 @@ export default function AdminStudentsPage() {
                     </div>
                   </form>
                 </DialogContent>
-              </Dialog>
+                </Dialog>
+              </div>
             </div>
           </div>
 
           <div className='mb-4 md:hidden'>
-            <div className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm'>
+            <div className='flex items-center gap-2 rounded-2xl border border-slate-200 bg-background px-3 py-2 shadow-sm dark:border-slate-800'>
               <Search className='h-4 w-4 text-slate-400' />
               <Input
                 value={search}
@@ -699,6 +856,70 @@ export default function AdminStudentsPage() {
               </CardContent>
             </Card>
           </div>
+
+          <Card className='mb-8 border-primary/10 bg-primary/5'>
+            <CardHeader className='pb-3'>
+              <div className='flex items-center justify-between'>
+                <div>
+                  <CardTitle className='flex items-center gap-2 text-base'>
+                    <BellRing className='h-4 w-4 text-primary' />
+                    Student notification markazi
+                  </CardTitle>
+                  <CardDescription>
+                    Studentlarga yuborilgan oxirgi xabarlar va tezkor broadcast.
+                  </CardDescription>
+                </div>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => setIsNotificationModalOpen(true)}
+                >
+                  <Send className='mr-2 h-4 w-4' />
+                  Xabar yuborish
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {notificationsLoading ? (
+                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                  <Loader2 className='h-4 w-4 animate-spin' />
+                  Notificationlar yuklanmoqda...
+                </div>
+              ) : recentNotifications.length === 0 ? (
+                <div className='text-sm text-muted-foreground'>
+                  Hali notification yuborilmagan.
+                </div>
+              ) : (
+                <div className='grid gap-3 md:grid-cols-3'>
+                  {recentNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className='rounded-xl border bg-background p-3'
+                    >
+                      <div className='mb-1 flex items-center justify-between gap-2'>
+                        <p className='line-clamp-1 text-sm font-semibold'>
+                          {notification.title}
+                        </p>
+                        <Badge variant='secondary' className='text-[10px]'>
+                          {notification.is_read ? "O'qilgan" : 'Yangi'}
+                        </Badge>
+                      </div>
+                      <p className='line-clamp-2 text-xs text-muted-foreground'>
+                        {notification.message}
+                      </p>
+                      <p className='mt-2 text-[10px] font-medium text-muted-foreground'>
+                        {notification.created_at
+                          ? new Date(notification.created_at).toLocaleString(
+                              'uz-UZ'
+                            )
+                          : 'Sana yo‘q'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Students Table */}
           <Card>

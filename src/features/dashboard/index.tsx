@@ -14,7 +14,7 @@ export default function Dashboard() {
         <ConfigDrawer />
       </AdminHeader>
 
-      <Main>
+      <Main className='bg-background'>
         {/* ── Welcome ── */}
         <div className='mb-7'>
           <p className='mb-1 text-xs font-semibold tracking-widest text-primary uppercase'>

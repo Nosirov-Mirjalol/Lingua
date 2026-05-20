@@ -10,4 +10,4 @@ export interface GroupScheduleItem {
   lesson_status: LessonStatus
 }
 
-export interface ScheduleResponse extends Array<GroupScheduleItem> {}
+export type ScheduleResponse = GroupScheduleItem[]

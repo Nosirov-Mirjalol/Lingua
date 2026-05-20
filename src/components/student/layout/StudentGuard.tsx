@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import type { ReactNode } from 'react'
 import { getSessionUserRole } from '@/lib/auth-role'
 
 export function StudentGuard({ children }: { children: ReactNode }) {

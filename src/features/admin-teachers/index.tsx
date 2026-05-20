@@ -34,11 +34,27 @@ import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { ListPagination } from '@/components/list-pagination'
 import { AdminTeacherCreateModal } from '@/features/admin-teachers/components/admin-teacher-create-modal'
+import type { Group } from '@/api/service/teacher/group.type'
+import { useAdminGroups } from '@/hooks/admin/groups/useAdminGroups'
+import { useAdminCourses } from '@/hooks/admin/courses/useAdminCourses'
+import { useDeleteAdminGroup } from '@/hooks/admin/groups/useDeleteAdminGroup'
+import { TeacherGroupModal } from '@/features/admin-teachers/components/teacher-group-modal'
+import { TeacherGroupsManageModal } from '@/features/admin-teachers/components/teacher-groups-manage-modal'
 
 export default function AdminTeachersPage() {
   const { data: rawTeachers = [], isLoading } = useAdminTeachers()
   const deleteMutation = useDeleteAdminTeacher()
   const updateMutation = useUpdateAdminTeacher()
+
+  const { data: groups = [] } = useAdminGroups()
+  const { data: courses = [] } = useAdminCourses('')
+  const deleteGroupMutation = useDeleteAdminGroup()
+
+  const [groupModalOpen, setGroupModalOpen] = useState(false)
+  const [selectedTeacherForGroup, setSelectedTeacherForGroup] = useState<AdminTeacher | null>(null)
+  const [groupsManageModalOpen, setGroupsManageModalOpen] = useState(false)
+  const [deleteGroupId, setDeleteGroupId] = useState<number | null>(null)
+
 
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
@@ -76,6 +92,11 @@ export default function AdminTeachersPage() {
     const start = (page - 1) * pageSize
     return filtered.slice(start, start + pageSize)
   }, [filtered, page, pageSize])
+
+  const getTeacherGroups = (teacherId: number) => {
+    const teacherGroups = Array.isArray(groups) ? groups.filter((g: Group) => g.teacher === teacherId) : []
+    return teacherGroups
+  }
 
   const startEdit = (teacher: AdminTeacher) => {
     setEditingTeacher(teacher)
@@ -124,11 +145,23 @@ export default function AdminTeachersPage() {
     })
   }
 
+  const confirmDeleteGroup = () => {
+    if (!deleteGroupId) return
+    toast.promise(deleteGroupMutation.mutateAsync(deleteGroupId), {
+      loading: "O'chirilmoqda...",
+      success: () => {
+        setDeleteGroupId(null)
+        return "O'chirildi"
+      },
+      error: 'Xatolik yuz berdi',
+    })
+  }
+
   return (
     <>
       <AdminHeader fixed />
 
-      <Main fixed className='bg-background/40 font-outfit'>
+      <Main className='bg-background font-outfit'>
         <div className='container mx-auto max-w-[1400px] p-6'>
           <div className='mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between'>
             <div>
@@ -147,9 +180,8 @@ export default function AdminTeachersPage() {
             </RoseButton>
           </div>
 
-<<<<<<< HEAD
-          <Card className='overflow-hidden rounded-[32px] border-none bg-card shadow-sm'>
-            <div className='flex flex-col gap-4 border-b p-6 md:flex-row md:items-center md:justify-between'>
+          <Card className='rounded-[32px] border-none bg-background shadow-sm'>
+            <div className='flex flex-col gap-4 border-b border-slate-50 p-6 md:flex-row md:items-center md:justify-between'>
               <div className='flex w-fit items-center gap-1 rounded-full bg-muted p-1'>
                 {['Hammasi', 'Faol', 'Nofaol'].map((tab) => (
                   <button
@@ -157,8 +189,8 @@ export default function AdminTeachersPage() {
                     className={cn(
                       'rounded-full px-6 py-2 text-xs font-bold transition-all',
                       tab === 'Hammasi'
-                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
-                        : 'text-muted-foreground'
+                        ? 'bg-rose-600 text-white shadow-md shadow-rose-200 dark:shadow-none'
+                        : 'text-slate-500 dark:text-slate-400'
                     )}
                   >
                     {tab}
@@ -167,48 +199,22 @@ export default function AdminTeachersPage() {
               </div>
               <div className='flex items-center gap-3'>
                 <div className='relative'>
-                  <Search className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+                  <Search className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400' />
                   <Input
                     placeholder='Ustozlarni qidirish...'
                     className='h-10 w-64 rounded-full border-none bg-muted pl-10 text-xs font-medium'
                     value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value)
-                      setPage(1)
-                    }}
+                    onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
                 <Button
                   variant='ghost'
                   size='icon'
-                  className='rounded-full text-muted-foreground'
+                  className='rounded-full text-slate-400'
                 >
                   <Filter className='h-4 w-4' />
                 </Button>
               </div>
-=======
-          <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
-            <div className="p-6 border-b border-slate-50 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-               <div className="flex items-center gap-1 p-1 bg-slate-50 rounded-full w-fit">
-                  {['Hammasi', 'Faol', 'Nofaol'].map(tab => (
-                    <button key={tab} className={cn("px-6 py-2 rounded-full text-xs font-bold transition-all", tab === 'Hammasi' ? "bg-rose-600 text-white shadow-md shadow-rose-200 dark:shadow-none" : "text-slate-500")}>
-                      {tab}
-                    </button>
-                  ))}
-               </div>
-               <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                    <Input 
-                      placeholder="Ustozlarni qidirish..." 
-                      className="h-10 w-64 rounded-full bg-slate-50 border-none pl-10 text-xs font-medium" 
-                      value={search}
-                      onChange={e => setSearch(e.target.value)}
-                    />
-                  </div>
-                  <Button variant="ghost" size="icon" className="rounded-full text-slate-400"><Filter className="h-4 w-4" /></Button>
-               </div>
->>>>>>> b6612ff0a0c190d6006744c9e600144354c1074d
             </div>
 
             <div className='overflow-x-auto'>
@@ -448,6 +454,39 @@ export default function AdminTeachersPage() {
         <AdminTeacherCreateModal
           open={createOpen}
           onOpenChange={setCreateOpen}
+        />
+
+        <TeacherGroupModal
+          isOpen={groupModalOpen}
+          onClose={() => {
+            setGroupModalOpen(false)
+            setSelectedTeacherForGroup(null)
+          }}
+          teacherId={selectedTeacherForGroup?.id || 0}
+          teacherName={selectedTeacherForGroup ? selectedTeacherForGroup.first_name + " " + selectedTeacherForGroup.last_name : ""}
+          courses={courses}
+        />
+
+        <TeacherGroupsManageModal
+          isOpen={groupsManageModalOpen}
+          onClose={() => {
+            setGroupsManageModalOpen(false)
+            setSelectedTeacherForGroup(null)
+          }}
+          teacherName={selectedTeacherForGroup ? selectedTeacherForGroup.first_name + " " + selectedTeacherForGroup.last_name : ""}
+          groups={selectedTeacherForGroup ? getTeacherGroups(selectedTeacherForGroup.id) : []}
+          onAddGroup={() => {
+            setGroupsManageModalOpen(false)
+            setGroupModalOpen(true)
+          }}
+          onDeleteGroup={setDeleteGroupId}
+        />
+
+        <DeleteConfirmDialog
+          open={deleteGroupId !== null}
+          onOpenChange={(v) => !v && setDeleteGroupId(null)}
+          onConfirm={confirmDeleteGroup}
+          isLoading={deleteGroupMutation.isPending}
         />
       </Main>
     </>

@@ -1,4 +1,4 @@
-import { Homework } from '@/types/student'
+import { type Homework } from '@/types/student'
 import { HomeworkSidebarItem } from './HomeworkSidebarItem'
 import { Button } from '@/components/ui/button'
 import { FilePlus } from 'lucide-react'

@@ -50,7 +50,7 @@ export function StudentGrowth() {
           </CardDescription>
         </div>
         <Select defaultValue='12months'>
-          <SelectTrigger className='h-9 w-45 border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'>
+          <SelectTrigger className='h-9 w-45 border-gray-200 bg-background dark:border-gray-700'>
             <SelectValue placeholder='Select period' />
           </SelectTrigger>
           <SelectContent className='border-gray-200 dark:border-gray-700'>

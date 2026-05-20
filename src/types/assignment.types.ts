@@ -45,3 +45,11 @@ export type SubmitAssignmentPayload = {
   text_answer?: string
   file_answer?: string
 }
+
+export interface AssignmentStatus {
+  id: number
+  student: number
+  student_name: string
+  status: 'topshirgan' | 'topshirmagan'
+  submitted_at?: string
+}

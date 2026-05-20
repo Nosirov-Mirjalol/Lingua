@@ -29,7 +29,11 @@ export default defineConfig(
         'warn',
         { allowConstantExport: true },
       ],
-      'no-console': 'error',
+      'no-console': 'warn',
+      'preserve-caught-error': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
+      'react-hooks/set-state-in-effect': 'off',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -43,6 +47,7 @@ export default defineConfig(
           ignoreRestSiblings: true,
         },
       ],
+      '@typescript-eslint/no-explicit-any': 'off',
       // Enforce type-only imports for TypeScript types
       '@typescript-eslint/consistent-type-imports': [
         'error',

@@ -72,7 +72,7 @@ export function TeacherThemeProvider({
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [theme, resolvedTheme])
 
-  const setTheme = (theme: Theme) => {
+  const setTheme = (_theme: Theme) => {
     // Teacher panel always uses light mode - ignore theme changes
     setCookie(storageKey, 'light', THEME_COOKIE_MAX_AGE)
     _setTheme('light')

@@ -75,7 +75,7 @@ export function EditModal({
                 onOpenChange(false)
                 onCancel?.()
               }}
-              className='border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+              className='border-slate-200 bg-background text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
             >
               BEKOR QILISH
             </Button>

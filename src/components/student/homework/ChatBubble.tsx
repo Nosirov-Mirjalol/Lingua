@@ -1,4 +1,4 @@
-import { HomeworkMessage } from '@/types/student'
+import { type HomeworkMessage } from '@/types/student'
 import { formatDisplayDate } from '@/lib/date-format'
 import { cn } from '@/lib/utils'
 

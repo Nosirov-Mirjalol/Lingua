@@ -1,4 +1,4 @@
-import { Homework } from '@/types/student'
+import { type Homework } from '@/types/student'
 import { HomeworkStatusBadge } from './HomeworkStatusBadge'
 import { cn } from '@/lib/utils'
 import { User, Calendar } from 'lucide-react'

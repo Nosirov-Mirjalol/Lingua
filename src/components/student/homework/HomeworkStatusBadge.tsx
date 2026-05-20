@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
-import { HomeworkStatus } from '@/types/student'
+import { type HomeworkStatus } from '@/types/student'
 
 interface Props {
   status: HomeworkStatus

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Download, X, Calendar, TrendingUp } from 'lucide-react'
 import { Dialog, DialogClose, DialogContent } from '@/components/ui/dialog'
 import { RoseButton } from '@/components/ui/rose-button'
@@ -68,7 +68,7 @@ function MetaCard({
   label,
   value,
 }: {
-  icon: React.ReactNode
+  icon: ReactNode
   label: string
   value: string
 }) {
@@ -93,7 +93,7 @@ function StarRating({ rating }: { rating: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <span
           key={i}
-          className={i < rating ? 'text-primary' : 'text-muted-foreground'
+          className={i < rating ? 'text-primary' : 'text-muted-foreground'}
           style={{ fontSize: 15 }}
         >
           ★

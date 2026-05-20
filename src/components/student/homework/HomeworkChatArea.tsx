@@ -1,4 +1,4 @@
-import { Homework, HomeworkMessage } from '@/types/student'
+import { type Homework, type HomeworkMessage } from '@/types/student'
 import { HomeworkSidebar } from './HomeworkSidebar'
 import { ChatBubble } from './ChatBubble'
 import { HomeworkAssignmentBubble } from './HomeworkAssignmentBubble'

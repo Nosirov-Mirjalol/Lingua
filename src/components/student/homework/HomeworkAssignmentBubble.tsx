@@ -1,4 +1,4 @@
-import { Homework } from '@/types/student'
+import { type Homework } from '@/types/student'
 import { Book, Calendar } from 'lucide-react'
 
 interface Props {

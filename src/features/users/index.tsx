@@ -28,7 +28,7 @@ export function Users() {
         <ConfigDrawer />
       </AdminHeader>
 
-      <Main className='flex flex-1 flex-col gap-4 sm:gap-6'>
+      <Main className='flex flex-1 flex-col gap-4 bg-background sm:gap-6'>
         <div className='flex flex-wrap items-end justify-between gap-2'>
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>User List</h2>

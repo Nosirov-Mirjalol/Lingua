@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Loader2, Plus } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   type AdminCourseCreatePayload,

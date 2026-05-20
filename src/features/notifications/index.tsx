@@ -95,14 +95,16 @@ export default function NotificationsPage() {
         <ConfigDrawer />
       </AdminHeader>
 
-      <Main className='bg-white font-outfit dark:bg-slate-950'>
-        <div className='flex min-h-[calc(100vh-7rem)] flex-col border-x border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'>
+      <Main className='bg-background font-outfit'>
+        <div className='flex min-h-[calc(100vh-7rem)] flex-col border-x border-t border-slate-200 bg-background dark:border-slate-800'>
           <div className='flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800'>
             <div>
               <h1 className='text-xl font-bold text-slate-900 dark:text-slate-50'>
                 Bildirishnomalar
               </h1>
-              <p className='text-xs text-slate-500 dark:text-slate-400'>Tizim xabarlari ro'yxati</p>
+              <p className='text-xs text-slate-500 dark:text-slate-400'>
+                Tizim xabarlari ro'yxati
+              </p>
             </div>
             <Dialog
               open={isCreateModalOpen}
@@ -113,7 +115,7 @@ export default function NotificationsPage() {
                   <Plus className='mr-2 h-4 w-4' /> Yangi xabar
                 </RoseButton>
               </DialogTrigger>
-              <DialogContent className='rounded-xl bg-white dark:bg-slate-900 sm:max-w-md'>
+              <DialogContent className='rounded-xl bg-background sm:max-w-md'>
                 <DialogHeader>
                   <DialogTitle className='text-lg font-bold dark:text-slate-50'>
                     Xabar yuborish

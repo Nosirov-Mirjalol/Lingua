@@ -1,6 +1,6 @@
 export interface LoginDtoRequest {
-    username:String;
-    phone:String;
+    username:string;
+    phone:string;
 }
 export interface LoginDtoResponse{
     username:string

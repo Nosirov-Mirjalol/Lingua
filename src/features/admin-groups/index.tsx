@@ -39,16 +39,25 @@ interface Teacher {
   last_name?: string
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Nom kiritilishi shart'),
-  course: z.string().min(1, 'Kursni tanlang'),
-  teacher: z.string().min(1, 'Ustozni tanlang'),
-  start_date: z.string().min(1, 'Sanani tanlang'),
-  time_from: z.string().min(1, 'Vaqtni tanlang'),
-  time_to: z.string().min(1, 'Vaqtni tanlang'),
-  week_days_type: z.enum(['ODD', 'EVEN', 'CUSTOM']),
-  days: z.array(z.string()).optional(),
-})
+const formSchema = z
+  .object({
+    name: z.string().min(1, 'Nom kiritilishi shart'),
+    course: z.string().min(1, 'Kursni tanlang'),
+    teacher: z.string().min(1, 'Ustozni tanlang'),
+    start_date: z.string().min(1, 'Sanani tanlang'),
+    time_from: z.string().min(1, 'Vaqtni tanlang'),
+    time_to: z.string().min(1, 'Vaqtni tanlang'),
+    week_days_type: z.enum(['ODD', 'EVEN', 'CUSTOM']),
+    days: z.array(z.string()).optional(),
+  })
+  .refine(
+    (values) =>
+      values.week_days_type !== 'CUSTOM' || Boolean(values.days?.length),
+    {
+      message: 'Kamida bitta kun tanlang',
+      path: ['days'],
+    }
+  )
 
 type FormValues = z.infer<typeof formSchema>
 
@@ -162,8 +171,10 @@ export default function AdminGroupsPage() {
         <div className='container mx-auto max-w-6xl px-6 py-10'>
           <div className='mb-12 flex items-center justify-between'>
             <div className='space-y-1'>
-              <h1 className='text-2xl font-bold text-foreground'>Guruhlar</h1>
-              <p className='text-[10px] font-black tracking-[0.2em] text-muted-foreground uppercase'>
+              <h1 className='text-2xl font-black text-rose-700 dark:text-rose-400'>
+                Guruhlar
+              </h1>
+              <p className='text-[10px] font-black tracking-[0.2em] text-rose-500 uppercase'>
                 Boshqaruv paneli
               </p>
             </div>
@@ -172,99 +183,103 @@ export default function AdminGroupsPage() {
                 reset()
                 setCreateOpen(true)
               }}
-              className='h-11 rounded-full bg-slate-900 px-6 text-xs font-bold text-white shadow-lg shadow-slate-100 transition-all hover:bg-slate-800 dark:bg-rose-600 dark:shadow-none dark:hover:bg-rose-700'
+              className='h-11 rounded-full bg-rose-600 px-6 text-xs font-black text-white shadow-lg shadow-rose-100 transition-all hover:bg-rose-700 dark:shadow-none'
             >
               <Plus className='mr-2 h-4 w-4' /> Qo'shish
             </Button>
           </div>
 
           <div className='relative mb-8 max-w-md'>
-            <Search className='absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+            <Search className='absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-rose-400' />
             <Input
               placeholder='Qidirish...'
-              className='h-11 rounded-full border-none bg-muted pl-11 text-sm font-medium focus-visible:ring-1 focus-visible:ring-border'
+              className='h-11 rounded-full border border-rose-100 bg-rose-50/60 pl-11 text-sm font-bold focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-rose-900/50 dark:bg-rose-950/20'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          <div className='space-y-3'>
+          <div>
             {isLoading ? (
               <div className='py-20 text-center'>
-                <Loader2 className='inline-block animate-spin text-muted-foreground' />
+                <Loader2 className='inline-block animate-spin text-rose-500' />
               </div>
             ) : filtered.length === 0 ? (
-              <div className='py-20 text-center text-xs font-medium text-muted-foreground'>
+              <div className='rounded-3xl border border-dashed border-rose-200 bg-rose-50/60 py-20 text-center text-xs font-black text-rose-500 dark:border-rose-900/60 dark:bg-rose-950/20'>
                 Guruhlar topilmadi
               </div>
             ) : (
-              filtered.map((group) => (
-                <div
-                  key={group.id}
-                  className='group flex items-center justify-between rounded-[24px] border border-transparent bg-muted/50 p-5 transition-all hover:border-border hover:bg-muted'
-                >
-                  <div className='flex items-center gap-6'>
-                    <div className='flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground transition-colors group-hover:text-primary'>
-                      <UsersIcon className='h-5 w-5' />
-                    </div>
-                    <div>
-                      <div className='mb-1 text-sm font-bold text-foreground'>
-                        {group.name}
+              <div className='grid gap-5 md:grid-cols-2 xl:grid-cols-3'>
+                {filtered.map((group) => (
+                  <div
+                    key={group.id}
+                    className='group flex min-h-[260px] flex-col justify-between rounded-[28px] border border-rose-100 bg-card p-5 shadow-sm shadow-rose-100/70 transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-xl hover:shadow-rose-100 dark:border-rose-950/70 dark:shadow-none dark:hover:border-rose-800'
+                  >
+                    <div className='flex items-start justify-between gap-4'>
+                      <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-lg shadow-rose-200 dark:shadow-none'>
+                        <UsersIcon className='h-5 w-5' />
                       </div>
-                      <div className='flex items-center gap-3'>
-                        <span className='text-[10px] font-black tracking-widest text-muted-foreground uppercase'>
-                          ID #{group.id}
-                        </span>
-                        <span className='h-1 w-1 rounded-full bg-border'></span>
-                        <span className='text-[10px] font-bold text-muted-foreground uppercase'>
-                          Kurs #{group.course}
-                        </span>
+                      <div className='min-w-0 flex-1'>
+                        <div className='mb-1 line-clamp-1 text-base font-black text-foreground'>
+                          {group.name}
+                        </div>
+                        <div className='flex items-center gap-3'>
+                          <span className='text-[10px] font-black tracking-widest text-rose-500 uppercase'>
+                            ID #{group.id}
+                          </span>
+                          <span className='h-1 w-1 rounded-full bg-rose-300'></span>
+                          <span className='text-[10px] font-black text-rose-500 uppercase'>
+                            Kurs #{group.course}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className='hidden items-center gap-12 text-right text-xs font-bold text-muted-foreground md:flex'>
-                    <div className='space-y-1'>
-                      <div className='text-[10px] font-black tracking-widest text-muted-foreground uppercase'>
-                        Ustoz
+                    <div className='mt-5 space-y-3 text-xs font-black'>
+                      <div className='rounded-2xl bg-rose-50/70 p-4 dark:bg-rose-950/20'>
+                        <div className='text-[10px] font-black tracking-widest text-rose-500 uppercase'>
+                          Ustoz
+                        </div>
+                        <div className='mt-1 line-clamp-1 text-sm font-black text-rose-950 dark:text-rose-100'>
+                          {group.teacher_name || `Ustoz #${group.teacher}`}
+                        </div>
                       </div>
-                      <div className='max-w-[120px] truncate'>
-                        {group.teacher_name || `Ustoz #${group.teacher}`}
+                      <div className='grid grid-cols-2 gap-3'>
+                        <div className='rounded-2xl border border-rose-100 p-3 dark:border-rose-950/70'>
+                          <div className='text-[10px] font-black tracking-widest text-rose-500 uppercase'>
+                            Jadval
+                          </div>
+                          <div className='mt-1 line-clamp-1 text-xs font-black text-foreground'>
+                            {Array.isArray(group.week_days)
+                              ? group.week_days.join(', ')
+                              : group.week_days || '—'}
+                          </div>
+                        </div>
+                        <div className='rounded-2xl border border-rose-100 p-3 dark:border-rose-950/70'>
+                          <div className='text-[10px] font-black tracking-widest text-rose-500 uppercase'>
+                            Vaqt
+                          </div>
+                          <div className='mt-1 text-xs font-black text-foreground'>
+                            {group.start_time?.slice(0, 5) || '--:--'} -{' '}
+                            {group.end_time?.slice(0, 5) || '--:--'}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className='space-y-1'>
-                      <div className='text-[10px] font-black tracking-widest text-muted-foreground uppercase'>
-                        Jadval
-                      </div>
-                      <div>
-                        {Array.isArray(group.week_days)
-                          ? group.week_days.join(', ')
-                          : group.week_days || '—'}
-                      </div>
-                    </div>
-                    <div className='space-y-1'>
-                      <div className='text-[10px] font-black tracking-widest text-muted-foreground uppercase'>
-                        Vaqt
-                      </div>
-                      <div>
-                        {group.start_time?.slice(0, 5)} -{' '}
-                        {group.end_time?.slice(0, 5)}
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className='flex items-center gap-2'>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      className='rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive'
-                      onClick={() => setDeleteId(group.id)}
-                    >
-                      <Trash2 className='h-4 w-4' />
-                    </Button>
+                    <div className='mt-4 flex justify-end'>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='h-9 w-9 rounded-full text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950'
+                        onClick={() => setDeleteId(group.id)}
+                      >
+                        <Trash2 className='h-4 w-4' />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </div>

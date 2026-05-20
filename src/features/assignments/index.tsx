@@ -30,7 +30,7 @@ export default function AssignmentsPage() {
 
   return (
     <AssignmentsErrorBoundary>
-      <div className='min-h-screen bg-[#F8FAFC] dark:bg-[#020617]'>
+      <div className='min-h-screen bg-background'>
         <Header>
           <div className='ms-auto flex items-center space-x-2'>
             <Search />

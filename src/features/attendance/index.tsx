@@ -5,15 +5,16 @@ export default function AttendancePage() {
   return (
     <>
       <Header>
-        <h1 className="text-lg font-semibold">Davomat</h1>
+        <h1 className='text-lg font-semibold'>Davomat</h1>
       </Header>
-      <Main>
-        <div className="rounded-lg border p-4">
-          <h2 className="text-lg font-semibold mb-4">Davomat ro'yxati</h2>
-            <p className="text-muted-foreground">
-              Bu bo'limga o'quvchilar davomatini qilish va boshqarish imkoniyatlari mavjud.
-            </p>
-          </div>
+      <Main className='bg-background'>
+        <div className='rounded-lg border p-4'>
+          <h2 className='mb-4 text-lg font-semibold'>Davomat ro'yxati</h2>
+          <p className='text-muted-foreground'>
+            Bu bo'limga o'quvchilar davomatini qilish va boshqarish
+            imkoniyatlari mavjud.
+          </p>
+        </div>
       </Main>
     </>
   )

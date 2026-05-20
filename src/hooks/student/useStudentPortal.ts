@@ -28,11 +28,6 @@ interface ProfileApiResponse {
   'User Data'?: Partial<StudentProfile>
 }
 
-interface StoredUserData extends Partial<StudentProfile> {
-  first_name?: string
-  last_name?: string
-}
-
 function formatRelativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60_000)

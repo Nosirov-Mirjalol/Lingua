@@ -5,7 +5,6 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { SidebarNav } from './components/sidebar-nav'
 
 const sidebarNavItems = [
@@ -25,7 +24,7 @@ export function Settings() {
         <ConfigDrawer />
       </Header>
 
-      <Main fixed>
+      <Main fixed className='bg-background'>
         <div className='space-y-0.5'>
           <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
             Sozlamalar

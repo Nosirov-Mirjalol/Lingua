@@ -1,6 +1,7 @@
 import type {
   Assignment,
   AssignmentListParams,
+  AssignmentStatus,
   CreateAssignmentPayload,
   GradeAssignmentPayload,
   Submission,
@@ -9,7 +10,7 @@ import type {
 } from '@/types/assignment.types'
 import { apiClient } from '@/api/client'
 
-const ASSIGNMENTS_LIST_CREATE = '/api/assignments/list-cerate/'
+const ASSIGNMENTS_LIST_CREATE = '/api/assignments/list-create/'
 const ASSIGNMENTS_BY_ID = (id: number) => `/api/assignments/${id}/`
 const ASSIGNMENTS_GRADE = (id: number) => `/api/assignments/${id}/grade/`
 const ASSIGNMENTS_SUBMIT = (id: number) => `/api/assignments/${id}/submit/`
@@ -51,6 +52,8 @@ export const submitAssignment = (
   return apiClient.post<Submission>(ASSIGNMENTS_SUBMIT(id), payload)
 }
 
-export const getAssignmentStatus = (id: number): Promise<any> => {
-  return apiClient.get<any>(ASSIGNMENTS_STATUS(id))
+export const getAssignmentStatus = (
+  id: number
+): Promise<AssignmentStatus[]> => {
+  return apiClient.get<AssignmentStatus[]>(ASSIGNMENTS_STATUS(id))
 }

@@ -37,14 +37,11 @@ export function DeleteModal({
             <Button
               variant='outline'
               onClick={onCancel}
-              className='flex-1 border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+              className='flex-1 border-slate-200 bg-background text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
             >
               BEKOR QILISH
             </Button>
-            <RoseButton
-              onClick={onConfirm}
-              className='flex-1'
-            >
+            <RoseButton onClick={onConfirm} className='flex-1'>
               O'CHIRISH
             </RoseButton>
           </div>
