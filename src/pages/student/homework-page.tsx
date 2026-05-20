@@ -151,7 +151,7 @@ export default function StudentHomeworkPage() {
       />
 
       <div className='mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]'>
-        <Card className='shadow-sm flex flex-col border-primary/20 transition-all hover:border-primary/30 hover:shadow-md'>
+        <Card className='shadow-sm flex flex-col border-primary/20 transition-all hover:border-primary/30 hover:shadow-md min-h-0'>
           <CardHeader className='pb-2 shrink-0'>
             <div>
               <CardTitle className='text-base'>Topshiriqlar markazi</CardTitle>
@@ -161,7 +161,7 @@ export default function StudentHomeworkPage() {
             </div>
           </CardHeader>
           <CardContent className='p-0 flex-1 min-h-0'>
-            <ScrollArea className='h-[calc(100svh-220px)]'>
+            <ScrollArea className='min-h-80 max-h-[calc(100vh-220px)]'>
               <div className='space-y-2 p-2 pt-0'>
                 {isLoading && (
                   <div className="space-y-3 p-2">
@@ -240,7 +240,7 @@ export default function StudentHomeworkPage() {
           ) : activeAssignment ? (
             <>
               <CardHeader className='pb-3'>
-                <div className='flex flex-col gap-4 md:flex-row md:items-start md:justify-between'>
+                <div className='flex flex-col gap-4'>
                   <div className='min-w-0'>
                     <p className='text-xs font-semibold tracking-wide text-muted-foreground uppercase'>
                       GURUH: {activeAssignment.group}
@@ -276,15 +276,15 @@ export default function StudentHomeworkPage() {
                     </div>
                   </div>
 
-                  <div className='flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 shrink-0'>
+                  <div className='flex w-full items-center gap-3 rounded-2xl border bg-card px-4 py-3 md:w-full'>
                     <Avatar className='size-10'>
                       <AvatarFallback className='bg-primary/10 text-primary'>
                         {activeAssignment.created_by?.charAt(0).toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className='leading-tight'>
+                    <div className='leading-tight min-w-0'>
                       <p className='text-xs font-semibold text-muted-foreground'>Ustoz</p>
-                      <p className='text-sm font-semibold text-foreground'>{activeAssignment.created_by || 'Noma’lum'}</p>
+                      <p className='truncate text-sm font-semibold text-foreground'>{activeAssignment.created_by || 'Noma’lum'}</p>
                     </div>
                   </div>
                 </div>

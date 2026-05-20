@@ -16,7 +16,7 @@ export function StudentSchedulePage() {
         icon={<CalendarDays size={18} />}
       />
 
-      <div className='grid gap-4 lg:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'>
         {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className='overflow-hidden border-primary/10'>
