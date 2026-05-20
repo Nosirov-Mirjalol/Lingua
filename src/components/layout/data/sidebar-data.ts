@@ -10,7 +10,6 @@ import {
   LayoutDashboard,
   MessageSquare,
   ScrollText,
-  Settings,
   User,
   Users,
 } from 'lucide-react'
@@ -39,7 +38,11 @@ export const studentSidebarData: SidebarData = {
       items: [
         { title: 'Bosh sahifa', url: '/student', icon: LayoutDashboard },
         { title: 'Dars jadvali', url: '/student/schedule', icon: CalendarDays },
-        { title: 'Uy vazifalari', url: '/student/homework', icon: ClipboardList },
+        {
+          title: 'Uy vazifalari',
+          url: '/student/homework',
+          icon: ClipboardList,
+        },
         { title: 'Xabarlar', url: '/student/messages', icon: MessageSquare },
         { title: 'Chatlar', url: '/student-chats', icon: MessageSquare },
         { title: 'Mening guruhim', url: '/student/groups', icon: BookOpen },
@@ -110,16 +113,6 @@ export const adminSidebarData: SidebarData = {
           title: 'Chats',
           url: '/admin-chats',
           icon: MessageSquare,
-        },
-      ],
-    },
-    {
-      title: 'System',
-      items: [
-        {
-          title: 'Settings',
-          url: '/settings',
-          icon: Settings,
         },
       ],
     },

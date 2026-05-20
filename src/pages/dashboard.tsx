@@ -1,10 +1,9 @@
 import {
-  Users,
-  Network,
-  DollarSign,
   ClipboardCheck,
-  TrendingUp,
+  Network,
   TrendingDown,
+  TrendingUp,
+  Users,
 } from 'lucide-react'
 import { RoseButton } from '@/components/ui/rose-button'
 import { DashboardCard } from '@/components/dashboard-card'
@@ -20,7 +19,7 @@ export default function Dashboard() {
           </p>
         </div>
 
-        <div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4'>
+        <div className='grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
           <DashboardCard
             title='TOTAL STUDENTS'
             value='248'
@@ -35,14 +34,6 @@ export default function Dashboard() {
             status='Stable'
             statusVariant='neutral'
             icon={Network}
-          />
-
-          <DashboardCard
-            title='MONTHLY REVENUE'
-            value='48.5M UZS'
-            status='+4.2M'
-            statusVariant='success'
-            icon={DollarSign}
           />
 
           <DashboardCard
@@ -79,7 +70,7 @@ export default function Dashboard() {
               </div>
               <div className='flex items-center gap-4 rounded-xl bg-slate-50 p-4'>
                 <div className='rounded-full bg-rose-100 p-2 text-rose-600'>
-                  <DollarSign size={18} />
+                  <Network size={18} />
                 </div>
                 <div className='flex-1'>
                   <p className='text-sm font-semibold text-slate-900'>

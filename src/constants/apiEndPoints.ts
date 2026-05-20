@@ -58,6 +58,9 @@ const API_ENDPOINTS = {
   },
   USER: {
     USER_ME: '/user',
+    LIST: '/api/auth/users/',
+    BY_ID: (id: number) => `/api/auth/users/${id}/`,
+    REGISTER: '/api/auth/register/',
   },
   STUDENT: {
     ASSIGNED_GROUPS: '/api/groups/my-groups/',
@@ -68,12 +71,8 @@ const API_ENDPOINTS = {
     BY_ID: (id: number) => `/api/assignments/${id}/`,
     SUBMIT: (id: number) => `/api/assignments/${id}/submit/`,
     GRADE: (id: number) => `/api/assignments/${id}/grade/`,
-<<<<<<< HEAD
     STATUS: (id: number) => `/api/assignments/${id}/status/`,
   },
-=======
-  }
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
 }
 
 export const {

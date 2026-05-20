@@ -29,7 +29,11 @@ export type AdminCourseUpdatePayload = Partial<AdminCourseCreatePayload>
 
 function unwrapList<T>(raw: unknown): T[] {
   if (Array.isArray(raw)) return raw as T[]
-  if (raw && typeof raw === 'object' && Array.isArray((raw as { results?: unknown }).results))
+  if (
+    raw &&
+    typeof raw === 'object' &&
+    Array.isArray((raw as { results?: unknown }).results)
+  )
     return (raw as { results: T[] }).results
   return []
 }
@@ -64,9 +68,12 @@ export const updateAdminCourse = (
   courseId: number,
   data: AdminCourseUpdatePayload
 ): Promise<AdminCourse> => {
-  return apiClient.put<AdminCourse>(COURSE.UPDATE_DELETE(courseId), data)
+  return apiClient.put<AdminCourse>(
+    `/api/courses/update-delete/${courseId}`,
+    data
+  )
 }
 
 export const deleteAdminCourse = (courseId: number): Promise<unknown> => {
-  return apiClient.delete<unknown>(COURSE.UPDATE_DELETE(courseId))
+  return apiClient.delete<unknown>(`/api/courses/update-delete/${courseId}`)
 }
