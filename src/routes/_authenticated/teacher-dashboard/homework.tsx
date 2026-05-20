@@ -35,8 +35,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { RoseButton } from '@/components/ui/rose-button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AssignTaskModal } from '@/components/teacher/modals/AssignTaskModal'
 import { ListPagination } from '@/components/list-pagination'
+import { AssignTaskModal } from '@/components/teacher/modals/AssignTaskModal'
 
 interface AssignmentStatus {
   student_id: number
@@ -46,7 +46,7 @@ interface AssignmentStatus {
   submitted_at: string | null
   score: number | null
   text_answer: string | null
-  file_answer: string | null
+  file_url: string | null
 }
 
 const formatDate = (val: string | null) => {
@@ -124,160 +124,139 @@ function AssignmentDetailsModal({
 
   return (
     <>
+      {/* 1. O'quvchilar javoblarini ko'rish modali */}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className='max-w-3xl rounded-2xl border-none bg-white p-6 shadow-2xl dark:bg-slate-900'>
-          <DialogHeader>
+        <DialogContent className='flex max-h-[90vh] max-w-3xl flex-col gap-0 overflow-hidden rounded-2xl border-none bg-white p-0 shadow-2xl dark:bg-slate-900'>
+          
+          {/* Header alohida qilindi va X tugma uchun pr-14 berildi */}
+          <DialogHeader className='border-b p-5 pr-14 dark:border-slate-800'>
             <DialogTitle className='text-xl font-bold dark:text-white'>
-              {assignment.title}{' '}
-              <span className='text-sm text-gray-500'>
-                (Guruh ID: {assignment.group})
-              </span>
+              {assignment.title}
             </DialogTitle>
           </DialogHeader>
 
-          {loading ? (
-            <div className='flex justify-center py-10'>
-              <Loader2 className='animate-spin text-gray-500' />
-            </div>
-          ) : !data ? (
-            <p className='py-8 text-center text-gray-500'>Ma'lumot topilmadi</p>
-          ) : (
-            <div className='space-y-5'>
-              <div className='grid grid-cols-3 gap-3 rounded-2xl bg-gray-50 p-5 dark:bg-slate-800'>
-                <div className='text-center'>
-                  <p className='text-xs text-gray-500'>Jami</p>
-                  <p className='text-2xl font-bold'>{total}</p>
-                </div>
-                <div className='text-center text-emerald-600'>
-                  <p className='text-xs'>Topshirgan</p>
-                  <p className='text-2xl font-bold'>{submitted.length}</p>
-                </div>
-                <div className='text-center text-rose-600'>
-                  <p className='text-xs'>Topshirmagan</p>
-                  <p className='text-2xl font-bold'>{notSubmitted.length}</p>
-                </div>
+          {/* Asosiy kontent qismi, overflow (skroll) qilingan */}
+          <div className='flex-1 overflow-y-auto p-5'>
+            {loading ? (
+              <div className='flex justify-center py-10'>
+                <Loader2 className='animate-spin text-gray-500' />
               </div>
+            ) : !data ? (
+              <p className='py-8 text-center text-gray-500'>Ma'lumot topilmadi</p>
+            ) : (
+              <div className='space-y-5'>
+                {/* Statistika qismi */}
+                <div className='grid grid-cols-3 gap-3 rounded-2xl bg-gray-50 p-5 dark:bg-slate-800'>
+                  <div className='text-center'>
+                    <p className='text-xs text-gray-500'>Jami</p>
+                    <p className='text-2xl font-bold'>{total}</p>
+                  </div>
+                  <div className='text-center text-emerald-600'>
+                    <p className='text-xs'>Topshirgan</p>
+                    <p className='text-2xl font-bold'>{submitted.length}</p>
+                  </div>
+                  <div className='text-center text-rose-600'>
+                    <p className='text-xs'>Topshirmagan</p>
+                    <p className='text-2xl font-bold'>{notSubmitted.length}</p>
+                  </div>
+                </div>
 
-              {total > 0 && (
-                <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-                  <TabsList className='w-full bg-gray-100 p-1 dark:bg-slate-800'>
-                    <TabsTrigger value='topshirgan' className='flex-1'>
-                      Topshirgan ({submitted.length})
-                    </TabsTrigger>
-                    <TabsTrigger value='topshirmagan' className='flex-1'>
-                      Topshirmagan ({notSubmitted.length})
-                    </TabsTrigger>
-                  </TabsList>
+                {total > 0 && (
+                  <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+                    <TabsList className='w-full bg-gray-100 p-1 dark:bg-slate-800'>
+                      <TabsTrigger value='topshirgan' className='flex-1'>
+                        Topshirgan ({submitted.length})
+                      </TabsTrigger>
+                      <TabsTrigger value='topshirmagan' className='flex-1'>
+                        Topshirmagan ({notSubmitted.length})
+                      </TabsTrigger>
+                    </TabsList>
 
-                  <TabsContent
-                    value='topshirgan'
-                    className='mt-4 max-h-[50vh] space-y-3 overflow-auto'
-                  >
-                    {submitted.map((s: AssignmentStatus) => (
-                      <div
-                        key={s.student_id}
-                        className='rounded-xl border bg-emerald-50/50 p-4 dark:border-slate-700 dark:bg-slate-800'
-                      >
-                        <div className='mb-2 flex items-start justify-between'>
-                          <div>
-                            <p className='font-bold dark:text-white'>
+                    {/* Topshirganlar ro'yxati */}
+                    <TabsContent
+                      value='topshirgan'
+                      className='mt-4 space-y-3 outline-none'
+                    >
+                      {submitted.map((s: AssignmentStatus) => (
+                        <div
+                          key={s.student_id}
+                          className='flex items-center justify-between rounded-xl border p-4 dark:border-slate-700 dark:bg-slate-800/50'
+                        >
+                          <div className='flex-1 overflow-hidden pr-4'>
+                            <p className='text-lg font-bold dark:text-white'>
                               {s.full_name || s.username}
                             </p>
-                            <p className='text-xs text-gray-500'>
+                            <p className='text-sm text-gray-500'>
                               ID: {s.student_id} • Topshirdi:{' '}
                               {formatDate(s.submitted_at)}
                             </p>
                           </div>
-                          <span className='font-bold text-emerald-600'>
-                            Ball: {s.score ?? '—'}
-                          </span>
+                          
+                          <div className='shrink-0 text-right'>
+                            {s.file_url ? (
+                              <button
+                                type='button'
+                                onClick={() => setPreviewUrl(s.file_url)}
+                                className='flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700 transition-all hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
+                              >
+                                <Eye size={16} /> Faylni ko'rish
+                              </button>
+                            ) : s.text_answer ? (
+                              <div 
+                                className='max-w-62.5 truncate rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 dark:bg-slate-900 dark:text-slate-300'
+                                title={s.text_answer}
+                              >
+                                <span className='font-medium text-gray-500 dark:text-gray-400'>Javob: </span>
+                                {s.text_answer}
+                              </div>
+                            ) : (
+                              <span className='text-sm italic text-gray-400'>
+                                Javob yo'q
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        {s.text_answer && (
-                          <div className='mb-2'>
-                            <p className='mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase'>
-                              Yozma javob:
-                            </p>
-                            <p className='rounded-xl border bg-white p-2.5 text-sm dark:border-none dark:bg-slate-700 dark:text-slate-200'>
-                              {s.text_answer}
-                            </p>
-                          </div>
-                        )}
-                        {s.file_answer && (
-                          <div className='mt-3'>
-                            <p className='mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase'>
-                              Topshirilgan fayl:
-                            </p>
-                            <div className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-100 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-800'>
-                              <div className='flex min-w-0 flex-1 items-center gap-3'>
-                                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-slate-900 dark:text-emerald-400'>
-                                  {getFileIcon(s.file_answer)}
-                                </div>
-                                <div className='min-w-0 flex-1'>
-                                  <p className='truncate text-xs font-bold text-gray-700 dark:text-slate-200'>
-                                    {getFileName(s.file_answer)}
-                                  </p>
-                                  <p className='text-[10px] font-semibold text-gray-400 uppercase'>
-                                    {getFileExtension(s.file_answer)} format
-                                  </p>
-                                </div>
-                              </div>
-                              <div className='flex shrink-0 items-center gap-2'>
-                                <button
-                                  type='button'
-                                  onClick={() => setPreviewUrl(s.file_answer)}
-                                  className='flex items-center gap-1 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-all hover:bg-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:hover:bg-emerald-900/50'
-                                >
-                                  <Eye size={14} /> Ko'rish
-                                </button>
-                                <a
-                                  href={getFileUrl(s.file_answer)}
-                                  download
-                                  target='_blank'
-                                  rel='noreferrer'
-                                  className='flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold transition-all hover:bg-gray-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700'
-                                >
-                                  <Download size={14} /> Yuklab olish
-                                </a>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </TabsContent>
+                      ))}
+                    </TabsContent>
 
-                  <TabsContent
-                    value='topshirmagan'
-                    className='mt-4 max-h-[50vh] space-y-3 overflow-auto'
-                  >
-                    {notSubmitted.map((s: AssignmentStatus) => (
-                      <div
-                        key={s.student_id}
-                        className='rounded-xl border bg-rose-50/50 p-4 dark:border-slate-700 dark:bg-slate-800'
-                      >
-                        <p className='font-bold dark:text-white'>
-                          {s.full_name || s.username}
-                        </p>
-                        <p className='text-xs text-gray-500'>
-                          ID: {s.student_id}
-                        </p>
-                      </div>
-                    ))}
-                  </TabsContent>
-                </Tabs>
-              )}
-            </div>
-          )}
+                    {/* Topshirmaganlar ro'yxati */}
+                    <TabsContent
+                      value='topshirmagan'
+                      className='mt-4 space-y-3 outline-none'
+                    >
+                      {notSubmitted.map((s: AssignmentStatus) => (
+                        <div
+                          key={s.student_id}
+                          className='rounded-xl border p-4 dark:border-slate-700 dark:bg-slate-800/50'
+                        >
+                          <p className='text-lg font-bold dark:text-white'>
+                            {s.full_name || s.username}
+                          </p>
+                          <p className='text-sm text-gray-500'>
+                            ID: {s.student_id}
+                          </p>
+                        </div>
+                      ))}
+                    </TabsContent>
+                  </Tabs>
+                )}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
+      {/* 2. Faylni ko'rish modali */}
       <Dialog
         open={!!previewUrl}
         onOpenChange={(isOpen) => !isOpen && setPreviewUrl(null)}
       >
-        <DialogContent className='max-w-4xl rounded-2xl border-none bg-white p-6 shadow-2xl dark:bg-slate-900 [&>button.absolute]:text-slate-400 dark:[&>button.absolute]:text-slate-500'>
-          <DialogHeader className='mb-4 flex flex-row items-center justify-between border-b pb-3 dark:border-slate-800'>
-            <DialogTitle className='max-w-[70%] truncate text-lg font-bold dark:text-white'>
+        {/* max-w-5xl berib kengaytirildi, p-0 va overflow-hidden orqali toshib ketish to'sildi */}
+        <DialogContent className='flex max-h-[90vh] max-w-5xl flex-col gap-0 overflow-hidden rounded-2xl border-none bg-white p-0 shadow-2xl dark:bg-slate-900'>
+          
+          {/* Flex-row orqali sarlavha va tugma bir qatorga joylandi, pr-14 orqali X tugmaga teginmaslik qilindi */}
+          <DialogHeader className='flex flex-row items-center justify-between border-b p-4 pr-14 sm:space-y-0 dark:border-slate-800 dark:bg-slate-900 z-10'>
+            <DialogTitle className='truncate text-lg font-bold dark:text-white'>
               {previewUrl ? getFileName(previewUrl) : "Fayl ko'rish"}
             </DialogTitle>
             {previewUrl && (
@@ -285,14 +264,15 @@ function AssignmentDetailsModal({
                 href={getFileUrl(previewUrl)}
                 target='_blank'
                 rel='noreferrer'
-                className='mr-8 flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-all hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                className='flex shrink-0 items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
               >
-                <ExternalLink size={14} /> Yangi oynada ochish
+                <ExternalLink size={16} /> Yangi oynada ochish
               </a>
             )}
           </DialogHeader>
 
-          <div className='flex max-h-[70vh] min-h-[50vh] items-center justify-center overflow-auto rounded-xl border bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-950'>
+          {/* Iframe/rasm saqlovchi qism. Fixed height (h-[75vh]) qotirildi */}
+          <div className='flex h-[75vh] w-full flex-col items-center justify-center overflow-hidden bg-gray-50/50 p-4 dark:bg-slate-950/50'>
             {previewUrl &&
               (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(
                 getFileExtension(previewUrl)
@@ -300,12 +280,14 @@ function AssignmentDetailsModal({
                 <img
                   src={getFileUrl(previewUrl)}
                   alt='File Preview'
-                  className='max-h-[65vh] max-w-full rounded-lg object-contain shadow-sm'
+                  // Rasm toshib ketmasligi uchun h-full w-full object-contain
+                  className='h-full w-full rounded-lg object-contain shadow-sm'
                 />
               ) : getFileExtension(previewUrl) === 'pdf' ? (
                 <iframe
                   src={getFileUrl(previewUrl)}
-                  className='h-[65vh] w-full rounded-lg border-none'
+                  // Iframe ham 100% height va widthni egallaydi
+                  className='h-full w-full rounded-xl border bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900'
                   title='PDF Preview'
                 />
               ) : (
@@ -317,8 +299,7 @@ function AssignmentDetailsModal({
                     {getFileName(previewUrl)}
                   </p>
                   <p className='mt-1 text-xs text-gray-500 dark:text-gray-400'>
-                    Ushbu fayl turini brauzerda to'g'ridan-to'g'ri ko'rib
-                    bo'lmaydi.
+                    Ushbu fayl turini brauzerda to'g'ridan-to'g'ri ko'rib bo'lmaydi.
                   </p>
                   <a
                     href={getFileUrl(previewUrl)}
@@ -465,12 +446,12 @@ function HomeworkPage() {
 
   return (
     <div>
-      <div className='mb-6 py-5 flex items-center justify-between'>
+      <div className='mb-6 flex items-center justify-between py-5'>
         <div>
-          <h1 className='text-2xl font-bold text-gray-800 dark:text-white md:text-3xl'>
+          <h1 className='text-2xl font-bold text-gray-800 md:text-3xl dark:text-white'>
             Homework
           </h1>
-          <p className='mt-1 text-sm text-gray-500 dark:text-gray-400 md:mt-2 md:text-base'>
+          <p className='mt-1 text-sm text-gray-500 md:mt-2 md:text-base dark:text-gray-400'>
             Create and manage homework assignments
           </p>
         </div>
