@@ -26,14 +26,14 @@ export function ChatListItem({
     <button
       type='button'
       className={cn(
-        'group relative flex w-full items-center gap-3 rounded-2xl p-3 text-start transition-all duration-200',
+        'group relative flex w-full items-center gap-3 rounded-2xl border p-3 text-start transition-all duration-200',
         active
-          ? 'bg-primary/10 shadow-sm ring-1 ring-primary/20'
-          : 'hover:bg-muted'
+          ? 'border-rose-500 bg-primary/10 shadow-sm ring-1 ring-primary/20'
+          : 'border-rose-300 hover:bg-muted'
       )}
       onClick={onClick}
     >
-      <div className='relative flex-shrink-0'>
+      <div className='relative flex-shrink:0'>
         <Avatar className='h-12 w-12 border-2 border-background shadow-sm'>
           {avatar ? <AvatarImage src={avatar} alt={title} /> : null}
           <AvatarFallback className='bg-primary/10 font-semibold text-primary'>

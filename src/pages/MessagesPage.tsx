@@ -233,15 +233,12 @@ export function MessagesPage() {
             )}
           </div>
         </div>
-
-        {/* Chat Area */}
         <div className={cn(
           'flex flex-1 flex-col overflow-hidden bg-white dark:bg-[#090d1f]/40', 
           !selectedGroupId && 'hidden sm:flex'
         )}>
           {selectedGroup ? (
             <>
-              {/* Chat Header */}
               <div className='flex flex-col border-b border-slate-100 bg-white/50 px-5 py-4 dark:border-slate-800/60 dark:bg-transparent backdrop-blur-sm'>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-4'>
@@ -301,8 +298,6 @@ export function MessagesPage() {
                   </div>
                 )}
               </div>
-
-              {/* Messages List */}
               <div ref={messagesContainerRef} className='flex-1 overflow-y-auto bg-slate-500/2 p-4 sm:p-6'>
                 <div className='flex flex-col gap-5'>
                   {messagesLoading ? (
@@ -400,7 +395,6 @@ export function MessagesPage() {
               </div>
             </>
           ) : (
-            /* Empty State bloki to'liq dark-safe holatga keltirildi */
             <div className='flex h-full flex-col items-center justify-center bg-slate-500/1 dark:**:text-white/90 [&_.bg-white]:dark:bg-slate-900/40 [&_p]:dark:text-slate-400'>
               <ChatEmptyState
                 title='Sizning xabarlaringiz'
