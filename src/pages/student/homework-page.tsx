@@ -134,7 +134,7 @@ export default function StudentHomeworkPage() {
       />
 
       <div className='mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]'>
-        <Card className='shadow-sm flex flex-col'>
+        <Card className='shadow-sm flex flex-col border-primary/20 transition-all hover:border-primary/30 hover:shadow-md'>
           <CardHeader className='pb-2 shrink-0'>
             <div>
               <CardTitle className='text-base'>Topshiriqlar markazi</CardTitle>
@@ -212,7 +212,7 @@ export default function StudentHomeworkPage() {
           </CardContent>
         </Card>
 
-        <Card className='shadow-sm'>
+        <Card className='shadow-sm border-primary/20 transition-all hover:border-primary/30 hover:shadow-md'>
           {isLoading ? (
             <CardContent className='flex h-[400px] items-center justify-center'>
               <div className="flex flex-col items-center gap-4">

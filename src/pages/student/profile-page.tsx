@@ -1,12 +1,9 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
 import { Loader2, Save, Camera, User as UserIcon } from 'lucide-react'
-import { toast } from 'sonner'
 import { useStudentProfile } from '@/hooks/student/useStudentPortal'
 import { useUpdateStudentProfile } from '@/hooks/student/useUpdateProfile'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RoseButton } from '@/components/ui/rose-button'
 
@@ -26,7 +23,7 @@ export function StudentProfilePage() {
   useEffect(() => {
     if (!selectedFile) return
     return () => {
-      URL.revokeObjectURL(previewUrl)
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
     }
   }, [previewUrl, selectedFile])
 
@@ -146,11 +143,11 @@ export function StudentProfilePage() {
 
       <div className='flex flex-col gap-8 md:flex-row'>
         <div className='w-full md:w-1/3 lg:w-1/4'>
-          <div className='flex flex-col items-center rounded-xl border border-slate-200 bg-card p-6 text-card-foreground shadow-sm'>
+          <div className='flex flex-col items-center rounded-xl border border-primary/10 bg-card p-6 text-card-foreground shadow-sm'>
             <div className='group relative mb-4'>
-              <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-muted'>
+              <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-primary'>
                 {previewUrl ? (
-                  <img src={previewUrl} alt='Profile' className='h-full w-full object-cover' />
+                  <img src={previewUrl} alt='' className='h-full w-full object-cover' />
                 ) : (
                   <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
                     <UserIcon size={48} />
@@ -177,31 +174,31 @@ export function StudentProfilePage() {
         </div>
 
         <div className='w-full md:w-2/3 lg:w-3/4'>
-          <div className='rounded-xl border border-slate-200 bg-card text-card-foreground shadow-sm'>
+          <div className='rounded-xl border border-primary/10 bg-card text-card-foreground shadow-sm'>
             <form id='profile-form' onSubmit={handleSubmit(onSubmit)} className='space-y-6 p-6 sm:p-8'>
               <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
                 <div className='space-y-2'>
                   <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                     Full name
                   </label>
-                  <Input {...register('full_name')} placeholder='e.g. John Doe' disabled={isFormDisabled} />
-                  {errors.full_name && <p className='text-[0.8rem] text-destructive'>{errors.full_name.message}</p>}
+                  <Input {...register('full_name')} placeholder='To‘liq ismingizni kiriting' disabled={isFormDisabled} />
+                  {errors.full_name && <p className='text-[0.8rem] text-destructive'>{String(errors.full_name.message ?? '')}</p>}
                 </div>
 
                 <div className='space-y-2'>
                   <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                     Username
                   </label>
-                  <Input {...register('username')} placeholder='e.g. john_doe' disabled={isFormDisabled} />
-                  {errors.username && <p className='text-[0.8rem] text-destructive'>{errors.username.message}</p>}
+                  <Input {...register('username')} placeholder='Foydalanuvchi nomingizni kiriting' disabled={isFormDisabled} />
+                  {errors.username && <p className='text-[0.8rem] text-destructive'>{String(errors.username.message ?? '')}</p>}
                 </div>
 
                 <div className='space-y-2'>
                   <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                     Timezone
                   </label>
-                  <Input {...register('timezone')} placeholder='continent/city' disabled={isFormDisabled} defaultValue={profile?.timezone || ''} />
-                  {errors.timezone && <p className='text-[0.8rem] text-destructive'>{errors.timezone.message}</p>}
+                  <Input {...register('timezone')} placeholder='Mamlakat/shaҳar formatida kiriting' disabled={isFormDisabled} defaultValue={profile?.timezone || ''} />
+                  {errors.timezone && <p className='text-[0.8rem] text-destructive'>{String(errors.timezone.message ?? '')}</p>}
                 </div>
               </div>
 
@@ -209,18 +206,36 @@ export function StudentProfilePage() {
                 <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                   Bio
                 </label>
-                <Textarea {...register('bio')} rows={4} placeholder='Write a short introduction...' disabled={isFormDisabled} className='resize-none' />
+                <Textarea
+                  {...register('bio')}
+                  rows={4}
+                  placeholder='O‘zingiz haqida qisqacha yozing'
+                  disabled={isFormDisabled}
+                  className='resize-none placeholder:text-slate-500 dark:placeholder:text-slate-400'
+                />
               </div>
 
               <div className='space-y-2'>
                 <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 dark:text-slate-300'>
                   Learning Goal
                 </label>
-                <Textarea {...register('learning_goal')} rows={3} placeholder='What are your main goals?' disabled={isFormDisabled} className='resize-none' />
+                <Textarea
+                  {...register('learning_goal')}
+                  rows={3}
+                  placeholder='O‘qish maqsadingizni yozing'
+                  disabled={isFormDisabled}
+                  className='resize-none placeholder:text-slate-500 dark:placeholder:text-slate-400'
+                />
               </div>
 
               <div className='flex justify-end border-t border-slate-100 dark:border-slate-800 pt-4'>
-                <RoseButton type='submit' form='profile-form' disabled={(!isDirty && !selectedFile) || isFormDisabled} className='w-full sm:w-auto'>
+                <RoseButton
+                  type='submit'
+                  form='profile-form'
+                  roseVariant='solid'
+                  disabled={(!isDirty && !selectedFile) || isFormDisabled}
+                  className='w-full sm:w-auto bg-rose-600 text-white shadow-lg hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-200'
+                >
                   {isFormDisabled ? (
                     <>
                       <Loader2 size={16} className='mr-2 animate-spin' />

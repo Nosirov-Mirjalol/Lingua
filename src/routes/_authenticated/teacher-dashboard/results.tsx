@@ -5,10 +5,20 @@ import {
   TrendingUp,
   TrendingDown,
   Download,
+  PencilLine,
   Plus,
 } from 'lucide-react'
 import { RoseButton } from '@/components/ui/rose-button'
 import { AddResultModal } from '@/components/teacher/modals/AddResultModal'
+import { ListPagination } from '@/components/list-pagination'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 
 export const Route = createFileRoute(
   '/_authenticated/teacher-dashboard/results'
