@@ -49,7 +49,6 @@ export function StudentProfilePage() {
   const {
     register,
     handleSubmit,
-    setValue,
     reset,
     formState: { isDirty, errors },
   } = useForm<Partial<Record<string, any>>>({

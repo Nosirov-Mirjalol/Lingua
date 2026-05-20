@@ -34,7 +34,7 @@ export function StudentOverviewPage() {
         />
       </section>
 
-      <section className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
+      <section className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
         <StudentStatCard
           title='Kelgusi darslar'
           value={dashboard?.stats.upcomingLessons ?? '-'}
@@ -57,7 +57,7 @@ export function StudentOverviewPage() {
         />
       </section>
 
-      <section className='grid gap-4 xl:grid-cols-[1.5fr_1fr]'>
+      <section className='grid gap-4 lg:grid-cols-[1.5fr_1fr]'>
         <Card className='overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
           <CardHeader>
             <CardTitle className='text-primary'>Bugungi asosiy ko‘rsatkichlar</CardTitle>

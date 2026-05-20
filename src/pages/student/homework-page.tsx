@@ -27,11 +27,7 @@ export default function StudentHomeworkPage() {
   const [textAnswer, setTextAnswer] = useState('')
   const [submissionMeta, setSubmissionMeta] = useState<Record<number, { is_submitted: boolean; submitted_at: string }>>({})
   const submitMutation = useSubmitHomework()
-
-  // Stable 'now' for purity
   const [now] = useState(() => Date.now())
-
-  // Derive active assignment: use activeId if set, otherwise first assignment
   const effectiveActiveId = activeId ?? assignments[0]?.id ?? null
   const activeAssignment = useMemo(
     () => assignments.find((assignment) => assignment.id === effectiveActiveId) ?? null,
