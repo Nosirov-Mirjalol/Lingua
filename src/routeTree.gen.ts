@@ -50,7 +50,6 @@ import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/c
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
 import { Route as AuthenticatedTeacherDashboardSettingsRouteImport } from './routes/_authenticated/teacher-dashboard/settings'
-import { Route as AuthenticatedTeacherDashboardResultsRouteImport } from './routes/_authenticated/teacher-dashboard/results'
 import { Route as AuthenticatedTeacherDashboardProfileRouteImport } from './routes/_authenticated/teacher-dashboard/profile'
 import { Route as AuthenticatedTeacherDashboardNotificationsRouteImport } from './routes/_authenticated/teacher-dashboard/notifications'
 import { Route as AuthenticatedTeacherDashboardMessagesRouteImport } from './routes/_authenticated/teacher-dashboard/messages'
@@ -296,12 +295,6 @@ const AuthenticatedTeacherDashboardSettingsRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedTeacherDashboardRouteRoute,
   } as any)
-const AuthenticatedTeacherDashboardResultsRoute =
-  AuthenticatedTeacherDashboardResultsRouteImport.update({
-    id: '/results',
-    path: '/results',
-    getParentRoute: () => AuthenticatedTeacherDashboardRouteRoute,
-  } as any)
 const AuthenticatedTeacherDashboardProfileRoute =
   AuthenticatedTeacherDashboardProfileRouteImport.update({
     id: '/profile',
@@ -473,7 +466,6 @@ export interface FileRoutesByFullPath {
   '/teacher-dashboard/messages': typeof AuthenticatedTeacherDashboardMessagesRoute
   '/teacher-dashboard/notifications': typeof AuthenticatedTeacherDashboardNotificationsRoute
   '/teacher-dashboard/profile': typeof AuthenticatedTeacherDashboardProfileRoute
-  '/teacher-dashboard/results': typeof AuthenticatedTeacherDashboardResultsRoute
   '/teacher-dashboard/settings': typeof AuthenticatedTeacherDashboardSettingsRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
@@ -532,7 +524,6 @@ export interface FileRoutesByTo {
   '/teacher-dashboard/messages': typeof AuthenticatedTeacherDashboardMessagesRoute
   '/teacher-dashboard/notifications': typeof AuthenticatedTeacherDashboardNotificationsRoute
   '/teacher-dashboard/profile': typeof AuthenticatedTeacherDashboardProfileRoute
-  '/teacher-dashboard/results': typeof AuthenticatedTeacherDashboardResultsRoute
   '/teacher-dashboard/settings': typeof AuthenticatedTeacherDashboardSettingsRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
@@ -599,7 +590,6 @@ export interface FileRoutesById {
   '/_authenticated/teacher-dashboard/messages': typeof AuthenticatedTeacherDashboardMessagesRoute
   '/_authenticated/teacher-dashboard/notifications': typeof AuthenticatedTeacherDashboardNotificationsRoute
   '/_authenticated/teacher-dashboard/profile': typeof AuthenticatedTeacherDashboardProfileRoute
-  '/_authenticated/teacher-dashboard/results': typeof AuthenticatedTeacherDashboardResultsRoute
   '/_authenticated/teacher-dashboard/settings': typeof AuthenticatedTeacherDashboardSettingsRoute
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
@@ -664,7 +654,6 @@ export interface FileRouteTypes {
     | '/teacher-dashboard/messages'
     | '/teacher-dashboard/notifications'
     | '/teacher-dashboard/profile'
-    | '/teacher-dashboard/results'
     | '/teacher-dashboard/settings'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
@@ -723,7 +712,6 @@ export interface FileRouteTypes {
     | '/teacher-dashboard/messages'
     | '/teacher-dashboard/notifications'
     | '/teacher-dashboard/profile'
-    | '/teacher-dashboard/results'
     | '/teacher-dashboard/settings'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
@@ -789,7 +777,6 @@ export interface FileRouteTypes {
     | '/_authenticated/teacher-dashboard/messages'
     | '/_authenticated/teacher-dashboard/notifications'
     | '/_authenticated/teacher-dashboard/profile'
-    | '/_authenticated/teacher-dashboard/results'
     | '/_authenticated/teacher-dashboard/settings'
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
@@ -1119,13 +1106,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeacherDashboardSettingsRouteImport
       parentRoute: typeof AuthenticatedTeacherDashboardRouteRoute
     }
-    '/_authenticated/teacher-dashboard/results': {
-      id: '/_authenticated/teacher-dashboard/results'
-      path: '/results'
-      fullPath: '/teacher-dashboard/results'
-      preLoaderRoute: typeof AuthenticatedTeacherDashboardResultsRouteImport
-      parentRoute: typeof AuthenticatedTeacherDashboardRouteRoute
-    }
     '/_authenticated/teacher-dashboard/profile': {
       id: '/_authenticated/teacher-dashboard/profile'
       path: '/profile'
@@ -1360,7 +1340,6 @@ interface AuthenticatedTeacherDashboardRouteRouteChildren {
   AuthenticatedTeacherDashboardMessagesRoute: typeof AuthenticatedTeacherDashboardMessagesRoute
   AuthenticatedTeacherDashboardNotificationsRoute: typeof AuthenticatedTeacherDashboardNotificationsRoute
   AuthenticatedTeacherDashboardProfileRoute: typeof AuthenticatedTeacherDashboardProfileRoute
-  AuthenticatedTeacherDashboardResultsRoute: typeof AuthenticatedTeacherDashboardResultsRoute
   AuthenticatedTeacherDashboardSettingsRoute: typeof AuthenticatedTeacherDashboardSettingsRoute
   AuthenticatedTeacherDashboardIndexRoute: typeof AuthenticatedTeacherDashboardIndexRoute
 }
@@ -1381,8 +1360,6 @@ const AuthenticatedTeacherDashboardRouteRouteChildren: AuthenticatedTeacherDashb
       AuthenticatedTeacherDashboardNotificationsRoute,
     AuthenticatedTeacherDashboardProfileRoute:
       AuthenticatedTeacherDashboardProfileRoute,
-    AuthenticatedTeacherDashboardResultsRoute:
-      AuthenticatedTeacherDashboardResultsRoute,
     AuthenticatedTeacherDashboardSettingsRoute:
       AuthenticatedTeacherDashboardSettingsRoute,
     AuthenticatedTeacherDashboardIndexRoute:
