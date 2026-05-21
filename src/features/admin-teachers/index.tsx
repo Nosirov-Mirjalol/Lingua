@@ -7,7 +7,7 @@ import { useDeleteAdminTeacher } from '@/hooks/admin/teachers/useDeleteAdminTeac
 import { useUpdateAdminTeacher } from '@/hooks/admin/teachers/useUpdateAdminTeacher'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -18,15 +18,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RoseButton } from '@/components/ui/rose-button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
@@ -225,16 +216,15 @@ export default function AdminTeachersPage() {
                               <Trash2 className='h-4 w-4' />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+                         </td>
+                       </tr>
+                      )))}
+                    </tbody>
+                  </table>
+            </div>
+            </Card>
 
-          <ListPagination
+           <ListPagination
             page={page}
             pageSize={pageSize}
             totalCount={teachers.length}
@@ -317,40 +307,6 @@ export default function AdminTeachersPage() {
           open={createOpen}
           onOpenChange={setCreateOpen}
         />
-
-        <TeacherGroupModal
-          isOpen={groupModalOpen}
-          onClose={() => {
-            setGroupModalOpen(false)
-            setSelectedTeacherForGroup(null)
-          }}
-          teacherId={selectedTeacherForGroup?.id || 0}
-          teacherName={selectedTeacherForGroup ? selectedTeacherForGroup.first_name + " " + selectedTeacherForGroup.last_name : ""}
-          courses={courses}
-        />
-
-        <TeacherGroupsManageModal
-          isOpen={groupsManageModalOpen}
-          onClose={() => {
-            setGroupsManageModalOpen(false)
-            setSelectedTeacherForGroup(null)
-          }}
-          teacherName={selectedTeacherForGroup ? selectedTeacherForGroup.first_name + " " + selectedTeacherForGroup.last_name : ""}
-          groups={selectedTeacherForGroup ? getTeacherGroups(selectedTeacherForGroup.id) : []}
-          onAddGroup={() => {
-            setGroupsManageModalOpen(false)
-            setGroupModalOpen(true)
-          }}
-          onDeleteGroup={setDeleteGroupId}
-        />
-
-        <DeleteConfirmDialog
-          open={deleteGroupId !== null}
-          onOpenChange={(v) => !v && setDeleteGroupId(null)}
-          onConfirm={confirmDeleteGroup}
-          isLoading={deleteGroupMutation.isPending}
-        />
-        <AdminTeacherCreateModal open={createOpen} onOpenChange={setCreateOpen} />
       </Main>
     </>
   )

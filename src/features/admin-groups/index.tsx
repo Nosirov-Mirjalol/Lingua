@@ -6,11 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   CalendarIcon,
   Loader2,
-  Pencil,
   Plus,
   Search,
   Trash2,
-  User,
   Users as UsersIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'

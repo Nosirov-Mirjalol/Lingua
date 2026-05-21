@@ -1,5 +1,5 @@
 import { apiClient } from '@/api/client'
-import { Homework, HomeworkMessage } from '@/types/student'
+import type { Homework, HomeworkMessage } from '@/types/student'
 
 export const homeworkService = {
   getHomeworkList: async (): Promise<Homework[]> => {
