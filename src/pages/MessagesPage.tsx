@@ -177,14 +177,14 @@ export function MessagesPage() {
   return (
     // ✅ FIX 1: lg:px-12 → lg:px-2 — katta padding chatni siqib qo'yardi
     <div className='mx-auto h-full w-full max-w-full p-2 sm:p-3 lg:px-2 lg:py-2 text-slate-900 dark:text-white/95'>
-      <div className='flex h-[calc(100dvh-4.5rem)] sm:h-[calc(100dvh-6rem)] lg:h-[calc(100dvh-4.5rem)] min-h-[500px] w-full overflow-hidden rounded-2xl border border-primary/20 transition-all hover:border-primary/30 hover:shadow-md bg-white shadow-sm dark:bg-slate-950/40 backdrop-blur-md'>
+      <div className='flex h-[calc(100dvh-4.5rem)] sm:h-[calc(100dvh-6rem)] lg:h-[calc(100dvh-4.5rem)] min-h:500px w-full overflow-hidden rounded-2xl border border-primary/20 transition-all hover:border-primary/30 hover:shadow-md bg-white shadow-sm dark:bg-slate-950/40 backdrop-blur-md'>
 
         {/* SIDEBAR */}
         {/* ✅ FIX 2: lg:w-80 xl:w-96 → lg:w-60 xl:w-64 — sidebar kengligi kamaytirildi */}
         <div className={cn(
           'flex flex-col border-r border-slate-100 bg-slate-50/40 dark:border-slate-800/60 dark:bg-transparent shrink-0 transition-all duration-300 ease-in-out relative',
           sidebarCollapsed
-            ? 'w-[52px] sm:w-[56px]'
+            ? 'w:52px sm:w:56px'
             : 'w-full sm:w-52 md:w-56 lg:w-60 xl:w-64',
           selectedGroupId ? 'hidden sm:flex' : 'flex'
         )}>
@@ -430,7 +430,7 @@ export function MessagesPage() {
                                   📎 Biriktirilgan fayl
                                 </a>
                               )}
-                              <p className='break-words'>{msg.content}</p>
+                              <p className='overflow-wrap: break-word'>{msg.content}</p>
                             </div>
 
                             {isOwn && (
@@ -473,7 +473,7 @@ export function MessagesPage() {
                   <textarea
                     rows={1}
                     placeholder='Xabar yozing...'
-                    className='min-h-[42px] w-full flex-1 resize-none rounded-2xl border border-transparent bg-slate-100 px-3 py-2.5 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-primary/30 focus:bg-white dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-primary/40 dark:focus:bg-slate-950 sm:min-h-[46px] sm:px-4 sm:py-3'
+                    className='min-h:42px w-full flex-1 resize-none rounded-2xl border border-transparent bg-slate-100 px-3 py-2.5 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-primary/30 focus:bg-white dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-primary/40 dark:focus:bg-slate-950 sm:min-h:46px sm:px-4 sm:py-3'
                     {...register('content')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -488,7 +488,7 @@ export function MessagesPage() {
                     disabled={!contentValue?.trim() || sendMutation.isPending}
                     className='mb-0.5 h-9 w-9 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:scale-105 active:scale-95 disabled:opacity-40 sm:h-10 sm:w-10 lg:h-11 lg:w-11'
                   >
-                    <Send size={16} className='ml-0.5 sm:size-[18px]' />
+                    <Send size={16} className='ml-0.5 sm:size:18px' />
                   </Button>
                 </form>
               </div>
