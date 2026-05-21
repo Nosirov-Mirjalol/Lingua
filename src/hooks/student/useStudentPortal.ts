@@ -90,8 +90,6 @@ function unwrapSingle<T>(
   return null
 }
 
-<<<<<<< HEAD
-=======
 function formatTimeRange(start?: string, end?: string, fallback?: string): string {
   if (fallback?.trim()) return fallback
   const parts = [start, end].filter((value): value is string => !!value?.trim())

@@ -18,9 +18,6 @@ export const Route = createFileRoute('/_authenticated/teacher-dashboard')({
   },
   component: TeacherDashboardLayout,
 })
-<<<<<<< HEAD
-=======
-
 function TeacherDashboardLayout() {
   const defaultOpen = getCookie('sidebar_state') !== 'false'
 
@@ -46,4 +43,3 @@ function TeacherDashboardLayout() {
     </SearchProvider>
   )
 }
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351

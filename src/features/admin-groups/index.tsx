@@ -183,96 +183,26 @@ export default function AdminGroupsPage() {
         <div className='container mx-auto max-w-6xl px-6 py-10'>
           {/* Header Qismi */}
           <div className='mb-12 flex items-center justify-between'>
-<<<<<<< HEAD
-            <div className='space-y-1'>
-              <h1 className='text-2xl font-black text-rose-700 dark:text-rose-400'>
-                Guruhlar
-              </h1>
-              <p className='text-[10px] font-black tracking-[0.2em] text-rose-500 uppercase'>
-                Boshqaruv paneli
-              </p>
-            </div>
-            <RoseButton
-              onClick={() => {
-                reset()
-                setCreateOpen(true)
-              }}
-              className='h-11 rounded-full bg-rose-600 px-6 text-xs font-black text-white shadow-lg shadow-rose-100 transition-all hover:bg-rose-700 dark:shadow-none'
-            >
-=======
             <div>
               <h1 className='text-2xl font-bold text-foreground'>Guruhlar</h1>
               <p className='text-[10px] font-black tracking-[0.2em] text-muted-foreground uppercase'>Boshqaruv paneli</p>
             </div>
             <RoseButton onClick={() => { reset(); setCreateOpen(true) }}>
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
               <Plus className='mr-2 h-4 w-4' /> Qo'shish
             </RoseButton>
           </div>
 
           {/* Qidiruv Qismi */}
           <div className='relative mb-8 max-w-md'>
-<<<<<<< HEAD
-            <Search className='absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-rose-400' />
-            <Input
-              placeholder='Qidirish...'
-              className='h-11 rounded-full border border-rose-100 bg-rose-50/60 pl-11 text-sm font-bold focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-rose-900/50 dark:bg-rose-950/20'
-=======
             <Search className='absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
             <Input
               placeholder='Qidirish...'
               className='h-11 rounded-full border-none bg-muted pl-11 text-sm font-medium focus-visible:ring-1'
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-<<<<<<< HEAD
-          <div>
-            {isLoading ? (
-              <div className='col-span-full py-20 text-center'>
-                <Loader2 className='inline-block animate-spin text-muted-foreground' />
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className='col-span-full py-20 text-center text-xs font-medium text-muted-foreground'>
-                Guruhlar topilmadi
-              </div>
-            ) : (
-              filtered.map((group) => (
-                <div
-                  key={group.id}
-                  className='group relative rounded-2xl bg-card p-5 shadow-sm transition-all hover:shadow-md'
-                >
-                  <div className='mb-4 flex items-start justify-between'>
-                    <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
-                      <UsersIcon className='h-5 w-5' />
-                    </div>
-                    <div className='flex gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        className='h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary'
-                        onClick={() => {
-                          setEditingGroup(group)
-                          setEditOpen(true)
-                        }}
-                      >
-                        <Pencil className='h-4 w-4' />
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        className='h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive'
-                        onClick={() => setDeleteId(group.id)}
-                      >
-                        <Trash2 className='h-4 w-4' />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-=======
           {/* Ro'yxat Qismi */}
           <div className='space-y-3'>
             {isLoading ? (
@@ -300,7 +230,6 @@ export default function AdminGroupsPage() {
                   </Button>
                 </div>
               ))
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
             )}
           </div>
         </div>
