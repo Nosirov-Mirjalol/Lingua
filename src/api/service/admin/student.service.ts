@@ -1,41 +1,26 @@
 import { apiClient } from '@/api/client'
-import type { User, ApiError } from '@/types/student'
+import type { User } from '@/api/service/teacher/user.type'
 
 export type AdminStudentCreatePayload = {
   username: string
   email: string
-  first_name: string
-  last_name: string
+  full_name: string
   phone?: string
   password?: string
   role: 'student'
 }
 
-/** +998 dan keyin 9 ta raqam (masalan 901234567) — API sxemasi maxLength 9 */
-function extractNationalNine(phone?: string): string | undefined {
-  if (!phone?.trim() || phone.trim() === '+998') return undefined
-  let digits = phone.replace(/\D/g, '')
-  if (digits.startsWith('998')) digits = digits.slice(3)
-  if (digits.length !== 9)
-    throw new Error(
-      "Telefon: +998 dan keyin aniq 9 ta raqam bo'lishi kerak (masalan: 90 123 45 67)"
-    )
-  return digits
-}
-
-function parseCreatedUserId(body: unknown): number | null {
+function _parseCreatedUserId(body: unknown): number | null {
   if (!body || typeof body !== 'object') return null
   const r = body as Record<string, unknown>
-  const rawId = r.id ?? (r.user && typeof r.user === 'object'
-    ? (r.user as Record<string, unknown>).id
-    : undefined)
+  const rawId =
+    r.id ??
+    (r.user && typeof r.user === 'object'
+      ? (r.user as Record<string, unknown>).id
+      : undefined)
   if (typeof rawId === 'number' && Number.isFinite(rawId)) return rawId
   if (typeof rawId === 'string' && /^\d+$/.test(rawId)) return Number(rawId)
   return null
-}
-
-function buildFullName(firstName: string, lastName: string): string {
-  return `${firstName.trim()} ${lastName.trim()}`.replace(/\s+/g, ' ').trim()
 }
 
 export function getStudentApiErrorMessage(
@@ -43,15 +28,17 @@ export function getStudentApiErrorMessage(
   fallback = 'Xatolik yuz berdi'
 ): string {
   if (error instanceof Error && error.message) return error.message
-  const api = error as ApiError
+  const api = error as { message?: string }
   if (api?.message) return String(api.message)
   return fallback
 }
 
-function assertStudentId(studentId: number): void {
-  if (!Number.isFinite(studentId) || studentId <= 0) {
+function assertStudentId(studentId: number | string): number {
+  const id = typeof studentId === 'string' ? parseInt(studentId, 10) : studentId
+  if (!Number.isFinite(id) || id <= 0) {
     throw new Error("Student ID noto'g'ri")
   }
+  return id
 }
 
 /**
@@ -62,8 +49,7 @@ export const createAdminStudent = async (
 ): Promise<User> => {
   if (!data.username?.trim()) throw new Error('Username kiritilmadi')
   if (!data.email?.trim()) throw new Error('Email kiritilmadi')
-  if (!data.first_name?.trim()) throw new Error('Ism kiritilmadi')
-  if (!data.last_name?.trim()) throw new Error('Familiya kiritilmadi')
+  if (!data.full_name?.trim()) throw new Error("To'liq ism kiritilmadi")
   if (!data.password?.trim()) throw new Error('Parol kiritilmadi')
 
   const password = data.password.trim()
@@ -74,36 +60,37 @@ export const createAdminStudent = async (
   if (!emailRegex.test(data.email.trim()))
     throw new Error("Email formati noto'g'ri")
 
-  const nine = data.phone ? extractNationalNine(data.phone) : undefined
+  // Phone number validation and formatting
+  let formattedPhone: string | undefined = undefined
+  if (data.phone && data.phone.trim()) {
+    const phone = data.phone.trim().replace(/\s/g, '')
+    // Remove +998 prefix if present to get just the 9 digits
+    const digits = phone.replace(/\+998/, '').replace(/^998/, '')
 
+    // Validate that we have exactly 9 digits
+    if (digits.length !== 9 || !/^\d{9}$/.test(digits)) {
+      throw new Error(
+        "Telefon raqami noto'g'ri formatda. Masalan: +998901234567 yoki 901234567"
+      )
+    }
+    formattedPhone = digits
+  }
+
+  const fullName = data.full_name.trim().replace(/\s+/g, ' ')
   const registerPayload: Record<string, unknown> = {
     username: data.username.trim(),
     email: data.email.trim(),
-    first_name: data.first_name.trim(),
-    last_name: data.last_name.trim(),
+    full_name: fullName,
+    phone: formattedPhone,
     password,
     password2: password,
     role: 'student',
   }
-  /** Sxema: telefon 9 ta milliy raqam (masalan 901234567) */
-  if (nine) registerPayload.phone = nine
 
   const created = await apiClient.post<unknown>(
     '/api/auth/register/',
     registerPayload
   )
-
-  const newId = parseCreatedUserId(created)
-  if (newId != null) {
-    try {
-      await apiClient.patch<User>(`/api/auth/users/${newId}/`, {
-        first_name: data.first_name.trim(),
-        last_name: data.last_name.trim(),
-      })
-    } catch {
-      // Ignored for now
-    }
-  }
 
   return created as User
 }
@@ -111,8 +98,14 @@ export const createAdminStudent = async (
 /**
  * Barcha talabalarni olish
  */
-export const getAdminStudents = async (): Promise<User[]> => {
-  const data = await apiClient.get<User[]>('/api/auth/users/')
+export const getAdminStudents = async (
+  page?: number,
+  pageSize?: number
+): Promise<User[]> => {
+  const params: Record<string, unknown> = {}
+  if (page !== undefined) params.page = page
+  if (pageSize !== undefined) params.page_size = pageSize
+  const data = await apiClient.get<User[]>('/api/auth/user-list/', { params })
   return (data || []).filter((u) => u.role === 'student')
 }
 
@@ -120,25 +113,29 @@ export const getAdminStudents = async (): Promise<User[]> => {
  * Talabani tahrirlash
  */
 export const updateAdminStudent = async (
-  id: number,
+  id: number | string,
   data: Partial<AdminStudentCreatePayload>
 ): Promise<User> => {
-  assertStudentId(id)
+  const numericId = assertStudentId(id)
   const payload: Record<string, unknown> = {}
-  if (data.first_name) payload.first_name = data.first_name.trim()
-  if (data.last_name) payload.last_name = data.last_name.trim()
+  if (data.full_name) payload.full_name = data.full_name.trim()
   if (data.email) payload.email = data.email.trim()
   if (data.phone) {
-    const nine = extractNationalNine(data.phone)
-    if (nine) payload.phone = nine
+    const phone = data.phone.trim().replace(/\s/g, '')
+    const digits = phone.replace(/\+998/, '').replace(/^998/, '')
+    if (digits.length === 9 && /^\d{9}$/.test(digits)) {
+      payload.phone = digits
+    }
   }
-  return await apiClient.patch<User>(`/api/auth/users/${id}/`, payload)
+  return await apiClient.put<User>(`/api/auth/users/${numericId}/`, payload)
 }
 
 /**
  * Talabani o'chirish
  */
-export const deleteAdminStudent = async (id: number): Promise<void> => {
-  assertStudentId(id)
-  await apiClient.delete(`/api/auth/users/${id}/`)
+export const deleteAdminStudent = async (
+  id: number | string
+): Promise<void> => {
+  const numericId = assertStudentId(id)
+  await apiClient.delete(`/api/auth/profile-delete/${numericId}/`)
 }

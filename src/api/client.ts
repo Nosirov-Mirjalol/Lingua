@@ -16,7 +16,6 @@ export interface ApiError {
 
 const PUBLIC_AUTH_PATHS = [
   '/api/auth/login/',
-  '/api/auth/register/',
   '/api/auth/forgot-password/',
   '/api/auth/verfiy-password/',
 ]
@@ -95,7 +94,6 @@ class ApiClient {
     this.setupInterceptors()
   }
 
-
   private setupInterceptors(): void {
     this.client.interceptors.request.use(
       (config) => {
@@ -113,7 +111,6 @@ class ApiClient {
         return config
       },
       (error: unknown) => {
-
         return Promise.reject(error)
       }
     )
@@ -199,7 +196,11 @@ class ApiClient {
         'Content-Type': undefined,
       }
     }
-    const response: AxiosResponse<T> = await this.client.post(url, data, requestConfig)
+    const response: AxiosResponse<T> = await this.client.post(
+      url,
+      data,
+      requestConfig
+    )
     return response.data
   }
   async put<T>(
@@ -214,7 +215,11 @@ class ApiClient {
         'Content-Type': undefined,
       }
     }
-    const response: AxiosResponse<T> = await this.client.put(url, data, requestConfig)
+    const response: AxiosResponse<T> = await this.client.put(
+      url,
+      data,
+      requestConfig
+    )
     return response.data
   }
   async patch<T>(
@@ -229,7 +234,11 @@ class ApiClient {
         'Content-Type': undefined,
       }
     }
-    const response: AxiosResponse<T> = await this.client.patch(url, data, requestConfig)
+    const response: AxiosResponse<T> = await this.client.patch(
+      url,
+      data,
+      requestConfig
+    )
     return response.data
   }
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {

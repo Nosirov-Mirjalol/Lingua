@@ -1,28 +1,39 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMyGroups, type StudentGroup } from '@/api/service/student/group.service'
-import { useStudentUnreadCount } from './useStudentNotifications'
-import { apiClient } from '@/api/client'
-import { GROUP, MESSAGES, AUTH } from '@/constants/apiEndPoints'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  getMyAssignments,
+  submitAssignment,
+} from '@/services/assignment.service'
 import type {
-  StudentAssignment,
+  Assignment,
+  SubmitAssignmentPayload,
+} from '@/types/assignment.types'
+import type {
   StudentConversation,
   StudentDashboardStats,
   StudentProfile,
   StudentScheduleItem,
 } from '@/types/student'
-import { getMyAssignments, submitAssignment } from '@/services/assignment.service'
-import type { Assignment, SubmitAssignmentPayload } from '@/types/assignment.types'
+import { apiClient } from '@/api/client'
+import {
+  getMyGroups,
+  type StudentGroup,
+} from '@/api/service/student/group.service'
 import { formatLessonDays } from '@/lib/formatters'
+import { AUTH, GROUP, MESSAGES } from '@/constants/apiEndPoints'
+import { useStudentUnreadCount } from './useStudentNotifications'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function unwrap<T>(raw: unknown, nestedKeys: string[] = ['results', 'data', 'items', 'groups', 'schedule']): T[] {
+function unwrap<T>(
+  raw: unknown,
+  nestedKeys: string[] = ['results', 'data', 'items', 'groups', 'schedule']
+): T[] {
   // If it's already an array, return it
   if (Array.isArray(raw)) return raw as T[]
 
   if (raw && typeof raw === 'object') {
     const record = raw as Record<string, unknown>
-    
+
     // Search in provided nested keys
     for (const key of nestedKeys) {
       if (Array.isArray(record[key])) {
@@ -44,9 +55,12 @@ function unwrap<T>(raw: unknown, nestedKeys: string[] = ['results', 'data', 'ite
 }
 
 // Helper to find a single object in a response
-function unwrapSingle<T>(raw: unknown, nestedKeys: string[] = ['results', 'data', 'profile', 'user']): T | null {
+function unwrapSingle<T>(
+  raw: unknown,
+  nestedKeys: string[] = ['results', 'data', 'profile', 'user']
+): T | null {
   if (!raw) return null
-  
+
   // If it's an array, take the first item
   if (Array.isArray(raw)) {
     return raw.length > 0 ? (raw[0] as T) : null
@@ -54,7 +68,7 @@ function unwrapSingle<T>(raw: unknown, nestedKeys: string[] = ['results', 'data'
 
   if (typeof raw === 'object') {
     const record = raw as Record<string, unknown>
-    
+
     // Search in nested keys
     for (const key of nestedKeys) {
       const val = record[key]
@@ -66,7 +80,7 @@ function unwrapSingle<T>(raw: unknown, nestedKeys: string[] = ['results', 'data'
         }
       }
     }
-    
+
     // If it's the object itself
     if ('id' in record || 'username' in record || 'full_name' in record) {
       return record as unknown as T
@@ -76,6 +90,8 @@ function unwrapSingle<T>(raw: unknown, nestedKeys: string[] = ['results', 'data'
   return null
 }
 
+<<<<<<< HEAD
+=======
 function formatTimeRange(start?: string, end?: string, fallback?: string): string {
   if (fallback?.trim()) return fallback
   const parts = [start, end].filter((value): value is string => !!value?.trim())
@@ -96,13 +112,15 @@ function normalizeLessonStatus(status?: string): string {
 function normalizeStudentScheduleItem(item: any): StudentScheduleItem {
   const rawDays = item.week_days_names || item.days || []
   const formattedDaysString = formatLessonDays(rawDays)
-  const cleanDays = formattedDaysString === 'No lesson days available' 
-    ? [] 
-    : formattedDaysString.split(', ')
+  const cleanDays =
+    formattedDaysString === 'No lesson days available'
+      ? []
+      : formattedDaysString.split(', ')
 
   return {
     id: item.id ?? 0,
-    title: item.title || item.name || item.group_name || item.course_name || 'Dars',
+    title:
+      item.title || item.name || item.group_name || item.course_name || 'Dars',
     time: formatTimeRange(item.start_time, item.end_time, item.time),
     week_days_type: item.week_days_type || 'Dars jadvali',
     week_days_names: cleanDays,
@@ -115,7 +133,7 @@ function formatRelativeTime(iso: string): string {
   try {
     const date = new Date(iso)
     if (isNaN(date.getTime())) return 'Yaqinda'
-    
+
     const diff = Date.now() - date.getTime()
     const m = Math.floor(diff / 60_000)
     const h = Math.floor(m / 60)
@@ -143,14 +161,20 @@ const getStoredUser = () => {
 const buildProfile = (overrides?: Partial<StudentProfile>): StudentProfile => {
   const stored = getStoredUser()
   const data = { ...stored, ...overrides }
-  
+
   // Filter out placeholder "string" values from API
-  const username = data?.username && data.username !== 'string' ? data.username : ''
-  const full_name = data?.full_name && data.full_name !== 'string' ? data.full_name : ''
-  const timezone = data?.timezone && data.timezone !== 'string' ? data.timezone : ''
+  const username =
+    data?.username && data.username !== 'string' ? data.username : ''
+  const full_name =
+    data?.full_name && data.full_name !== 'string' ? data.full_name : ''
+  const timezone =
+    data?.timezone && data.timezone !== 'string' ? data.timezone : ''
   const bio = data?.bio && data.bio !== 'string' ? data.bio : ''
-  const learning_goal = data?.learning_goal && data.learning_goal !== 'string' ? data.learning_goal : ''
-  
+  const learning_goal =
+    data?.learning_goal && data.learning_goal !== 'string'
+      ? data.learning_goal
+      : ''
+
   return {
     id: data?.id ?? 0,
     username: username || '',
@@ -177,13 +201,13 @@ export const useStudentProfile = () => {
       try {
         // Bypass caching/304 with timestamp and no-cache headers
         const cacheBuster = `t=${Date.now()}`
-        const url = AUTH.PROFILE_GET.includes('?') 
-          ? `${AUTH.PROFILE_GET}&${cacheBuster}` 
+        const url = AUTH.PROFILE_GET.includes('?')
+          ? `${AUTH.PROFILE_GET}&${cacheBuster}`
           : `${AUTH.PROFILE_GET}?${cacheBuster}`
 
         const response = await apiClient.get<unknown>(url)
         const profileData = unwrapSingle<any>(response)
-        
+
         if (profileData) {
           const current = getStoredUser()
           const updated = { ...current, ...profileData }
@@ -251,7 +275,12 @@ export const useStudentSchedule = () => {
     queryKey: ['student', 'schedule'],
     queryFn: async (): Promise<StudentScheduleItem[]> => {
       const data = await apiClient.get<unknown>(GROUP.MY_SCHEDULE)
-      return unwrap<any>(data, ['results', 'data', 'schedule', 'schedules']).map(normalizeStudentScheduleItem)
+      return unwrap<any>(data, [
+        'results',
+        'data',
+        'schedule',
+        'schedules',
+      ]).map(normalizeStudentScheduleItem)
     },
     staleTime: 60_000,
   })
@@ -262,7 +291,12 @@ export const useStudentHomework = () => {
     queryKey: ['student', 'homework'],
     queryFn: async (): Promise<Assignment[]> => {
       const data = await getMyAssignments()
-      return unwrap<Assignment>(data, ['results', 'data', 'assignments', 'items'])
+      return unwrap<Assignment>(data, [
+        'results',
+        'data',
+        'assignments',
+        'items',
+      ])
     },
     staleTime: 60_000,
   })
@@ -271,8 +305,13 @@ export const useStudentHomework = () => {
 export const useSubmitHomework = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: SubmitAssignmentPayload | FormData }) =>
-      submitAssignment(id, payload),
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number
+      payload: SubmitAssignmentPayload | FormData
+    }) => submitAssignment(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student', 'homework'] })
     },
@@ -284,15 +323,22 @@ export const useStudentMessages = () => {
     queryKey: ['student', 'messages'],
     queryFn: async (): Promise<StudentConversation[]> => {
       const res = await apiClient.get<unknown>(MESSAGES.GROUPS)
-      const data = unwrap<any>(res, ['results', 'data', 'groups', 'conversations'])
+      const data = unwrap<any>(res, [
+        'results',
+        'data',
+        'groups',
+        'conversations',
+      ])
       return data.map((c: any) => ({
         id: c.id,
         participant: c.group_name || 'Guruh',
         subject: 'Guruh xabari',
-        lastMessage: c.last_message?.text || 'Xabarlar yo\'q',
-        time: c.last_message?.created_at ? formatRelativeTime(c.last_message.created_at) : '',
+        lastMessage: c.last_message?.text || "Xabarlar yo'q",
+        time: c.last_message?.created_at
+          ? formatRelativeTime(c.last_message.created_at)
+          : '',
         unread: c.unread_count || 0,
-        messages: []
+        messages: [],
       }))
     },
     staleTime: 60_000,
@@ -305,7 +351,13 @@ export const useStudentGroups = () => {
     queryFn: async (): Promise<StudentGroup[]> => {
       const data = await getMyGroups()
       // getMyGroups already calls unwrapGroups, but we add an extra safety layer here
-      return unwrap<StudentGroup>(data, ['results', 'data', 'groups', 'assigned_groups', 'my_groups'])
+      return unwrap<StudentGroup>(data, [
+        'results',
+        'data',
+        'groups',
+        'assigned_groups',
+        'my_groups',
+      ])
     },
     staleTime: 60_000,
   })

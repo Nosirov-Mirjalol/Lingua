@@ -92,8 +92,7 @@ export default function NotificationsPage() {
       const matchesSearch = n.title
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
-      const matchesTab =
-        activeTab === 'all' || n.target_role === activeTab
+      const matchesTab = activeTab === 'all' || n.target_role === activeTab
       const notDeleted = !deletedIds.has(n.id)
       return matchesSearch && matchesTab && notDeleted
     })
@@ -129,6 +128,7 @@ export default function NotificationsPage() {
         <ConfigDrawer />
       </AdminHeader>
 
+<<<<<<< HEAD
       <Main className='bg-background font-outfit'>
         <div className='flex min-h-[calc(100vh-7rem)] flex-col border-x border-t border-slate-200 bg-background dark:border-slate-800'>
           <div className='flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800'>
@@ -147,6 +147,101 @@ export default function NotificationsPage() {
               <DialogTrigger asChild>
                 <RoseButton roseSize='sm' className='h-9 px-4'>
                   <Plus className='mr-2 h-4 w-4' /> Yangi xabar
+                </RoseButton>
+              </DialogTrigger>
+              <DialogContent className='rounded-xl bg-background sm:max-w-md'>
+                <DialogHeader>
+                  <DialogTitle className='text-lg font-bold dark:text-slate-50'>
+                    Xabar yuborish
+                  </DialogTitle>
+                </DialogHeader>
+                <div className='space-y-4 py-4'>
+                  <div className='space-y-1'>
+                    <Label className='text-xs font-bold text-slate-500 dark:text-slate-400'>
+                      Sarlavha
+                    </Label>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
+                      className='h-10 rounded-lg dark:bg-slate-800 dark:text-slate-100'
+                    />
+                  </div>
+                  <div className='space-y-1'>
+                    <Label className='text-xs font-bold text-slate-500 dark:text-slate-400'>
+                      Xabar
+                    </Label>
+                    <Textarea
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
+                      className='rounded-lg dark:bg-slate-800 dark:text-slate-100'
+                    />
+                  </div>
+                  <div className='space-y-1'>
+                    <Label className='text-xs font-bold text-slate-500 dark:text-slate-400'>
+                      Tur
+                    </Label>
+                    <Select
+                      value={formData.type}
+                      onValueChange={(v) =>
+                        setFormData({ ...formData, type: v as any })
+                      }
+                    >
+                      <SelectTrigger className='h-10 rounded-lg dark:bg-slate-800 dark:text-slate-100'>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='info'>Ma'lumot (Info)</SelectItem>
+                        <SelectItem value='warning'>
+                          Ogohlantirish (Warning)
+                        </SelectItem>
+                        <SelectItem value='error'>Xatolik (Error)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant='ghost'
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className='rounded-lg dark:hover:bg-slate-800'
+                  >
+                    Bekor qilish
+                  </Button>
+                  <RoseButton
+                    onClick={handleCreate}
+                    disabled={sendBroadcastMutation.isPending}
+                    className='px-8'
+                  >
+                    {sendBroadcastMutation.isPending ? (
+                      <Loader2 className='h-4 w-4 animate-spin' />
+                    ) : (
+                      'Yuborish'
+                    )}
+=======
+      <Main>
+        <div className='bg-white font-outfit dark:bg-slate-950'>
+          <div className='flex min-h-[calc(100vh-7rem)] flex-col border-x border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'>
+            <div className='flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800'>
+              <div>
+                <h1 className='text-xl font-bold text-slate-900 dark:text-slate-50'>
+                  Bildirishnomalar
+                </h1>
+                <p className='text-xs text-slate-500 dark:text-slate-400'>
+                  Tizim xabarlari ro'yxati
+                </p>
+              </div>
+              <Dialog
+                open={isCreateModalOpen}
+                onOpenChange={setIsCreateModalOpen}
+              >
+                <DialogTrigger asChild>
+                  <RoseButton roseSize='sm' className='h-9 px-4'>
+                    <Plus className='mr-2 h-4 w-4' /> Yangi xabar
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
                   </RoseButton>
                 </DialogTrigger>
                 <DialogContent className='rounded-xl bg-white sm:max-w-md dark:bg-slate-900'>

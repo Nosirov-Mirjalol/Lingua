@@ -1,5 +1,5 @@
 import { apiClient } from '@/api/client'
-import { AUTH, GROUP } from '@/constants/apiEndPoints'
+import { GROUP } from '@/constants/apiEndPoints'
 
 export interface AdminTeacher {
   id: number
@@ -17,6 +17,7 @@ export type AdminTeacherCreatePayload = {
   phone?: string
   learning_goal?: string
   password: string
+  avatar?: File
   role?: 'teacher'
 }
 
@@ -46,25 +47,52 @@ export const createAdminTeacher = (
     throw new Error("Email formati noto'g'ri")
   }
 
-  // Phone number validation
+  // Phone number validation and formatting
+  let formattedPhone: string | undefined = undefined
   if (data.phone && data.phone.trim()) {
-    const phone = data.phone.trim()
-    // Allow formats: +998901234567, 998901234567, 901234567
-    const phoneRegex = /^(\+998|998)?[0-9]{9}$/
-    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+    const phone = data.phone.trim().replace(/\s/g, '')
+    // Remove +998 prefix if present to get just the 9 digits
+    const digits = phone.replace(/\+998/, '').replace(/^998/, '')
+
+    // Validate that we have exactly 9 digits
+    if (digits.length !== 9 || !/^\d{9}$/.test(digits)) {
       throw new Error(
-        "Telefon raqami noto'g'ri formatda. Masalan: +998901234567"
+        "Telefon raqami noto'g'ri formatda. Masalan: +998901234567 yoki 901234567"
       )
     }
+    formattedPhone = digits
   }
 
   const fullName = data.full_name.trim().replace(/\s+/g, ' ')
   const password = data.password.trim()
+
+  // If avatar file is provided, use FormData
+  if (data.avatar) {
+    const formData = new FormData()
+    formData.append('username', data.username.trim())
+    formData.append('email', data.email.trim())
+    formData.append('full_name', fullName)
+    if (formattedPhone) formData.append('phone', formattedPhone)
+    if (data.learning_goal?.trim())
+      formData.append('learning_goal', data.learning_goal.trim())
+    formData.append('password', password)
+    formData.append('password2', password)
+    formData.append('role', 'teacher')
+    formData.append('avatar', data.avatar)
+
+    return apiClient.post<AdminTeacher>('/api/auth/register/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  }
+
+  // Otherwise, use JSON payload
   const payload = {
     username: data.username.trim(),
     email: data.email.trim(),
     full_name: fullName,
-    phone: data.phone?.trim().replace(/\s/g, '') || undefined,
+    phone: formattedPhone,
     learning_goal: data.learning_goal?.trim() || undefined,
     password,
     password2: password,
@@ -87,7 +115,11 @@ export const updateAdminTeacher = (
     updatePayload.full_name = data.full_name.trim()
   }
   if (data.phone !== undefined) {
-    updatePayload.phone = data.phone.trim()
+    const phone = data.phone.trim().replace(/\s/g, '')
+    const digits = phone.replace(/\+998/, '').replace(/^998/, '')
+    if (digits.length === 9 && /^\d{9}$/.test(digits)) {
+      updatePayload.phone = digits
+    }
   }
   if (data.learning_goal !== undefined) {
     updatePayload.learning_goal = data.learning_goal.trim()
@@ -95,11 +127,13 @@ export const updateAdminTeacher = (
   if (data.avatar !== undefined) {
     updatePayload.avatar = data.avatar.trim()
   }
-  updatePayload.id = teacherId
 
-  return apiClient.patch<AdminTeacher>(AUTH.PROFILE_UPDATE, updatePayload)
+  return apiClient.put<AdminTeacher>(
+    `/api/auth/users/${teacherId}/`,
+    updatePayload
+  )
 }
 
 export const deleteAdminTeacher = (teacherId: number): Promise<unknown> => {
-  return apiClient.delete<unknown>(AUTH.PROFILE_DELETE(teacherId))
+  return apiClient.delete<unknown>(`/api/auth/users/${teacherId}/`)
 }

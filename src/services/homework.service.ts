@@ -1,15 +1,28 @@
+<<<<<<< HEAD
+import { client } from '@/api/client'
+import { type Homework, type HomeworkMessage } from '@/types/student'
+=======
 import { apiClient } from '@/api/client'
-import type { Homework, HomeworkMessage } from '@/types/student'
+import { Homework, HomeworkMessage } from '@/types/student'
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
 
 export const homeworkService = {
   getHomeworkList: async (): Promise<Homework[]> => {
     return await apiClient.get<Homework[]>('/api/student/homework')
   },
   getMessages: async (id: string): Promise<HomeworkMessage[]> => {
-    return await apiClient.get<HomeworkMessage[]>(`/api/student/homework/${id}/messages`)
+    return await apiClient.get<HomeworkMessage[]>(
+      `/api/student/homework/${id}/messages`
+    )
   },
-  sendMessage: async (id: string, content: string): Promise<HomeworkMessage> => {
-    return await apiClient.post<HomeworkMessage>(`/api/student/homework/${id}/messages`, { content })
+  sendMessage: async (
+    id: string,
+    content: string
+  ): Promise<HomeworkMessage> => {
+    return await apiClient.post<HomeworkMessage>(
+      `/api/student/homework/${id}/messages`,
+      { content }
+    )
   },
   submitHomework: async (id: string, file: File): Promise<void> => {
     const formData = new FormData()

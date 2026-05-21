@@ -60,6 +60,7 @@ function AttendancePage() {
     page: filters.page,
     page_size: filters.pageSize,
   })
+  
 
   const filteredGroups = useMemo(() => {
     if (!profile?.id) return groups
@@ -157,7 +158,7 @@ function AttendancePage() {
       {/* Header */}
       <div className='flex flex-wrap items-center justify-between gap-4'>
         <div>
-          <h1 className='text-2xl font-bold'>Attendance</h1>
+          <h1 className='text-3xl font-bold'>Attendance</h1>
           <p className='text-sm text-slate-500'>Manage student presence</p>
         </div>
         <div className='relative w-full sm:w-64'>

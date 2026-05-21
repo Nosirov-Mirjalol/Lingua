@@ -1,11 +1,19 @@
 import { useMemo, useState } from 'react'
 import * as z from 'zod'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from 'date-fns'
-import { CalendarIcon, Loader2, Plus, Search, Trash2, Users as UsersIcon } from 'lucide-react'
+import { Controller, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  CalendarIcon,
+  Loader2,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  User,
+  Users as UsersIcon,
+} from 'lucide-react'
 import { toast } from 'sonner'
-
 import type { Group } from '@/api/service/teacher/group.type'
 import { cn } from '@/lib/utils'
 import { useAdminCourses } from '@/hooks/admin/courses/useAdminCourses'
@@ -13,15 +21,31 @@ import { useAdminGroups } from '@/hooks/admin/groups/useAdminGroups'
 import { useCreateAdminGroup } from '@/hooks/admin/groups/useCreateAdminGroup'
 import { useDeleteAdminGroup } from '@/hooks/admin/groups/useDeleteAdminGroup'
 import { useAdminTeachers } from '@/hooks/admin/teachers/useAdminTeachers'
-
 import { Button } from '@/components/ui/button'
-import { RoseButton } from '@/components/ui/rose-button'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { RoseButton } from '@/components/ui/rose-button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
@@ -56,18 +80,28 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>
 
 const DAY_MAP: Record<string, string> = {
-  Du: 'Mon', Se: 'Tue', Cho: 'Wed', Pa: 'Thu', Ju: 'Fri', Sha: 'Sat', Yak: 'Sun',
+  Du: 'Mon',
+  Se: 'Tue',
+  Cho: 'Wed',
+  Pa: 'Thu',
+  Ju: 'Fri',
+  Sha: 'Sat',
+  Yak: 'Sun',
 }
 
 const DAYS_LIST = ['Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha', 'Yak']
 
 // Input va Selectlar bir xil ko'rinishi uchun umumiy klasslar
-const inputClasses = "h-11 rounded-xl border-none bg-muted px-4 text-sm font-medium focus-visible:ring-1 focus-visible:ring-primary w-full"
-const labelClasses = "ml-1 mb-1.5 block text-[10px] font-black tracking-widest text-muted-foreground uppercase"
+const inputClasses =
+  'h-11 rounded-xl border-none bg-muted px-4 text-sm font-medium focus-visible:ring-1 focus-visible:ring-primary w-full'
+const labelClasses =
+  'ml-1 mb-1.5 block text-[10px] font-black tracking-widest text-muted-foreground uppercase'
 
 export default function AdminGroupsPage() {
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null)
   const [deleteId, setDeleteId] = useState<number | null>(null)
 
   const { data: groups = [], isLoading } = useAdminGroups()
@@ -77,25 +111,40 @@ export default function AdminGroupsPage() {
   const createMutation = useCreateAdminGroup()
   const deleteMutation = useDeleteAdminGroup()
 
-  const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<FormValues>({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '', course: '', teacher: '',
+      name: '',
+      course: '',
+      teacher: '',
       start_date: new Date().toISOString().split('T')[0],
-      time_from: '09:00', time_to: '10:30',
-      days: [], week_days_type: 'ODD',
+      time_from: '09:00',
+      time_to: '10:30',
+      days: [],
+      week_days_type: 'ODD',
     },
   })
 
   const teachers = useMemo<Teacher[]>(() => {
     const data: any = rawTeachersData
-    const list = Array.isArray(data) ? data : (data?.results ?? data?.data ?? data?.teachers ?? data?.user_list ?? [])
+    const list = Array.isArray(data)
+      ? data
+      : (data?.results ?? data?.data ?? data?.teachers ?? data?.user_list ?? [])
     return list.filter((t: Teacher) => t.id != null)
   }, [rawTeachersData])
 
   const filtered = useMemo<Group[]>(() => {
     const q = search.trim().toLowerCase()
-    return (Array.isArray(groups) ? groups : []).filter((g) => g.name.toLowerCase().includes(q))
+    return (Array.isArray(groups) ? groups : []).filter((g) =>
+      g.name.toLowerCase().includes(q)
+    )
   }, [groups, search])
 
   const onSubmit = (values: FormValues) => {
@@ -106,7 +155,10 @@ export default function AdminGroupsPage() {
       start_date: values.start_date,
       start_time: values.time_from,
       end_time: values.time_to,
-      week_days: values.week_days_type === 'CUSTOM' ? (values.days || []).map((d) => DAY_MAP[d]).join(',') : '',
+      week_days:
+        values.week_days_type === 'CUSTOM'
+          ? (values.days || []).map((d) => DAY_MAP[d]).join(',')
+          : '',
       week_days_type: values.week_days_type,
       status: 'active' as const,
     }
@@ -124,11 +176,14 @@ export default function AdminGroupsPage() {
 
   return (
     <>
-      <AdminHeader fixed />
+      <AdminHeader fixed>
+        <ConfigDrawer />
+      </AdminHeader>
       <Main className='bg-background font-outfit'>
         <div className='container mx-auto max-w-6xl px-6 py-10'>
           {/* Header Qismi */}
           <div className='mb-12 flex items-center justify-between'>
+<<<<<<< HEAD
             <div className='space-y-1'>
               <h1 className='text-2xl font-black text-rose-700 dark:text-rose-400'>
                 Guruhlar
@@ -137,101 +192,78 @@ export default function AdminGroupsPage() {
                 Boshqaruv paneli
               </p>
             </div>
-            <Button
+            <RoseButton
               onClick={() => {
                 reset()
                 setCreateOpen(true)
               }}
               className='h-11 rounded-full bg-rose-600 px-6 text-xs font-black text-white shadow-lg shadow-rose-100 transition-all hover:bg-rose-700 dark:shadow-none'
             >
+=======
+            <div>
+              <h1 className='text-2xl font-bold text-foreground'>Guruhlar</h1>
+              <p className='text-[10px] font-black tracking-[0.2em] text-muted-foreground uppercase'>Boshqaruv paneli</p>
+            </div>
+            <RoseButton onClick={() => { reset(); setCreateOpen(true) }}>
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
               <Plus className='mr-2 h-4 w-4' /> Qo'shish
             </RoseButton>
           </div>
 
           {/* Qidiruv Qismi */}
           <div className='relative mb-8 max-w-md'>
+<<<<<<< HEAD
             <Search className='absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-rose-400' />
             <Input
               placeholder='Qidirish...'
               className='h-11 rounded-full border border-rose-100 bg-rose-50/60 pl-11 text-sm font-bold focus-visible:ring-2 focus-visible:ring-rose-200 dark:border-rose-900/50 dark:bg-rose-950/20'
+=======
+            <Search className='absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+            <Input
+              placeholder='Qidirish...'
+              className='h-11 rounded-full border-none bg-muted pl-11 text-sm font-medium focus-visible:ring-1'
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
+<<<<<<< HEAD
           <div>
             {isLoading ? (
-              <div className='py-20 text-center'>
-                <Loader2 className='inline-block animate-spin text-rose-500' />
+              <div className='col-span-full py-20 text-center'>
+                <Loader2 className='inline-block animate-spin text-muted-foreground' />
               </div>
             ) : filtered.length === 0 ? (
-              <div className='rounded-3xl border border-dashed border-rose-200 bg-rose-50/60 py-20 text-center text-xs font-black text-rose-500 dark:border-rose-900/60 dark:bg-rose-950/20'>
+              <div className='col-span-full py-20 text-center text-xs font-medium text-muted-foreground'>
                 Guruhlar topilmadi
               </div>
             ) : (
-              <div className='grid gap-5 md:grid-cols-2 xl:grid-cols-3'>
-                {filtered.map((group) => (
-                  <div
-                    key={group.id}
-                    className='group flex min-h-[260px] flex-col justify-between rounded-[28px] border border-rose-100 bg-card p-5 shadow-sm shadow-rose-100/70 transition-all hover:-translate-y-0.5 hover:border-rose-300 hover:shadow-xl hover:shadow-rose-100 dark:border-rose-950/70 dark:shadow-none dark:hover:border-rose-800'
-                  >
-                    <div className='flex items-start justify-between gap-4'>
-                      <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-lg shadow-rose-200 dark:shadow-none'>
-                        <UsersIcon className='h-5 w-5' />
-                      </div>
-                      <div className='min-w-0 flex-1'>
-                        <div className='mb-1 line-clamp-1 text-base font-black text-foreground'>
-                          {group.name}
-                        </div>
-                        <div className='flex items-center gap-3'>
-                          <span className='text-[10px] font-black tracking-widest text-rose-500 uppercase'>
-                            ID #{group.id}
-                          </span>
-                          <span className='h-1 w-1 rounded-full bg-rose-300'></span>
-                          <span className='text-[10px] font-black text-rose-500 uppercase'>
-                            Kurs #{group.course}
-                          </span>
-                        </div>
-                      </div>
+              filtered.map((group) => (
+                <div
+                  key={group.id}
+                  className='group relative rounded-2xl bg-card p-5 shadow-sm transition-all hover:shadow-md'
+                >
+                  <div className='mb-4 flex items-start justify-between'>
+                    <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
+                      <UsersIcon className='h-5 w-5' />
                     </div>
-
-                    <div className='mt-5 space-y-3 text-xs font-black'>
-                      <div className='rounded-2xl bg-rose-50/70 p-4 dark:bg-rose-950/20'>
-                        <div className='text-[10px] font-black tracking-widest text-rose-500 uppercase'>
-                          Ustoz
-                        </div>
-                        <div className='mt-1 line-clamp-1 text-sm font-black text-rose-950 dark:text-rose-100'>
-                          {group.teacher_name || `Ustoz #${group.teacher}`}
-                        </div>
-                      </div>
-                      <div className='grid grid-cols-2 gap-3'>
-                        <div className='rounded-2xl border border-rose-100 p-3 dark:border-rose-950/70'>
-                          <div className='text-[10px] font-black tracking-widest text-rose-500 uppercase'>
-                            Jadval
-                          </div>
-                          <div className='mt-1 line-clamp-1 text-xs font-black text-foreground'>
-                            {Array.isArray(group.week_days)
-                              ? group.week_days.join(', ')
-                              : group.week_days || '—'}
-                          </div>
-                        </div>
-                        <div className='rounded-2xl border border-rose-100 p-3 dark:border-rose-950/70'>
-                          <div className='text-[10px] font-black tracking-widest text-rose-500 uppercase'>
-                            Vaqt
-                          </div>
-                          <div className='mt-1 text-xs font-black text-foreground'>
-                            {group.start_time?.slice(0, 5) || '--:--'} -{' '}
-                            {group.end_time?.slice(0, 5) || '--:--'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className='mt-4 flex justify-end'>
+                    <div className='flex gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
                       <Button
                         variant='ghost'
                         size='icon'
-                        className='h-9 w-9 rounded-full text-rose-500 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-950'
+                        className='h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary'
+                        onClick={() => {
+                          setEditingGroup(group)
+                          setEditOpen(true)
+                        }}
+                      >
+                        <Pencil className='h-4 w-4' />
+                      </Button>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive'
                         onClick={() => setDeleteId(group.id)}
                       >
                         <Trash2 className='h-4 w-4' />
@@ -240,6 +272,35 @@ export default function AdminGroupsPage() {
                   </div>
                 ))}
               </div>
+=======
+          {/* Ro'yxat Qismi */}
+          <div className='space-y-3'>
+            {isLoading ? (
+              <div className='py-20 text-center'><Loader2 className='inline-block animate-spin text-muted-foreground' /></div>
+            ) : filtered.length === 0 ? (
+              <div className='py-20 text-center text-xs font-medium text-muted-foreground'>Guruhlar topilmadi</div>
+            ) : (
+              filtered.map((group) => (
+                <div key={group.id} className='group flex items-center justify-between rounded-2xl bg-muted/50 p-5 transition-all hover:bg-muted'>
+                  <div className='flex items-center gap-6'>
+                    <div className='flex h-12 w-12 items-center justify-center rounded-2xl bg-card text-muted-foreground group-hover:text-primary'>
+                      <UsersIcon className='h-5 w-5' />
+                    </div>
+                    <div>
+                      <div className='mb-1 text-sm font-bold text-foreground'>{group.name}</div>
+                      <div className='flex items-center gap-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase'>
+                        <span>ID #{group.id}</span>
+                        <span className='h-1 w-1 rounded-full bg-border'></span>
+                        <span>Kurs #{group.course}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant='ghost' size='icon' className='hover:bg-destructive/10 hover:text-destructive rounded-full' onClick={() => setDeleteId(group.id)}>
+                    <Trash2 className='h-4 w-4' />
+                  </Button>
+                </div>
+              ))
+>>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
             )}
           </div>
         </div>
@@ -248,100 +309,189 @@ export default function AdminGroupsPage() {
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogContent className='rounded-4xl border-none bg-card p-8 shadow-2xl sm:max-w-110'>
             <DialogHeader className='mb-6'>
-              <DialogTitle className='text-xl font-bold'>Guruh qo'shish</DialogTitle>
+              <DialogTitle className='text-xl font-bold'>
+                Guruh qo'shish
+              </DialogTitle>
             </DialogHeader>
 
             <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
               {/* Nomi */}
               <div>
                 <Label className={labelClasses}>Guruh nomi</Label>
-                <Input placeholder='Nom kiriting' className={inputClasses} {...control.register('name')} />
-                {errors.name && <p className='mt-1 text-[10px] font-bold text-destructive'>{errors.name.message}</p>}
+                <Input
+                  placeholder='Nom kiriting'
+                  className={inputClasses}
+                  {...control.register('name')}
+                />
+                {errors.name && (
+                  <p className='mt-1 text-[10px] font-bold text-destructive'>
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               <div className='grid grid-cols-2 gap-4'>
                 {/* Kurs */}
                 <div>
                   <Label className={labelClasses}>Kurs</Label>
-                  <Controller name='course' control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className={inputClasses}>
-                        <SelectValue placeholder='Tanlang' />
-                      </SelectTrigger>
-                      <SelectContent className='rounded-xl border-border'>
-                        {courses.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)} className='rounded-lg py-2 font-medium'>{c.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )} />
+                  <Controller
+                    name='course'
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className={inputClasses}>
+                          <SelectValue placeholder='Tanlang' />
+                        </SelectTrigger>
+                        <SelectContent className='rounded-xl border-border'>
+                          {courses.map((c) => (
+                            <SelectItem
+                              key={c.id}
+                              value={String(c.id)}
+                              className='rounded-lg py-2 font-medium'
+                            >
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
-                
+
                 {/* Ustoz */}
                 <div>
                   <Label className={labelClasses}>Ustoz</Label>
-                  <Controller name='teacher' control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className={inputClasses}>
-                        <SelectValue placeholder='Tanlang' />
-                      </SelectTrigger>
-                      <SelectContent className='rounded-xl border-border'>
-                        {teachers.map((t) => (
-                          <SelectItem key={t.id} value={String(t.id)} className='rounded-lg py-2 font-medium'>
-                            {t.first_name ? `${t.first_name} ${t.last_name ?? ''}` : t.username}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )} />
+                  <Controller
+                    name='teacher'
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className={inputClasses}>
+                          <SelectValue placeholder='Tanlang' />
+                        </SelectTrigger>
+                        <SelectContent className='rounded-xl border-border'>
+                          {teachers.map((t) => (
+                            <SelectItem
+                              key={t.id}
+                              value={String(t.id)}
+                              className='rounded-lg py-2 font-medium'
+                            >
+                              {t.first_name
+                                ? `${t.first_name} ${t.last_name ?? ''}`
+                                : t.username}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
               </div>
 
               {/* Sanasi (Shadcn Calendar bilan) */}
               <div>
                 <Label className={labelClasses}>Boshlanish sanasi</Label>
-                <Controller name='start_date' control={control} render={({ field }) => (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant={"outline"} className={cn(inputClasses, "justify-start text-left font-normal", !field.value && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(new Date(field.value), "dd/MM/yyyy") : <span>Sanani tanlang</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar mode="single" selected={field.value ? new Date(field.value) : undefined} onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")} initialFocus />
-                    </PopoverContent>
-                  </Popover>
-                )} />
+                <Controller
+                  name='start_date'
+                  control={control}
+                  render={({ field }) => (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            inputClasses,
+                            'justify-start text-left font-normal',
+                            !field.value && 'text-muted-foreground'
+                          )}
+                        >
+                          <CalendarIcon className='mr-2 h-4 w-4' />
+                          {field.value ? (
+                            format(new Date(field.value), 'dd/MM/yyyy')
+                          ) : (
+                            <span>Sanani tanlang</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className='w-auto p-0' align='start'>
+                        <Calendar
+                          mode='single'
+                          selected={
+                            field.value ? new Date(field.value) : undefined
+                          }
+                          onSelect={(date) =>
+                            field.onChange(
+                              date ? format(date, 'yyyy-MM-dd') : ''
+                            )
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                />
               </div>
 
               {/* Vaqti */}
               <div className='grid grid-cols-2 gap-4'>
                 <div>
                   <Label className={labelClasses}>Vaqti (Dan)</Label>
-                  <Input type='time' className={inputClasses} {...control.register('time_from')} />
+                  <Input
+                    type='time'
+                    className={inputClasses}
+                    {...control.register('time_from')}
+                  />
                 </div>
                 <div>
                   <Label className={labelClasses}>Vaqti (Gacha)</Label>
-                  <Input type='time' className={inputClasses} {...control.register('time_to')} />
+                  <Input
+                    type='time'
+                    className={inputClasses}
+                    {...control.register('time_to')}
+                  />
                 </div>
               </div>
 
               {/* Dars Kunlari */}
               <div>
                 <Label className={labelClasses}>Dars kunlari turi</Label>
-                <Controller name='week_days_type' control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className={inputClasses}>
-                      <SelectValue placeholder='Tanlang' />
-                    </SelectTrigger>
-                    <SelectContent className='rounded-xl border-border'>
-                      <SelectItem value='ODD' className='rounded-lg py-2 font-medium'>Toq kunlar (Du, Cho, Ju)</SelectItem>
-                      <SelectItem value='EVEN' className='rounded-lg py-2 font-medium'>Juft kunlar (Se, Pa, Sha)</SelectItem>
-                      <SelectItem value='CUSTOM' className='rounded-lg py-2 font-medium'>Boshqa (Tanlash)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )} />
+                <Controller
+                  name='week_days_type'
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className={inputClasses}>
+                        <SelectValue placeholder='Tanlang' />
+                      </SelectTrigger>
+                      <SelectContent className='rounded-xl border-border'>
+                        <SelectItem
+                          value='ODD'
+                          className='rounded-lg py-2 font-medium'
+                        >
+                          Toq kunlar (Du, Cho, Ju)
+                        </SelectItem>
+                        <SelectItem
+                          value='EVEN'
+                          className='rounded-lg py-2 font-medium'
+                        >
+                          Juft kunlar (Se, Pa, Sha)
+                        </SelectItem>
+                        <SelectItem
+                          value='CUSTOM'
+                          className='rounded-lg py-2 font-medium'
+                        >
+                          Boshqa (Tanlash)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
 
                 {watch('week_days_type') === 'CUSTOM' && (
                   <div className='mt-3 flex flex-wrap gap-2'>
@@ -349,9 +499,24 @@ export default function AdminGroupsPage() {
                       const selected = watch('days') || []
                       const isSelected = selected.includes(day)
                       return (
-                        <button key={day} type='button'
-                          onClick={() => setValue('days', isSelected ? selected.filter((d) => d !== day) : [...selected, day], { shouldValidate: true })}
-                          className={cn('h-9 rounded-lg px-3 text-xs font-bold transition-all', isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80')}
+                        <button
+                          key={day}
+                          type='button'
+                          onClick={() =>
+                            setValue(
+                              'days',
+                              isSelected
+                                ? selected.filter((d) => d !== day)
+                                : [...selected, day],
+                              { shouldValidate: true }
+                            )
+                          }
+                          className={cn(
+                            'h-9 rounded-lg px-3 text-xs font-bold transition-all',
+                            isSelected
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          )}
                         >
                           {day}
                         </button>
@@ -363,14 +528,147 @@ export default function AdminGroupsPage() {
 
               {/* Tugmalar */}
               <DialogFooter className='gap-3 pt-4'>
-                <Button variant='ghost' type='button' onClick={() => setCreateOpen(false)} className='h-11 flex-1 rounded-xl font-bold'>
+                <Button
+                  variant='ghost'
+                  type='button'
+                  onClick={() => setCreateOpen(false)}
+                  className='h-11 flex-1 rounded-xl font-bold'
+                >
                   Bekor qilish
                 </Button>
-                <RoseButton type='submit' disabled={createMutation.isPending} className='h-11 flex-1 rounded-xl'>
-                  {createMutation.isPending ? <Loader2 className='h-4 w-4 animate-spin' /> : 'Saqlash'}
+                <RoseButton
+                  type='submit'
+                  disabled={createMutation.isPending}
+                  className='h-11 flex-1 rounded-xl'
+                >
+                  {createMutation.isPending ? (
+                    <Loader2 className='h-4 w-4 animate-spin' />
+                  ) : (
+                    'Saqlash'
+                  )}
                 </RoseButton>
               </DialogFooter>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Modal */}
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent className='rounded-4xl border-none bg-card p-8 shadow-2xl sm:max-w-110'>
+            <DialogHeader className='mb-6'>
+              <DialogTitle className='text-xl font-bold'>
+                Guruhni tahrirlash
+              </DialogTitle>
+            </DialogHeader>
+
+            {editingGroup && (
+              <form onSubmit={handleSubmit(onSubmit)} className='space-y-5'>
+                {/* Nomi */}
+                <div>
+                  <Label className={labelClasses}>Guruh nomi</Label>
+                  <Input
+                    defaultValue={editingGroup.name}
+                    placeholder='Nom kiriting'
+                    className={inputClasses}
+                    {...control.register('name')}
+                  />
+                  {errors.name && (
+                    <p className='mt-1 text-[10px] font-bold text-destructive'>
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className='grid grid-cols-2 gap-4'>
+                  {/* Kurs */}
+                  <div>
+                    <Label className={labelClasses}>Kurs</Label>
+                    <Controller
+                      name='course'
+                      control={control}
+                      defaultValue={String(editingGroup.course)}
+                      render={({ field }) => (
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <SelectTrigger className={inputClasses}>
+                            <SelectValue placeholder='Tanlang' />
+                          </SelectTrigger>
+                          <SelectContent className='rounded-xl border-border'>
+                            {courses.map((c) => (
+                              <SelectItem key={c.id} value={String(c.id)}>
+                                {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.course && (
+                      <p className='mt-1 text-[10px] font-bold text-destructive'>
+                        {errors.course.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Ustoz */}
+                  <div>
+                    <Label className={labelClasses}>Ustoz</Label>
+                    <Controller
+                      name='teacher'
+                      control={control}
+                      defaultValue={String(editingGroup.teacher)}
+                      render={({ field }) => (
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <SelectTrigger className={inputClasses}>
+                            <SelectValue placeholder='Tanlang' />
+                          </SelectTrigger>
+                          <SelectContent className='rounded-xl border-border'>
+                            {teachers.map((t) => (
+                              <SelectItem key={t.id} value={String(t.id)}>
+                                {t.first_name} {t.last_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.teacher && (
+                      <p className='mt-1 text-[10px] font-bold text-destructive'>
+                        {errors.teacher.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tugmalar */}
+                <DialogFooter className='gap-3 pt-4'>
+                  <Button
+                    variant='ghost'
+                    type='button'
+                    onClick={() => setEditOpen(false)}
+                    className='h-11 flex-1 rounded-xl font-bold'
+                  >
+                    Bekor qilish
+                  </Button>
+                  <RoseButton
+                    type='submit'
+                    disabled={createMutation.isPending}
+                    className='h-11 flex-1 rounded-xl'
+                  >
+                    {createMutation.isPending ? (
+                      <Loader2 className='h-4 w-4 animate-spin' />
+                    ) : (
+                      'Saqlash'
+                    )}
+                  </RoseButton>
+                </DialogFooter>
+              </form>
+            )}
           </DialogContent>
         </Dialog>
 
@@ -378,7 +676,12 @@ export default function AdminGroupsPage() {
           open={deleteId !== null}
           onOpenChange={(v) => !v && setDeleteId(null)}
           onConfirm={() => {
-            if (deleteId) toast.promise(deleteMutation.mutateAsync(deleteId), { loading: "O'chirilmoqda...", success: "O'chirildi", error: 'Xato' })
+            if (deleteId)
+              toast.promise(deleteMutation.mutateAsync(deleteId), {
+                loading: "O'chirilmoqda...",
+                success: "O'chirildi",
+                error: 'Xato',
+              })
           }}
           isLoading={deleteMutation.isPending}
         />

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   updateAdminTeacher,
   type AdminTeacherUpdatePayload,
@@ -8,10 +9,25 @@ export const useUpdateAdminTeacher = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: AdminTeacherUpdatePayload }) =>
-      updateAdminTeacher(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: number
+      data: AdminTeacherUpdatePayload
+    }) => {
+      console.log('Updating teacher:', id, data)
+      return updateAdminTeacher(id, data)
+    },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'teachers', 'list'] })
+      console.log('Teacher update successful')
+      await queryClient.invalidateQueries({
+        queryKey: ['admin', 'teachers', 'list'],
+      })
+    },
+    onError: (error: unknown) => {
+      console.error('Teacher update error:', error)
+      toast.error((error as Error)?.message || 'Yangilashda xatolik')
     },
   })
 }

@@ -86,7 +86,11 @@ export function AdminTeacherCreateModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     toast.promise(
-      createMutation.mutateAsync({ ...formData, role: 'teacher' as const }),
+      createMutation.mutateAsync({
+        ...formData,
+        avatar: imageFile || undefined,
+        role: 'teacher' as const,
+      }),
       {
         loading: 'Yaratilmoqda...',
         success: () => {

@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react'
 import {
-  Pencil,
-  Plus,
-  Trash2,
+  BarChart3,
   BookOpen,
   Clock,
-  BarChart3,
-  Search,
   Loader2,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAdminCourses } from '@/hooks/admin/courses/useAdminCourses'
@@ -49,31 +49,22 @@ export default function AdminCoursesPage() {
 
   const submitEdit = () => {
     if (!editingId) return
-    toast.promise(
-      updateMutation.mutateAsync({
+    updateMutation
+      .mutateAsync({
         id: editingId,
         data: { name: editName.trim() },
-      }),
-      {
-        loading: 'Yangilanmoqda...',
-        success: () => {
-          setEditingId(null)
-          return 'Yangilandi'
-        },
-        error: 'Xato',
-      }
-    )
+      })
+      .then(() => {
+        setEditingId(null)
+        toast.success('Yangilandi')
+      })
   }
 
   const confirmDelete = () => {
     if (!deleteId) return
-    toast.promise(deleteMutation.mutateAsync(deleteId), {
-      loading: "O'chirilmoqda...",
-      success: () => {
-        setDeleteId(null)
-        return "O'chirildi"
-      },
-      error: 'Xatolik yuz berdi',
+    deleteMutation.mutateAsync(deleteId).then(() => {
+      setDeleteId(null)
+      toast.success("O'chirildi")
     })
   }
 

@@ -58,6 +58,9 @@ const API_ENDPOINTS = {
   },
   USER: {
     USER_ME: '/user',
+    LIST: '/api/auth/users/',
+    BY_ID: (id: number) => `/api/auth/users/${id}/`,
+    REGISTER: '/api/auth/register/',
   },
   STUDENT: {
     ASSIGNED_GROUPS: '/api/groups/my-groups/',
