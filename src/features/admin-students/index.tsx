@@ -466,7 +466,6 @@ export default function AdminStudentsPage() {
                     <TableHead className='w-12'></TableHead>
                     <TableHead>Full Name</TableHead>
                     <TableHead>Username</TableHead>
-                    <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className='text-right'>Actions</TableHead>
@@ -487,7 +486,6 @@ export default function AdminStudentsPage() {
                         {student.first_name} {student.last_name}
                       </TableCell>
                       <TableCell>@{student.username}</TableCell>
-                      <TableCell>{student.email}</TableCell>
                       <TableCell>{student.phone || '-'}</TableCell>
                       <TableCell>
                         <Badge
