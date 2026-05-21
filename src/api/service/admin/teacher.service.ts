@@ -135,5 +135,5 @@ export const updateAdminTeacher = (
 }
 
 export const deleteAdminTeacher = (teacherId: number): Promise<unknown> => {
-  return apiClient.delete<unknown>(`/api/auth/users/${teacherId}/`)
+  return apiClient.delete<unknown>(`/api/auth/profile-delete/${teacherId}/`)
 }

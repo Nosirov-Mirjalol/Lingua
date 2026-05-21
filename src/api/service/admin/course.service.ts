@@ -75,5 +75,5 @@ export const updateAdminCourse = (
 }
 
 export const deleteAdminCourse = (courseId: number): Promise<unknown> => {
-  return apiClient.delete<unknown>(`/api/courses/update-delete/${courseId}`)
+  return apiClient.delete<unknown>(COURSE.UPDATE_DELETE(courseId))
 }

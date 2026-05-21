@@ -35,7 +35,7 @@ const API_ENDPOINTS = {
     CREATE: '/api/courses/create/',
     LIST: '/api/courses/list/',
     UPDATE_DELETE: (courseId: number) =>
-      `/api/courses/update-delete/${courseId}/`,
+      `/api/courses/update-delete/${courseId}`,
   },
   NOTIFICATIONS: {
     MY: '/api/notifications/my/',

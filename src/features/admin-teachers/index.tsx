@@ -108,7 +108,7 @@ export default function AdminTeachersPage() {
     <>
       <AdminHeader fixed />
 
-      <Main fixed className='bg-background/40'>
+      <Main className='bg-background/40'>
         <div className='container mx-auto max-w-7xl p-6'>
           <div className='mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between'>
             <div>
@@ -142,14 +142,17 @@ export default function AdminTeachersPage() {
             </div>
           </div>
 
-          <Card className='overflow-hidden border-muted shadow-sm'>
+          <Card className='border-border shadow-md'>
             <div className='overflow-x-auto'>
               <table className='w-full text-left'>
                 <thead>
                   <tr className='border-b bg-muted/20'>
                     {/* Guruhlar olib tashlandi */}
                     {['F.I.SH', 'Telefon', 'Maqsad', ''].map((h) => (
-                      <th key={h} className='px-6 py-4 text-xs font-bold tracking-wider text-muted-foreground uppercase'>
+                      <th
+                        key={h}
+                        className='px-6 py-4 text-xs font-bold tracking-wider text-muted-foreground uppercase'
+                      >
                         {h}
                       </th>
                     ))}
@@ -165,13 +168,19 @@ export default function AdminTeachersPage() {
                     </tr>
                   ) : paginated.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className='p-10 text-center text-sm text-muted-foreground'>
+                      <td
+                        colSpan={4}
+                        className='p-10 text-center text-sm text-muted-foreground'
+                      >
                         Ustozlar topilmadi
                       </td>
                     </tr>
                   ) : (
                     paginated.map((t: AdminTeacher) => (
-                      <tr key={t.id} className='group transition-colors hover:bg-muted/30'>
+                      <tr
+                        key={t.id}
+                        className='group border-b border-border/50 transition-colors hover:bg-muted/30'
+                      >
                         <td className='px-6 py-4'>
                           <div className='flex items-center gap-3'>
                             <Avatar className='h-10 w-10 border border-border/50'>
@@ -184,21 +193,23 @@ export default function AdminTeachersPage() {
                               <div className='text-sm font-semibold text-foreground'>
                                 {t.full_name || '—'}
                               </div>
-                              <div className='text-xs text-muted-foreground mt-0.5'>@{t.username}</div>
+                              <div className='mt-0.5 text-xs text-muted-foreground'>
+                                @{t.username}
+                              </div>
                             </div>
                           </div>
                         </td>
 
-                        <td className='px-6 py-4 text-sm text-muted-foreground font-medium'>
+                        <td className='px-6 py-4 text-sm font-medium text-muted-foreground'>
                           {t.phone || '—'}
                         </td>
 
-                        <td className='px-6 py-4 text-sm text-muted-foreground max-w-48 truncate'>
+                        <td className='max-w-48 truncate px-6 py-4 text-sm text-muted-foreground'>
                           {t.learning_goal || '—'}
                         </td>
 
                         <td className='px-6 py-4 text-right'>
-                          <div className='flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100'>
+                          <div className='flex justify-end gap-1'>
                             <Button
                               type='button'
                               variant='ghost'
@@ -216,15 +227,16 @@ export default function AdminTeachersPage() {
                               <Trash2 className='h-4 w-4' />
                             </Button>
                           </div>
-                         </td>
-                       </tr>
-                      )))}
-                    </tbody>
-                  </table>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-            </Card>
+          </Card>
 
-           <ListPagination
+          <ListPagination
             page={page}
             pageSize={pageSize}
             totalCount={teachers.length}
@@ -241,50 +253,84 @@ export default function AdminTeachersPage() {
           open={editingTeacher !== null}
           onOpenChange={(v) => !v && setEditingTeacher(null)}
         >
-          <DialogContent className='sm:max-w-md'>
+          <DialogContent className='rounded-2xl sm:max-w-md'>
             <DialogHeader>
-              <DialogTitle>Ustozni tahrirlash</DialogTitle>
+              <DialogTitle className='text-xl font-bold'>
+                Ustozni tahrirlash
+              </DialogTitle>
             </DialogHeader>
             <div className='space-y-4 pt-2'>
+              <div className='flex items-center gap-4 border-b pb-4'>
+                <Avatar className='h-16 w-16 border-2 border-primary/20'>
+                  <AvatarImage src={editingTeacher?.avatar || undefined} />
+                  <AvatarFallback className='bg-primary/10 text-lg font-bold text-primary'>
+                    {getInitials(editForm.full_name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className='text-sm font-semibold text-foreground'>
+                    {editingTeacher?.username}
+                  </p>
+                  <p className='text-xs text-muted-foreground'>
+                    ID: #{editingTeacher?.id}
+                  </p>
+                </div>
+              </div>
+
               <div className='space-y-2'>
-                <Label>To'liq ism</Label>
+                <Label className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+                  To'liq ism
+                </Label>
                 <Input
                   value={editForm.full_name}
                   onChange={(e) =>
                     setEditForm({ ...editForm, full_name: e.target.value })
                   }
                   placeholder='Ism Familiya'
+                  className='rounded-xl'
                 />
               </div>
 
               <div className='space-y-2'>
-                <Label>Telefon</Label>
+                <Label className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+                  Telefon
+                </Label>
                 <Input
                   value={editForm.phone}
                   onChange={(e) =>
                     setEditForm({ ...editForm, phone: e.target.value })
                   }
+                  placeholder='+998 90 123 45 67'
+                  className='rounded-xl'
                 />
               </div>
 
               <div className='space-y-2'>
-                <Label>O'quv maqsadi</Label>
+                <Label className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
+                  O'quv maqsadi
+                </Label>
                 <Input
                   value={editForm.learning_goal}
                   onChange={(e) =>
                     setEditForm({ ...editForm, learning_goal: e.target.value })
                   }
                   placeholder='Masalan: next.js, react...'
+                  className='rounded-xl'
                 />
               </div>
             </div>
             <DialogFooter className='mt-6 gap-2'>
-              <Button variant='outline' onClick={() => setEditingTeacher(null)}>
+              <Button
+                variant='outline'
+                onClick={() => setEditingTeacher(null)}
+                className='rounded-xl'
+              >
                 Bekor qilish
               </Button>
               <RoseButton
                 onClick={submitEdit}
                 disabled={updateMutation.isPending}
+                className='rounded-xl'
               >
                 {updateMutation.isPending ? (
                   <Loader2 className='h-4 w-4 animate-spin' />
