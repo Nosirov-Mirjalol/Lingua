@@ -58,7 +58,7 @@ export function StudentOverviewPage() {
       </section>
 
       <section className='grid gap-4 lg:grid-cols-[1.5fr_1fr]'>
-        <Card className='overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
+        <Card className='overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
           <CardHeader>
             <CardTitle className='text-primary'>Bugungi asosiy ko‘rsatkichlar</CardTitle>
             <CardDescription>
@@ -78,7 +78,7 @@ export function StudentOverviewPage() {
               {highlights.map((highlight) => (
                 <div
                   key={highlight.title}
-                  className='rounded-3xl border border-primary/20 bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md'
+                  className='rounded-3xl border border-primary/40 bg-card p-4 transition-all hover:border-primary/60 hover:shadow-md'
                 >
                   <p className='text-xs uppercase tracking-[0.18em] text-primary/70 font-bold'>
                     {highlight.title === 'Next lesson' ? 'Navbatdagi dars' : 
@@ -95,7 +95,7 @@ export function StudentOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className='space-y-4 overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
+        <Card className='space-y-4 overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
           <CardHeader>
             <CardTitle className='text-primary'>Tezkor harakatlar</CardTitle>
             <CardDescription>Eng muhim keyingi qadamlarga o‘ting.</CardDescription>
@@ -104,7 +104,7 @@ export function StudentOverviewPage() {
             {quickActions.map((action) => (
                 <div
                   key={action.label}
-                  className='flex items-center justify-between rounded-3xl border border-primary/20 bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md cursor-pointer group'
+                  className='flex items-center justify-between rounded-3xl border border-primary/40 bg-card p-4 transition-all hover:border-primary/60 hover:shadow-md cursor-pointer group'
                 >
                 <div>
                   <p className='font-bold text-foreground group-hover:text-primary transition-colors'>
@@ -129,7 +129,7 @@ export function StudentOverviewPage() {
       </section>
 
       <section className='grid gap-4 lg:grid-cols-3'>
-        <Card className='lg:col-span-2 overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
+        <Card className='lg:col-span-2 overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
           <CardHeader>
             <CardTitle className='text-primary'>To‘xtagan joyingizdan davom eting</CardTitle>
             <CardDescription>Oxirgi modullaringizni yakunlang.</CardDescription>
@@ -142,12 +142,12 @@ export function StudentOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className='overflow-hidden border-primary/40 transition-all hover:border-primary/50 hover:shadow-md'>
+        <Card className='overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
           <CardHeader>
             <CardTitle className='text-primary'>E’tibor bering</CardTitle>
           </CardHeader>
           <CardContent className='flex flex-wrap gap-2'>
-            <Badge className='rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10'>
+            <Badge className='rounded-full border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10'>
               Yangi modul mavjud
             </Badge>
             <Badge className='rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'>
@@ -167,7 +167,7 @@ function ProgressTile({ title, value }: { title: string; value: string }) {
   const numericValue = Number.parseInt(value, 10) || 0
 
   return (
-    <div className='rounded-3xl border border-primary/20 bg-card p-4 transition-all hover:border-primary/30 hover:shadow-md'>
+    <div className='rounded-3xl border border-primary/40 bg-card p-4 transition-all hover:border-primary/60 hover:shadow-md'>
       <p className='text-sm text-muted-foreground'>{title}</p>
       <div className='mt-3 flex items-center gap-3'>
         <p className='text-2xl font-semibold text-foreground'>{value}</p>

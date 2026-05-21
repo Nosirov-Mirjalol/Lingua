@@ -175,15 +175,17 @@ export function MessagesPage() {
   }
 
   return (
-    <div className='mx-auto h-full w-full max-w-7xl p-2 sm:p-4 lg:px-8 lg:py-3 text-slate-900 dark:text-white/95'>
-      <div className='flex h-[calc(100dvh-4.5rem)] sm:h-[calc(100dvh-6rem)] lg:h-[calc(100dvh-5rem)] min-h-[500px] w-full overflow-hidden rounded-2xl border border-primary/20 transition-all hover:border-primary/30 hover:shadow-md bg-white shadow-sm dark:bg-slate-950/40 backdrop-blur-md'>
+    // ✅ FIX 1: lg:px-12 → lg:px-2 — katta padding chatni siqib qo'yardi
+    <div className='mx-auto h-full w-full max-w-full p-2 sm:p-3 lg:px-2 lg:py-2 text-slate-900 dark:text-white/95'>
+      <div className='flex h-[calc(100dvh-4.5rem)] sm:h-[calc(100dvh-6rem)] lg:h-[calc(100dvh-4.5rem)] min-h-[500px] w-full overflow-hidden rounded-2xl border border-primary/20 transition-all hover:border-primary/30 hover:shadow-md bg-white shadow-sm dark:bg-slate-950/40 backdrop-blur-md'>
 
         {/* SIDEBAR */}
+        {/* ✅ FIX 2: lg:w-80 xl:w-96 → lg:w-60 xl:w-64 — sidebar kengligi kamaytirildi */}
         <div className={cn(
           'flex flex-col border-r border-slate-100 bg-slate-50/40 dark:border-slate-800/60 dark:bg-transparent shrink-0 transition-all duration-300 ease-in-out relative',
           sidebarCollapsed
-            ? 'w-[60px] sm:w-[64px]'
-            : 'w-full sm:w-56 md:w-64 lg:w-80 xl:w-96',
+            ? 'w-[52px] sm:w-[56px]'
+            : 'w-full sm:w-52 md:w-56 lg:w-60 xl:w-64',
           selectedGroupId ? 'hidden sm:flex' : 'flex'
         )}>
           {/* Collapsed: show only avatars */}
@@ -238,7 +240,7 @@ export function MessagesPage() {
           ) : (
             /* Expanded sidebar */
             <>
-              <div className='flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 custom-chat-sidebar'>
+              <div className='flex-1 min-h-0 overflow-y-auto p-3 sm:p-3 custom-chat-sidebar'>
                 <ChatListHeader
                   title='Xabarlar'
                   count={groups.length}
@@ -307,16 +309,17 @@ export function MessagesPage() {
         </div>
 
         {/* CHAT MAIN AREA */}
+        {/* ✅ FIX 3: w-0 qo'shildi — flex-1 bilan birga to'liq kenglikni egallaydi */}
         <div className={cn(
-          'flex flex-1 flex-col overflow-hidden bg-white dark:bg-[#090d1f]/40 min-w-0',
+          'flex flex-1 flex-col overflow-hidden bg-white dark:bg-[#090d1f]/40 min-w-0 w-0',
           !selectedGroupId ? 'hidden sm:flex' : 'flex'
         )}>
           {selectedGroup ? (
             <>
               {/* Chat Header */}
-              <div className='flex flex-col border-b border-slate-100 bg-white/50 px-3 py-2.5 dark:border-slate-800/60 dark:bg-transparent backdrop-blur-sm sm:px-4 sm:py-3 lg:px-6 lg:py-4'>
+              <div className='flex flex-col border-b border-slate-100 bg-white/50 px-3 py-2.5 dark:border-slate-800/60 dark:bg-transparent backdrop-blur-sm sm:px-4 sm:py-3'>
                 <div className='flex items-center justify-between'>
-                  <div className='flex items-center gap-2 sm:gap-3 lg:gap-4 min-w-0'>
+                  <div className='flex items-center gap-2 sm:gap-3 min-w-0'>
                     <Button
                       type='button'
                       variant='ghost'
@@ -328,8 +331,8 @@ export function MessagesPage() {
                     </Button>
 
                     <div className='relative shrink-0'>
-                      <Avatar className='h-9 w-9 border border-slate-200/50 dark:border-slate-800 sm:h-10 sm:w-10 lg:h-12 lg:w-12'>
-                        <AvatarFallback className='bg-primary/10 font-bold text-primary text-sm lg:text-base'>
+                      <Avatar className='h-9 w-9 border border-slate-200/50 dark:border-slate-800 sm:h-10 sm:w-10'>
+                        <AvatarFallback className='bg-primary/10 font-bold text-primary text-sm'>
                           {selectedGroup.name[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -339,7 +342,7 @@ export function MessagesPage() {
                     </div>
 
                     <div className='min-w-0'>
-                      <h2 className='truncate text-sm font-bold text-slate-900 dark:text-white lg:text-base'>
+                      <h2 className='truncate text-sm font-bold text-slate-900 dark:text-white'>
                         {selectedGroup.name}
                       </h2>
                       <span className='text-[10px] font-semibold text-emerald-500 dark:text-emerald-400 sm:text-xs'>
@@ -377,9 +380,9 @@ export function MessagesPage() {
               {/* Messages Area */}
               <div
                 ref={messagesContainerRef}
-                className='flex-1 min-h-0 overflow-y-auto bg-slate-50/30 p-3 dark:bg-transparent sm:p-4 lg:p-6'
+                className='flex-1 min-h-0 overflow-y-auto bg-slate-50/30 p-3 dark:bg-transparent sm:p-4 lg:p-5'
               >
-                <div className='flex flex-col gap-3 sm:gap-4 lg:gap-5'>
+                <div className='flex flex-col gap-3 sm:gap-4'>
                   {messagesLoading ? (
                     Array.from({ length: 4 }).map((_, i) => (
                       <div key={i} className={cn('flex flex-col gap-2', i % 2 === 0 ? 'items-end' : 'items-start')}>
@@ -395,7 +398,7 @@ export function MessagesPage() {
                         <div
                           key={msg.id}
                           className={cn(
-                            'group flex max-w-[88%] flex-col gap-1 sm:max-w-[80%] lg:max-w-[75%]',
+                            'group flex max-w-[85%] flex-col gap-1 sm:max-w-[75%] lg:max-w-[70%]',
                             isOwn ? 'items-end self-end' : 'items-start self-start'
                           )}
                         >
@@ -407,7 +410,7 @@ export function MessagesPage() {
                           <div className={cn('flex items-center gap-1.5 sm:gap-2', isOwn ? 'flex-row-reverse' : 'flex-row')}>
                             <div
                               className={cn(
-                                'px-3 py-2 text-[13px] leading-relaxed shadow-sm sm:px-3.5 sm:py-2 sm:text-[14px] lg:px-4 lg:py-2.5 lg:text-[15px]',
+                                'px-3 py-2 text-[13px] leading-relaxed shadow-sm sm:px-3.5 sm:py-2 sm:text-[14px] lg:px-4 lg:py-2.5',
                                 isOwn
                                   ? 'rounded-2xl rounded-br-md bg-primary text-primary-foreground'
                                   : 'rounded-2xl rounded-bl-md border border-slate-200/60 bg-white text-slate-800 dark:border-slate-800/80 dark:bg-slate-900 dark:text-slate-100'
@@ -465,12 +468,12 @@ export function MessagesPage() {
               <div className='border-t border-slate-100 bg-white/50 p-2.5 dark:border-slate-800/60 dark:bg-transparent backdrop-blur-sm sm:p-3 lg:p-4'>
                 <form
                   onSubmit={handleSubmit(onSubmit)}
-                  className='mx-auto flex max-w-4xl items-end gap-2 sm:gap-3'
+                  className='flex items-end gap-2 sm:gap-3'
                 >
                   <textarea
                     rows={1}
                     placeholder='Xabar yozing...'
-                    className='min-h-[42px] w-full flex-1 resize-none rounded-2xl border border-transparent bg-slate-100 px-3 py-2.5 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-primary/30 focus:bg-white dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-primary/40 dark:focus:bg-slate-950 sm:min-h-[46px] sm:px-4 sm:py-3 lg:min-h-[52px]'
+                    className='min-h-[42px] w-full flex-1 resize-none rounded-2xl border border-transparent bg-slate-100 px-3 py-2.5 text-sm text-slate-900 outline-none transition-all placeholder:text-slate-500 focus:border-primary/30 focus:bg-white dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-primary/40 dark:focus:bg-slate-950 sm:min-h-[46px] sm:px-4 sm:py-3'
                     {...register('content')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
@@ -483,7 +486,7 @@ export function MessagesPage() {
                     type='submit'
                     size='icon'
                     disabled={!contentValue?.trim() || sendMutation.isPending}
-                    className='mb-0.5 h-9 w-9 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:scale-105 active:scale-95 disabled:opacity-40 sm:h-10 sm:w-10 lg:h-12 lg:w-12'
+                    className='mb-0.5 h-9 w-9 shrink-0 rounded-xl bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:scale-105 active:scale-95 disabled:opacity-40 sm:h-10 sm:w-10 lg:h-11 lg:w-11'
                   >
                     <Send size={16} className='ml-0.5 sm:size-[18px]' />
                   </Button>
@@ -491,7 +494,7 @@ export function MessagesPage() {
               </div>
             </>
           ) : (
-            <div className='flex h-full flex-col items-center justify-center bg-slate-50/30 p-8 text-center dark:bg-transparent'>
+            <div className='hidden lg:flex h-full flex-col items-center justify-center bg-slate-50/30 p-8 text-center dark:bg-transparent'>
               <div className='max-w-md space-y-6'>
                 <ChatEmptyState
                   title='Sizning xabarlaringiz'

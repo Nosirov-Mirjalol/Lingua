@@ -42,12 +42,12 @@ export function StudentSchedulePage() {
             </Card>
           ))
         ) : schedule.length === 0 ? (
-          <div className="col-span-full py-12 text-center text-primary bg-primary/5 rounded-xl border border-primary/20 font-medium">
+          <div className="col-span-full py-12 text-center text-primary bg-primary/5 rounded-xl border border-primary/40 font-medium">
             Dars jadvali topilmadi.
           </div>
         ) : (
           schedule.map((session) => (
-            <Card key={session.id} className='overflow-hidden border-primary/20 transition-all hover:border-primary/30 hover:shadow-md'>
+            <Card key={session.id} className='overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
               <CardHeader className='pb-3'>
                 <div className='flex items-center justify-between gap-3'>
                   <div>

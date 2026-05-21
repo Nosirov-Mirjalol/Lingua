@@ -103,7 +103,7 @@ export function StudentProfilePage() {
 
   if (!profile) {
     return (
-      <div className='rounded-xl border border-primary/20 bg-primary/5 p-6 text-center text-primary font-medium'>
+      <div className='rounded-xl border border-primary/40 bg-primary/5 p-6 text-center text-primary font-medium'>
         Profil ma'lumotlarini yuklab bo'lmadi. Sahifani yangilang.
       </div>
     )
@@ -115,26 +115,26 @@ export function StudentProfilePage() {
     <div className='mx-auto max-w-7xl space-y-8'>
       <StudentPageHeader
         title='Mening profilim'
-        description='Shaxsiy ma’lumotlaringizni va profil sozlamalarini yangilang.'
+        description='Shaxsiy ma’lumotlaringizni va profil sozlamavelarini yangilang.'
         eyebrow='Sozlamalar'
         icon={<Settings size={18} />}
       />
 
       <div className='grid gap-8 lg:grid-cols-[300px_1fr]'>
         <aside className='space-y-6'>
-          <div className='flex flex-col items-center rounded-3xl border border-primary/20 bg-card p-8 text-card-foreground shadow-sm transition-all hover:border-primary/30'>
+          <div className='flex flex-col items-center rounded-3xl border border-primary/70 bg-card p-8 text-card-foreground shadow-sm transition-all hover:border-primary/80'>
             <div className='group relative mb-6'>
-              <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-primary/10 transition-colors group-hover:border-primary/20'>
-                {imageSrc ? (
+              <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-primary/10 transition-colors group-hover:border-primary/40 bg-white'>
+                {imageSrc && imageSrc !== defaultProfileImage ? (
                   <img
                     src={imageSrc}
-                    alt='Profile picture'
+                    alt=''
                     onError={handleImageError}
                     className='h-full w-full object-cover'
                   />
                 ) : (
-                  <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
-                    <UserIcon size={48} />
+                  <div className='flex h-full w-full items-center justify-center bg-white text-muted-foreground'>
+                    <UserIcon size={48} className='opacity-20' />
                   </div>
                 )}
               </div>
@@ -163,7 +163,7 @@ export function StudentProfilePage() {
         </aside>
 
         <section>
-          <div className='rounded-3xl border border-primary/20 bg-card p-6 shadow-sm transition-all hover:border-primary/30 md:p-8'>
+          <div className='rounded-3xl border border-primary/70 bg-card p-6 shadow-sm transition-all hover:border-primary/80 md:p-8'>
             <form id='profile-form' onSubmit={handleSubmit(onSubmit)} className='space-y-8'>
               <div className='grid gap-6 sm:grid-cols-2'>
                 <div className='space-y-2'>
@@ -174,7 +174,7 @@ export function StudentProfilePage() {
                     {...register('full_name')} 
                     placeholder='To‘liq ismingizni kiriting' 
                     disabled={isFormDisabled}
-                    className='rounded-xl border-primary/20 bg-background/50 focus:border-primary/40 focus:ring-primary/10'
+                    className='rounded-xl border-primary/40 bg-background/50 focus:border-primary/60 focus:ring-primary/10'
                   />
                   {errors.full_name && <p className='text-[0.8rem] text-destructive'>{String(errors.full_name.message ?? '')}</p>}
                 </div>
@@ -187,7 +187,7 @@ export function StudentProfilePage() {
                     {...register('username')} 
                     placeholder='Foydalanuvchi nomingizni kiriting' 
                     disabled={isFormDisabled} 
-                    className='rounded-xl border-primary/20 bg-background/50 focus:border-primary/40 focus:ring-primary/10'
+                    className='rounded-xl border-primary/40 bg-background/50 focus:border-primary/60 focus:ring-primary/10'
                   />
                   {errors.username && <p className='text-[0.8rem] text-destructive'>{String(errors.username.message ?? '')}</p>}
                 </div>
@@ -201,7 +201,7 @@ export function StudentProfilePage() {
                     placeholder='Mamlakat/shaҳar formatida kiriting' 
                     disabled={isFormDisabled} 
                     defaultValue={profile?.timezone || ''} 
-                    className='rounded-xl border-primary/20 bg-background/50 focus:border-primary/40 focus:ring-primary/10'
+                    className='rounded-xl border-primary/40 bg-background/50 focus:border-primary/60 focus:ring-primary/10'
                   />
                   {errors.timezone && <p className='text-[0.8rem] text-destructive'>{String(errors.timezone.message ?? '')}</p>}
                 </div>
@@ -216,7 +216,7 @@ export function StudentProfilePage() {
                   rows={4}
                   placeholder='O‘zingiz haqida qisqacha yozing'
                   disabled={isFormDisabled}
-                  className='resize-none rounded-xl border-primary/20 bg-background/50 placeholder:text-muted-foreground focus:border-primary/40 focus:ring-primary/10'
+                  className='resize-none rounded-xl border-primary/40 bg-background/50 placeholder:text-muted-foreground focus:border-primary/60 focus:ring-primary/10'
                 />
               </div>
 
@@ -229,7 +229,7 @@ export function StudentProfilePage() {
                   rows={3}
                   placeholder='O‘qish maqsadingizni yozing'
                   disabled={isFormDisabled}
-                  className='resize-none rounded-xl border-primary/20 bg-background/50 placeholder:text-muted-foreground focus:border-primary/40 focus:ring-primary/10'
+                  className='resize-none rounded-xl border-primary/40 bg-background/50 placeholder:text-muted-foreground focus:border-primary/60 focus:ring-primary/10'
                 />
               </div>
 

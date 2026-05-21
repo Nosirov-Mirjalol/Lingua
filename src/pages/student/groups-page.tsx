@@ -62,7 +62,7 @@ export function StudentGroupsPage() {
       ) : (
         <div className='grid gap-4 lg:grid-cols-3'>
           {groups.map((group) => (
-            <Card key={group.id} className='overflow-hidden border-primary/20 transition-all hover:border-primary/30 hover:shadow-md flex flex-col'>
+            <Card key={group.id} className='overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md flex flex-col'>
               <CardHeader className='pb-3'>
                 <div className='flex items-start justify-between gap-3'>
                   <div>

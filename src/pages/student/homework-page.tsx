@@ -146,12 +146,12 @@ export default function StudentHomeworkPage() {
   return (
     <div className='mx-auto max-w-7xl space-y-6'>
       <StudentPageHeader
-        title='Uy vazifalari'
+        title='Uyga vazifalar'
         description='O‘quv jarayoningizni kuzatib boring va topshiriqlarni yakunlang.'
       />
 
       <div className='mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]'>
-        <Card className='shadow-sm flex flex-col border-primary/20 transition-all hover:border-primary/30 hover:shadow-md min-h-0'>
+        <Card className='shadow-sm flex flex-col border-primary/70 transition-all hover:border-primary/80 hover:shadow-md min-h-0'>
           <CardHeader className='pb-2 shrink-0'>
             <div>
               <CardTitle className='text-base'>Topshiriqlar markazi</CardTitle>
@@ -190,8 +190,8 @@ export default function StudentHomeworkPage() {
                       }}
                       className={cn(
                         'w-full rounded-2xl border bg-card px-3 py-2.5 text-left transition',
-                        'hover:bg-accent hover:text-accent-foreground hover:shadow-sm',
-                        isActive ? 'border-primary ring-2 ring-primary/20 bg-accent/50' : 'border-border'
+                        'hover:bg-primary/5 hover:border-primary/60 hover:shadow-sm',
+                        isActive ? 'border-primary ring-2 ring-primary/20 bg-primary/5' : 'border-primary/40'
                       )}
                     >
                       <div className='flex items-start justify-between gap-3'>
@@ -229,7 +229,7 @@ export default function StudentHomeworkPage() {
           </CardContent>
         </Card>
 
-        <Card className='shadow-sm border-primary/20 transition-all hover:border-primary/30 hover:shadow-md'>
+        <Card className='shadow-sm border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
           {isLoading ? (
             <CardContent className='flex h-100 items-center justify-center'>
               <div className="flex flex-col items-center gap-4">
@@ -257,26 +257,26 @@ export default function StudentHomeworkPage() {
                       </Badge>
                       <Badge
                         variant='outline'
-                        className='rounded-full bg-muted text-muted-foreground'
+                        className='rounded-full bg-primary/5 text-primary border-primary/40'
                       >
                         Muddati: {formatDate(activeAssignment.deadline)}
                       </Badge>
                       <Badge
                         variant='outline'
-                        className='rounded-full bg-muted text-muted-foreground'
+                        className='rounded-full bg-primary/5 text-primary border-primary/40'
                       >
                         Maks. ball: {activeAssignment.max_score}
                       </Badge>
                       <Badge
                         variant='outline'
-                        className='rounded-full bg-primary/10 text-primary border-primary/20'
+                        className='rounded-full bg-primary/10 text-primary border-primary/40'
                       >
                         Format: {activeAssignment.submission_type === 'file' ? 'Fayl yuklash' : 'Matnli javob'}
                       </Badge>
                     </div>
                   </div>
 
-                  <div className='flex w-full items-center gap-3 rounded-2xl border bg-card px-4 py-3 md:w-full'>
+                  <div className='flex w-full items-center gap-3 rounded-2xl border border-primary/40 bg-card px-4 py-3 md:w-full'>
                     <Avatar className='size-10'>
                       <AvatarFallback className='bg-primary/10 text-primary'>
                         {activeAssignment.created_by?.charAt(0).toUpperCase() || 'U'}
@@ -297,20 +297,20 @@ export default function StudentHomeworkPage() {
                       <h3 className='text-sm font-semibold text-foreground mb-2'>
                         Vazifa tavsifi
                       </h3>
-                      <div className='text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap rounded-2xl border bg-card p-4'>
+                      <div className='text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap rounded-2xl border border-primary/40 bg-card p-4'>
                         {activeAssignment.description || 'Tavsif berilmagan.'}
                       </div>
                     </div>
 
                     {activeAssignment.attachment && (
-                      <div className='rounded-2xl border bg-card p-3'>
+                      <div className='rounded-2xl border border-primary/40 bg-card p-3'>
                         <h4 className='text-sm font-semibold text-foreground'>Biriktirilgan materiallar</h4>
                         <div className='mt-3'>
                           <a
                             href={activeAssignment.attachment}
                             target="_blank"
                             rel="noreferrer"
-                            className="flex items-center gap-3 p-3 rounded-xl border hover:bg-muted/50 transition-colors"
+                            className="flex items-center gap-3 p-3 rounded-xl border border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-colors"
                           >
                             <div className="bg-primary/10 p-2 rounded-lg text-primary">
                               <Paperclip className="size-4" />
@@ -325,7 +325,7 @@ export default function StudentHomeworkPage() {
                   </div>
 
                   <div className='space-y-4'>
-                    <div className='rounded-2xl border bg-card p-4'>
+                    <div className='rounded-2xl border border-primary/40 bg-card p-4'>
                       <h3 className='text-sm font-semibold text-foreground mb-4'>
                         Topshirish portali
                       </h3>
@@ -356,11 +356,11 @@ export default function StudentHomeworkPage() {
                                 type='button'
                                 onClick={() => fileInputRef.current?.click()}
                                 className={cn(
-                                  'w-full rounded-2xl border-2 border-dashed border-border bg-muted/30 p-6 text-center transition group',
-                                  'hover:bg-muted/60 hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20'
+                                  'w-full rounded-2xl border-2 border-dashed border-primary/40 bg-muted/30 p-6 text-center transition group',
+                                  'hover:bg-primary/5 hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20'
                                 )}
                               >
-                                <div className="bg-background rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3 shadow-sm border group-hover:scale-105 transition-transform">
+                                <div className="bg-background rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-3 shadow-sm border border-primary/20 group-hover:scale-105 transition-transform">
                                   <UploadCloud className='size-5 text-primary' />
                                 </div>
                                 <p className='text-sm font-semibold text-foreground'>
@@ -392,7 +392,7 @@ export default function StudentHomeworkPage() {
                               value={textAnswer}
                               onChange={(e) => setTextAnswer(e.target.value)}
                               placeholder={activeAssignment.submission_type === 'text' ? 'Javobingizni shu yerga yozing...' : 'Ustoz uchun izoh qoldiring...'}
-                              className='w-full resize-none rounded-xl border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground/60'
+                              className='w-full resize-none rounded-xl border border-primary/40 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground/60'
                             />
                           </div>
 
