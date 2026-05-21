@@ -76,8 +76,6 @@ function unwrapSingle<T>(raw: unknown, nestedKeys: string[] = ['results', 'data'
   return null
 }
 
-<<<<<<< HEAD
-=======
 function formatTimeRange(start?: string, end?: string, fallback?: string): string {
   if (fallback?.trim()) return fallback
   const parts = [start, end].filter((value): value is string => !!value?.trim())
@@ -113,8 +111,6 @@ function normalizeStudentScheduleItem(item: any): StudentScheduleItem {
     end_date: item.end_date || '-',
   }
 }
-
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
 function formatRelativeTime(iso: string): string {
   try {
     const date = new Date(iso)

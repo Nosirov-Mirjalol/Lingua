@@ -23,9 +23,10 @@ type NavUserProps = {
     email: string
     avatar: string
   }
+  role?: string
 }
 
-export function NavUser({ user }: NavUserProps) {
+export function NavUser({ user, role }: NavUserProps) {
   const { isMobile } = useSidebar()
   const [open, setOpen] = useDialogState()
 
@@ -47,6 +48,11 @@ export function NavUser({ user }: NavUserProps) {
                 </Avatar>
                 <div className='grid flex-1 text-start text-sm leading-tight'>
                   <span className='truncate font-semibold'>{user.name}</span>
+                  {role && (
+                    <span className='truncate text-xs text-muted-foreground capitalize'>
+                      {role}
+                    </span>
+                  )}
                 </div>
                 <ChevronsUpDown className='ms-auto size-4' />
               </SidebarMenuButton>
@@ -67,6 +73,11 @@ export function NavUser({ user }: NavUserProps) {
                   </Avatar>
                   <div className='grid flex-1 text-start text-sm leading-tight'>
                     <span className='truncate font-semibold'>{user.name}</span>
+                    {role && (
+                      <span className='truncate text-xs text-muted-foreground capitalize'>
+                        {role}
+                      </span>
+                    )}
                   </div>
                 </div>
               </DropdownMenuLabel>

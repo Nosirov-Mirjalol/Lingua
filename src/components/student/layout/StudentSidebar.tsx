@@ -34,7 +34,7 @@ const studentSidebarData = {
         { title: 'Profile', url: '/student/profile', icon: User },
       ],
     },
-  ] as const,
+  ],
 }
 
 export function StudentSidebar() {

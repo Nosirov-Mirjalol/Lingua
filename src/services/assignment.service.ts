@@ -1,11 +1,8 @@
 import type {
   Assignment,
   AssignmentListParams,
-<<<<<<< HEAD
   AssignmentStatus,
-=======
   AssignmentUploadResponse,
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
   CreateAssignmentPayload,
   GradeAssignmentPayload,
   Submission,

@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { client } from '@/api/client'
-import { type Homework, type HomeworkMessage } from '@/types/student'
-=======
 import { apiClient } from '@/api/client'
-import { Homework, HomeworkMessage } from '@/types/student'
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
+import type { Homework, HomeworkMessage } from '@/types/student'
 
 export const homeworkService = {
   getHomeworkList: async (): Promise<Homework[]> => {

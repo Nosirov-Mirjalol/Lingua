@@ -136,17 +136,9 @@ export default function AdminTeachersPage() {
     <>
       <AdminHeader fixed />
 
-<<<<<<< HEAD
       <Main className='bg-background font-outfit'>
         <div className='container mx-auto max-w-[1400px] p-6'>
           <div className='mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between'>
-=======
-      <Main fixed className='bg-background/40'>
-        <div className='container mx-auto max-w-7xl p-6'>
-          
-          {/* Header & Actions: Qidiruv tizimi va tugma yuqoriga, sodda dizaynda joylashtirildi */}
-          <div className='mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between'>
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
             <div>
               <p className='mb-1 text-xs font-black tracking-widest text-primary uppercase'>
                 Ustozlar boshqaruvi
@@ -170,7 +162,6 @@ export default function AdminTeachersPage() {
             </div>
           </div>
 
-<<<<<<< HEAD
           <Card className='rounded-[32px] border-none bg-background shadow-sm'>
             <div className='flex flex-col gap-4 border-b border-slate-50 p-6 md:flex-row md:items-center md:justify-between'>
               <div className='flex w-fit items-center gap-1 rounded-full bg-muted p-1'>
@@ -207,10 +198,6 @@ export default function AdminTeachersPage() {
                 </Button>
               </div>
             </div>
-
-=======
-          <Card className='overflow-hidden border-muted shadow-sm'>
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
             <div className='overflow-x-auto'>
               <table className='w-full text-left'>
                 <thead>
@@ -360,7 +347,6 @@ export default function AdminTeachersPage() {
           isLoading={deleteMutation.isPending}
         />
 
-<<<<<<< HEAD
         <AdminTeacherCreateModal
           open={createOpen}
           onOpenChange={setCreateOpen}
@@ -398,9 +384,6 @@ export default function AdminTeachersPage() {
           onConfirm={confirmDeleteGroup}
           isLoading={deleteGroupMutation.isPending}
         />
-=======
-        <AdminTeacherCreateModal open={createOpen} onOpenChange={setCreateOpen} />
->>>>>>> f625b1e03f99fb0e9fc0ac9a0f170c64aebab351
       </Main>
     </>
   )
