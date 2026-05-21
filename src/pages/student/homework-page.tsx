@@ -190,7 +190,6 @@ export default function StudentHomeworkPage() {
                       setSelectedFile(null)
                       setTextAnswer('')
                     }}
-                    // Balandlik aniq h-[92px] qilib cheklandi, 3 tadan ko'pi scroll bo'ladi
                     className={cn(
                       'w-full h:92px rounded-xl border bg-card px-3 py-2 text-left transition flex flex-col justify-between shrink-0 box-border',
                       'hover:bg-primary/5 hover:border-primary/60',
