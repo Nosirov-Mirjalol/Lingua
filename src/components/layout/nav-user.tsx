@@ -21,7 +21,6 @@ import { getFullAvatarUrl } from '@/components/shared/profile-avatar'
 type NavUserProps = {
   user: {
     name: string
-    email: string
     avatar: string
   }
   role?: string

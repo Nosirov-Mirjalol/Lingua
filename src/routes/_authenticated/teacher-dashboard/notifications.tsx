@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { Bell, CheckCheck, Loader2 } from 'lucide-react'
 import { NotificationCard } from '@/components/shared/NotificationCard'
+import { ListPagination } from '@/components/list-pagination'
 import {
   useMyNotifications,
   useUnreadCount,
@@ -38,6 +39,9 @@ function NotificationsPage() {
   const markAsRead = useMarkAsRead()
   const markAllRead = useMarkAllRead()
 
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+
   const notifications = useMemo<UINotification[]>(
     () =>
       apiNotifications.map((n) => ({
@@ -52,6 +56,14 @@ function NotificationsPage() {
 
   const unreadCount =
     unreadData?.unread_count ?? notifications.filter((n) => !n.read).length
+
+  const totalPages = Math.max(1, Math.ceil(notifications.length / pageSize))
+  const safePage = Math.min(page, totalPages)
+
+  const paginatedNotifications = useMemo(() => {
+    const start = (safePage - 1) * pageSize
+    return notifications.slice(start, start + pageSize)
+  }, [notifications, safePage, pageSize])
 
   if (isLoading)
     return (
@@ -119,24 +131,40 @@ function NotificationsPage() {
             </p>
           </div>
         ) : (
-          notifications.map((n) => {
-            const isPendingThis =
-              markAsRead.isPending && markAsRead.variables === n.id
+          <>
+            {paginatedNotifications.map((n) => {
+              const isPendingThis =
+                markAsRead.isPending && markAsRead.variables === n.id
 
-            return (
-              <div key={n.id} className={n.read ? 'opacity-70' : undefined}>
-                <NotificationCard
-                  title={n.title}
-                  message={n.body}
-                  time={isPendingThis ? 'Yuklanmoqda...' : n.time}
-                  isRead={n.read}
-                  onClick={() => !n.read && !isPendingThis && markAsRead.mutate(n.id)}
-                />
-              </div>
-            )
-          })
+              return (
+                <div key={n.id} className={n.read ? 'opacity-70' : undefined}>
+                  <NotificationCard
+                    title={n.title}
+                    message={n.body}
+                    time={isPendingThis ? 'Yuklanmoqda...' : n.time}
+                    isRead={n.read}
+                    onClick={() => !n.read && !isPendingThis && markAsRead.mutate(n.id)}
+                  />
+                </div>
+              )
+            })}
+            
+            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <ListPagination
+                page={safePage}
+                pageSize={pageSize}
+                totalCount={notifications.length}
+                onPageChange={setPage}
+                onPageSizeChange={(nextPageSize) => {
+                  setPageSize(nextPageSize)
+                  setPage(1)
+                }}
+              />
+            </div>
+          </>
         )}
       </div>
     </div>
   )
 }
+

@@ -3,14 +3,13 @@ import type { User } from '@/api/service/teacher/user.type'
 
 export type AdminStudentCreatePayload = {
   username: string
-  email: string
   full_name: string
   phone?: string
   password?: string
   role: 'student'
 }
 
-function _parseCreatedUserId(body: unknown): number | null {
+export function _parseCreatedUserId(body: unknown): number | null {
   if (!body || typeof body !== 'object') return null
   const r = body as Record<string, unknown>
   const rawId =
@@ -48,17 +47,12 @@ export const createAdminStudent = async (
   data: AdminStudentCreatePayload
 ): Promise<User> => {
   if (!data.username?.trim()) throw new Error('Username kiritilmadi')
-  if (!data.email?.trim()) throw new Error('Email kiritilmadi')
   if (!data.full_name?.trim()) throw new Error("To'liq ism kiritilmadi")
   if (!data.password?.trim()) throw new Error('Parol kiritilmadi')
 
   const password = data.password.trim()
   if (password.length < 8)
     throw new Error("Parol kamida 8 belgi bo'lishi kerak")
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(data.email.trim()))
-    throw new Error("Email formati noto'g'ri")
 
   // Phone number validation and formatting
   let formattedPhone: string | undefined = undefined
@@ -79,7 +73,6 @@ export const createAdminStudent = async (
   const fullName = data.full_name.trim().replace(/\s+/g, ' ')
   const registerPayload: Record<string, unknown> = {
     username: data.username.trim(),
-    email: data.email.trim(),
     full_name: fullName,
     phone: formattedPhone,
     password,
@@ -119,7 +112,6 @@ export const updateAdminStudent = async (
   const numericId = assertStudentId(id)
   const payload: Record<string, unknown> = {}
   if (data.full_name) payload.full_name = data.full_name.trim()
-  if (data.email) payload.email = data.email.trim()
   if (data.phone) {
     const phone = data.phone.trim().replace(/\s/g, '')
     const digits = phone.replace(/\+998/, '').replace(/^998/, '')

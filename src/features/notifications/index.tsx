@@ -127,7 +127,6 @@ export default function NotificationsPage() {
       <AdminHeader fixed>
         <ConfigDrawer />
       </AdminHeader>
-
       <Main>
         <div className='bg-white font-outfit dark:bg-slate-950'>
           <div className='flex min-h-[calc(100vh-7rem)] flex-col border-x border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'>
@@ -290,30 +289,36 @@ export default function NotificationsPage() {
                     ) : (
                       <div className='divide-y divide-slate-50 dark:divide-slate-800'>
                         {paginatedNotifications.map((n) => (
-                          <div key={n.id} className='group relative'>
+                          <div
+                            key={n.id}
+                            className='group relative flex w-full items-center gap-2' // w-full qo'shildi
+                          >
                             <NotificationCard
                               title={n.title}
                               message={n.message}
                               time={format(n.timestamp, 'dd.MM.yyyy HH:mm')}
                               isRead={n.read}
+                              className='flex-1 pr-24' // O'ng tarafdagi tugmalar uchun joy qoldiradi
                             />
-                            <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4'>
-                              <div className='pointer-events-auto flex items-center gap-2'>
-                                <Badge
-                                  variant='outline'
-                                  className='h-4 border-slate-100 text-[9px] font-bold text-slate-400 dark:border-slate-700 dark:text-slate-500'
-                                >
-                                  {roleLabel[n.target_role]}
-                                </Badge>
-                                <Button
-                                  variant='ghost'
-                                  size='icon'
-                                  className='h-8 w-8 rounded-lg text-slate-300 opacity-0 group-hover:opacity-100 hover:text-rose-500 dark:text-slate-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
-                                  onClick={() => setDeleteId(n.id)}
-                                >
-                                  <Trash2 className='h-4 w-4' />
-                                </Button>
-                              </div>
+
+                            {/* Absolute Actions (Badge + Delete) */}
+                            <div className='absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1.5'>
+                              <Badge
+                                variant='outline'
+                                className='h-5 border-slate-100 px-1.5 text-[10px] font-bold text-slate-400 dark:border-slate-700 dark:text-slate-500'
+                              >
+                                {roleLabel[n.target_role]}
+                              </Badge>
+                              <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                aria-label='Delete'
+                                className='h-7 w-7 rounded-lg text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-500 dark:text-slate-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
+                                onClick={() => setDeleteId(n.id)}
+                              >
+                                <Trash2 className='h-4 w-4' />
+                              </Button>
                             </div>
                           </div>
                         ))}
@@ -322,7 +327,7 @@ export default function NotificationsPage() {
                   </ScrollArea>
 
                   {!isLoading && !error && filtered.length > 0 && (
-                    <div className='border-t border-slate-100 px-4 py-4 dark:border-slate-800'>
+                    <div className='border-t pt-10 border-slate-100 px-4 py-2 dark:border-slate-800'>
                       <ListPagination
                         page={safePage}
                         pageSize={pageSize}

@@ -43,14 +43,14 @@ export function ProfileDropdown() {
       return {
         name: teacherProfile.full_name || teacherProfile.username || 'Teacher',
         email: teacherProfile.email || '',
-        avatar: getFullAvatarUrl(teacherProfile.avatar) || '',
+        avatar: teacherProfile.avatar || '',
       }
     }
     if ((role === 'student' || role === 'user') && studentProfile) {
       return {
         name: studentProfile.full_name || studentProfile.username || 'Student',
         email: studentProfile.email || '',
-        avatar: getFullAvatarUrl(studentProfile.avatar) || '',
+        avatar: studentProfile.avatar || '',
       }
     }
     // Admin - get from localStorage
@@ -62,7 +62,7 @@ export function ProfileDropdown() {
           return {
             name: data.name || 'Admin',
             email: data.email || '',
-            avatar: getFullAvatarUrl(data.avatar) || '',
+            avatar: data.avatar || '',
           }
         }
       } catch {
@@ -70,8 +70,7 @@ export function ProfileDropdown() {
       }
     }
     return {
-      name: 'User',
-      email: '',
+      name: 'Foydalanuvchi',
       avatar: '',
     }
   }, [role, teacherProfile, studentProfile])
@@ -108,9 +107,7 @@ export function ProfileDropdown() {
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col gap-1.5'>
               <p className='text-sm leading-none font-medium'>{profileData.name}</p>
-              <p className='text-xs leading-none text-muted-foreground'>
-                {profileData.email}
-              </p>
+
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

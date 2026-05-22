@@ -45,7 +45,7 @@ export function StudentSidebar() {
     () => ({
       name: profile?.full_name || 'Student',
       email: profile?.username || 'student@linguapro.com',
-      avatar: profile?.avatar || '',
+      avatar: '/avatars/student1.jpg',
     }),
     [profile]
   )
