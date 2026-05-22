@@ -54,7 +54,9 @@ import { ChatEmptyState } from '@/components/shared/chat/chat-empty-state'
 import { ChatListHeader } from '@/components/shared/chat/chat-list-header'
 import { ChatListItem } from '@/components/shared/chat/chat-list-item'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { GroupCapacityChart } from './components/group-capacity-chart'
 import { NewChat } from './components/new-chat'
+import { StudentGrowthChart } from './components/student-growth-chart'
 import { type ChatUser, type Convo } from './data/chat-types'
 // Fake Data
 import { conversations } from './data/convo.json'
@@ -194,6 +196,12 @@ export function Chats() {
       </Header>
 
       <Main fixed>
+        {/* Dashboard Section */}
+        <section className='mb-6 grid gap-6 md:grid-cols-2'>
+          <StudentGrowthChart />
+          <GroupCapacityChart />
+        </section>
+
         <section className='flex h-full gap-0 md:gap-6'>
           {/* Left Side - Chat List */}
           <div className='flex w-full flex-col gap-4 border-r border-border/50 pr-0 md:w-80 md:pr-2 lg:w-96'>

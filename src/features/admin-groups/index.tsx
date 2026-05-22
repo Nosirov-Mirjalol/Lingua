@@ -57,39 +57,17 @@ interface Teacher {
   last_name?: string
 }
 
-const formSchema = z
-  .object({
-    name: z.string().min(1, 'Nom kiritilishi shart'),
-    course: z.string().min(1, 'Kursni tanlang'),
-    teacher: z.string().min(1, 'Ustozni tanlang'),
-    start_date: z.string().min(1, 'Sanani tanlang'),
-    time_from: z.string().min(1, 'Vaqtni tanlang'),
-    time_to: z.string().min(1, 'Vaqtni tanlang'),
-    week_days_type: z.enum(['ODD', 'EVEN', 'CUSTOM']),
-    days: z.array(z.string()).optional(),
-  })
-  .refine(
-    (values) =>
-      values.week_days_type !== 'CUSTOM' || Boolean(values.days?.length),
-    {
-      message: 'Kamida bitta kun tanlang',
-      path: ['days'],
-    }
-  )
+const formSchema = z.object({
+  name: z.string().min(1, 'Nom kiritilishi shart'),
+  course: z.string().min(1, 'Kursni tanlang'),
+  teacher: z.string().min(1, 'Ustozni tanlang'),
+  start_date: z.string().min(1, 'Sanani tanlang'),
+  time_from: z.string().min(1, 'Vaqtni tanlang'),
+  time_to: z.string().min(1, 'Vaqtni tanlang'),
+  week_days_type: z.enum(['toq_kunlar', 'juft_kunlar', 'har_kuni']),
+})
 
 type FormValues = z.infer<typeof formSchema>
-
-const DAY_MAP: Record<string, string> = {
-  Du: 'Mon',
-  Se: 'Tue',
-  Cho: 'Wed',
-  Pa: 'Thu',
-  Ju: 'Fri',
-  Sha: 'Sat',
-  Yak: 'Sun',
-}
-
-const DAYS_LIST = ['Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha', 'Yak']
 
 // Input va Selectlar bir xil ko'rinishi uchun umumiy klasslar
 const inputClasses =
@@ -128,8 +106,7 @@ export default function AdminGroupsPage() {
       start_date: new Date().toISOString().split('T')[0],
       time_from: '09:00',
       time_to: '10:30',
-      days: [],
-      week_days_type: 'ODD',
+      week_days_type: 'toq_kunlar',
     },
   })
 
@@ -156,10 +133,6 @@ export default function AdminGroupsPage() {
       start_date: values.start_date,
       start_time: values.time_from,
       end_time: values.time_to,
-      week_days:
-        values.week_days_type === 'CUSTOM'
-          ? (values.days || []).map((d) => DAY_MAP[d]).join(',')
-          : '',
       week_days_type: values.week_days_type,
       status: 'active' as const,
     }
@@ -185,10 +158,6 @@ export default function AdminGroupsPage() {
       start_date: values.start_date,
       start_time: values.time_from,
       end_time: values.time_to,
-      week_days:
-        values.week_days_type === 'CUSTOM'
-          ? (values.days || []).map((d) => DAY_MAP[d]).join(',')
-          : '',
       week_days_type: values.week_days_type,
       status: 'active' as const,
     }
@@ -206,21 +175,6 @@ export default function AdminGroupsPage() {
         error: 'Xatolik yuz berdi',
       }
     )
-  }
-
-  const handleEditClick = (group: Group) => {
-    setEditingGroup(group)
-    reset({
-      name: group.name,
-      course: String(group.course),
-      teacher: String(group.teacher),
-      start_date: group.start_date || new Date().toISOString().split('T')[0],
-      time_from: group.start_time || '09:00',
-      time_to: group.end_time || '10:30',
-      days: [],
-      week_days_type: 'ODD',
-    })
-    setEditOpen(true)
   }
 
   return (
@@ -501,72 +455,28 @@ export default function AdminGroupsPage() {
                 </div>
               </div>
 
-              {/* Dars Kunlari */}
+              {/* Davrlar turi */}
               <div>
-                <Label className={labelClasses}>Dars kunlari turi</Label>
+                <Label className={labelClasses}>Davrlar turi</Label>
                 <Controller
-                  name='week_days_type'
                   control={control}
+                  name='week_days_type'
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
                       <SelectTrigger className={inputClasses}>
                         <SelectValue placeholder='Tanlang' />
                       </SelectTrigger>
                       <SelectContent className='rounded-xl border-border'>
-                        <SelectItem
-                          value='ODD'
-                          className='rounded-lg py-2 font-medium'
-                        >
-                          Toq kunlar (Du, Cho, Ju)
-                        </SelectItem>
-                        <SelectItem
-                          value='EVEN'
-                          className='rounded-lg py-2 font-medium'
-                        >
-                          Juft kunlar (Se, Pa, Sha)
-                        </SelectItem>
-                        <SelectItem
-                          value='CUSTOM'
-                          className='rounded-lg py-2 font-medium'
-                        >
-                          Boshqa (Tanlash)
-                        </SelectItem>
+                        <SelectItem value='toq_kunlar'>Toq kunlar</SelectItem>
+                        <SelectItem value='juft_kunlar'>Juft kunlar</SelectItem>
+                        <SelectItem value='har_kuni'>Har kuni</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                 />
-
-                {watch('week_days_type') === 'CUSTOM' && (
-                  <div className='mt-3 flex flex-wrap gap-2'>
-                    {DAYS_LIST.map((day) => {
-                      const selected = watch('days') || []
-                      const isSelected = selected.includes(day)
-                      return (
-                        <button
-                          key={day}
-                          type='button'
-                          onClick={() =>
-                            setValue(
-                              'days',
-                              isSelected
-                                ? selected.filter((d) => d !== day)
-                                : [...selected, day],
-                              { shouldValidate: true }
-                            )
-                          }
-                          className={cn(
-                            'h-9 rounded-lg px-3 text-xs font-bold transition-all',
-                            isSelected
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                          )}
-                        >
-                          {day}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
               </div>
 
               {/* Tugmalar */}
@@ -686,6 +596,30 @@ export default function AdminGroupsPage() {
                       </p>
                     )}
                   </div>
+                </div>
+
+                {/* Davrlar turi */}
+                <div>
+                  <Label className={labelClasses}>Davrlar turi</Label>
+                  <Controller
+                    control={control}
+                    name='week_days_type'
+                    render={({ field }) => (
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className={inputClasses}>
+                          <SelectValue placeholder='Tanlang' />
+                        </SelectTrigger>
+                        <SelectContent className='rounded-xl border-border'>
+                          <SelectItem value='toq_kunlar'>Toq kunlar</SelectItem>
+                          <SelectItem value='juft_kunlar'>Juft kunlar</SelectItem>
+                          <SelectItem value='har_kuni'>Har kuni</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
 
                 {/* Tugmalar */}

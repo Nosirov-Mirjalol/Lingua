@@ -62,8 +62,8 @@ export function StudentGrowth() {
         </Select>
       </CardHeader>
       <CardContent className='px-6 pb-6'>
-        <div className='h-80 w-full'>
-          <ResponsiveContainer width='100%' height='100%'>
+        <div className='w-full'>
+          <ResponsiveContainer width='100%' height={320}>
             <BarChart
               data={studentGrowthData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}

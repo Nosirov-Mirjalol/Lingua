@@ -29,7 +29,7 @@ export interface Group {
   start_time?: string
   end_time?: string
   week_days?: string | string[]
-  week_days_type?: 'ODD' | 'EVEN' | 'CUSTOM'
+  week_days_type?: 'odd' | 'even' | 'custom'
   students: GroupStudent[]
 }
 
