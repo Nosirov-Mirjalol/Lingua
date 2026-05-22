@@ -206,9 +206,9 @@ export default function StudentHomeworkPage() {
             <div className='space-y-2'>
               {isLoading && (
                 <div className='space-y-2'>
-                  <Skeleton className='h-[92px] w-full rounded-xl' />
-                  <Skeleton className='h-[92px] w-full rounded-xl' />
-                  <Skeleton className='h-[92px] w-full rounded-xl' />
+                  <Skeleton className='height: 92px w-full rounded-xl' />
+                  <Skeleton className='height: 92px w-full rounded-xl' />
+                  <Skeleton className='height: 92px w-full rounded-xl' />
                 </div>
               )}
               {!isLoading && assignments.length === 0 && (
