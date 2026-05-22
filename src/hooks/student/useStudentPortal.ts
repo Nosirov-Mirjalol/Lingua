@@ -214,49 +214,60 @@ export const useStudentProfile = () => {
 export const useStudentDashboard = () => {
   const { data: unreadRes } = useStudentUnreadCount()
   const unreadCount = unreadRes?.unread_count ?? 0
-  // ✅ FIX: useStudentProfile ni bu yerda chaqirmaslik — ikki joyda alohida so'rov ketmasligi uchun
-  // Profile ma'lumotlari cache dan keladi (yuqoridagi hook allaqachon yuklab olgan)
   const { data: profile } = useStudentProfile()
+  const { data: schedule } = useStudentSchedule()
+  const { data: homework } = useStudentHomework()
+  const { data: groups } = useStudentGroups()
 
   return useQuery({
-    // ✅ FIX: profile?.id ni dependency dan olib tashladik — profile o'zgarganda
-    // dashboard qayta hisoblanmaydi, faqat unreadCount o'zgarganda
-    queryKey: ['student', 'dashboard', unreadCount],
+    queryKey: ['student', 'dashboard', unreadCount, profile?.id, schedule?.length, homework?.length, groups?.length],
     queryFn: async () => {
       const activeProfile = profile || buildProfile()
+      
       const completion = activeProfile.completion ?? 0
-      const completedHours = `${Math.max(0, Math.round(completion * 0.8))}h`
+      const upcomingLessonsCount = schedule?.filter(s => s.status === 'Kutilmoqda').length ?? 0
+      
+      // Uy vazifalari statistikasi
+      const totalHomework = homework?.length ?? 0
+      const submittedHomework = homework?.filter(h => h.is_submitted || !!h.submitted_at).length ?? 0
+
+      // Dars kunlari ma'lumotlari
+      const lessonDays = groups?.[0]?.week_days_names?.join(', ') || 'Seshanba, Payshanba, Shanba'
+      const firstGroupName = groups?.[0]?.name || 'Guruh mavjud emas'
 
       return {
         stats: {
-          upcomingLessons: 0,
-          completedHours,
-          progress: completion,
+          upcomingLessons: upcomingLessonsCount,
+          lessonDays: lessonDays,
           unreadMessages: unreadCount,
-        } as StudentDashboardStats,
+        } as any,
         highlights: [
           {
             title: 'Next lesson',
             value: activeProfile.nextLesson || 'No upcoming lessons',
           },
           {
-            title: 'Current course',
-            value: activeProfile.activeCourse || 'No active course',
+            title: 'Active course',
+            value: firstGroupName,
           },
           {
             title: 'Learning streak',
-            value: `${activeProfile.streak ?? 0} days`,
+            value: `${activeProfile.streak ?? 0} kun`,
           },
+          {
+            title: 'Topshirilgan vazifalar',
+            value: `${submittedHomework} / ${totalHomework}`,
+          }
         ],
         quickActions: [
           {
-            label: 'Review lessons',
-            description: 'Check your progress',
+            label: 'Check Homework',
+            description: 'View assigned tasks',
           },
         ],
       }
     },
-    staleTime: 60_000,
+    staleTime: 30_000,
   })
 }
 

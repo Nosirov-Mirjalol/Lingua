@@ -34,26 +34,27 @@ export function StudentOverviewPage() {
         />
       </section>
 
-      <section className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+      <section className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
         <DashboardCard
           title='Kelgusi darslar'
           value={String(dashboard?.stats.upcomingLessons ?? 0)}
           icon={CalendarDays}
+          size='sm'
+          valueClassName='text-base'
         />
         <DashboardCard
-          title='Kurs yakunlanishi'
-          value={`${dashboard?.stats.progress ?? 0}%`}
-          icon={BookOpen}
-        />
-        <DashboardCard
-          title='O‘qilgan soatlar'
-          value={dashboard?.stats.completedHours ?? '0h'}
+          title='Dars kunlari'
+          value={dashboard?.stats.lessonDays || 'Yuklanmoqda...'}
           icon={ClipboardList}
+          size='sm'
+          valueClassName='text-base'
         />
         <DashboardCard
           title='O‘qilmagan xabarlar'
           value={String(dashboard?.stats.unreadMessages ?? 0)}
           icon={MessageSquare}
+          size='sm'
+          valueClassName='text-2xl'
         />
       </section>
 
@@ -82,9 +83,10 @@ export function StudentOverviewPage() {
                 >
                   <p className='text-xs uppercase tracking-[0.18em] text-primary/70 font-bold'>
                     {highlight.title === 'Next lesson' ? 'Navbatdagi dars' : 
-                     highlight.title === 'Active course' ? 'Faol kurs' : 
+                     highlight.title === 'Active course' ? 'Faol guruh' : 
                      highlight.title === 'Streak' ? 'Davomiylik' : 
-                     highlight.title === 'Attendance' ? 'Davomat' : highlight.title}
+                     highlight.title === 'Learning streak' ? 'Davomiylik' :
+                     highlight.title === 'Topshirilgan vazifalar' ? 'Vazifalar' : highlight.title}
                   </p>
                   <p className='mt-2 text-base font-semibold text-foreground'>
                     {highlight.value}
@@ -128,51 +130,6 @@ export function StudentOverviewPage() {
         </Card>
       </section>
 
-      <section className='grid gap-4 lg:grid-cols-3'>
-        <Card className='lg:col-span-2 overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
-          <CardHeader>
-            <CardTitle className='text-primary'>To‘xtagan joyingizdan davom eting</CardTitle>
-            <CardDescription>Oxirgi modullaringizni yakunlang.</CardDescription>
-          </CardHeader>
-          <CardContent className='space-y-4'>
-            <div className='grid gap-3 sm:grid-cols-2'>
-              <ProgressTile title='Talaffuz laboratoriyasi' value='78%' />
-              <ProgressTile title='Grammatika bo‘yicha seminar' value='65%' />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className='overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
-          <CardHeader>
-            <CardTitle className='text-primary'>E’tibor bering</CardTitle>
-          </CardHeader>
-          <CardContent className='flex flex-wrap gap-2'>
-            <Badge className='rounded-full border border-primary/40 bg-primary/5 text-primary hover:bg-primary/10'>
-              Yangi modul mavjud
-            </Badge>
-            <Badge className='rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'>
-              Fikr-mulohaza tayyor
-            </Badge>
-            <Badge className='rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'>
-              Ertaga jonli dars
-            </Badge>
-          </CardContent>
-        </Card>
-      </section>
-    </div>
-  )
-}
-
-function ProgressTile({ title, value }: { title: string; value: string }) {
-  const numericValue = Number.parseInt(value, 10) || 0
-
-  return (
-    <div className='rounded-3xl border border-primary/40 bg-card p-4 transition-all hover:border-primary/60 hover:shadow-md'>
-      <p className='text-sm text-muted-foreground'>{title}</p>
-      <div className='mt-3 flex items-center gap-3'>
-        <p className='text-2xl font-semibold text-foreground'>{value}</p>
-        <StudentProgressMeter value={numericValue} className='flex-1' />
-      </div>
     </div>
   )
 }
