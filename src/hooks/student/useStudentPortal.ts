@@ -228,7 +228,7 @@ export const useStudentDashboard = () => {
       
       // Uy vazifalari statistikasi
       const totalHomework = homework?.length ?? 0
-      const submittedHomework = homework?.filter(h => h.is_submitted === true || !!h.submitted_at).length ?? 0
+      const submittedHomework = (homework as any)?.filter((h: any) => h.status === 'submitted' || h.status === 'completed').length ?? 0
 
       // Dars kunlari ma'lumotlari
       const lessonDays = groups?.[0]?.week_days_names?.join(', ') || 'Seshanba, Payshanba, Shanba'
@@ -258,7 +258,7 @@ export const useStudentDashboard = () => {
           },
           {
             title: 'Topshirilgan vazifalar',
-            value: `${submittedHomework} / ${totalHomework}`,
+            value: `${totalHomework}`,
           }
         ],
         quickActions: [
