@@ -160,9 +160,9 @@ const buildProfile = (overrides?: Partial<StudentProfile>): StudentProfile => {
     data?.timezone && data.timezone !== 'string' ? data.timezone : ''
   const bio = data?.bio && data.bio !== 'string' ? data.bio : ''
   const learning_goal =
-    data?.learning_goal && data.learning_goal !== 'string'
+    data?.learning_goal && data.learning_goal !== 'string' && data.learning_goal !== 'fsdfds'
       ? data.learning_goal
-      : ''
+      : 'Ingliz tilida erkin so‘zlashish va barcha ko‘nikmalarni mukammal rivojlantirish'
 
   return {
     id: data?.id ?? 0,
@@ -224,7 +224,6 @@ export const useStudentDashboard = () => {
     queryFn: async () => {
       const activeProfile = profile || buildProfile()
       
-      const completion = activeProfile.completion ?? 0
       const upcomingLessonsCount = schedule?.filter(s => s.status === 'Kutilmoqda').length ?? 0
       
       // Uy vazifalari statistikasi
@@ -234,25 +233,28 @@ export const useStudentDashboard = () => {
       // Dars kunlari ma'lumotlari
       const lessonDays = groups?.[0]?.week_days_names?.join(', ') || 'Seshanba, Payshanba, Shanba'
       const firstGroupName = groups?.[0]?.name || 'Guruh mavjud emas'
+      const firstTeacherName = groups?.[0]?.teacher?.full_name || groups?.[0]?.teacher_name || 'Ustoz belgilanmagan'
+
+      // Kurs davomiyligini (jami kunlarni) hisoblash (2026-02-10 dan 2026-05-10 gacha)
+      const startDate = new Date('2026-02-10')
+      const endDate = new Date('2026-05-10')
+      const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
+      const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
       return {
         stats: {
           upcomingLessons: upcomingLessonsCount,
           lessonDays: lessonDays,
           unreadMessages: unreadCount,
-        } as any,
+          activeGroupsCount: groups?.length ?? 0,
+          durationDays: totalDays, // Jami kunlarni ko'rsatamiz
+          mainGroupName: firstGroupName,
+          mainTeacherName: firstTeacherName,
+        } as StudentDashboardStats,
         highlights: [
-          {
-            title: 'Next lesson',
-            value: activeProfile.nextLesson || 'No upcoming lessons',
-          },
           {
             title: 'Active course',
             value: firstGroupName,
-          },
-          {
-            title: 'Learning streak',
-            value: `${activeProfile.streak ?? 0} kun`,
           },
           {
             title: 'Topshirilgan vazifalar',
@@ -263,6 +265,7 @@ export const useStudentDashboard = () => {
           {
             label: 'Check Homework',
             description: 'View assigned tasks',
+            path: '/student/homework',
           },
         ],
       }

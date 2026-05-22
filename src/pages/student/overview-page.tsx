@@ -4,7 +4,9 @@ import {
   CalendarDays,
   ClipboardList,
   MessageSquare,
+  Users,
 } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { useStudentDashboard, useStudentProfile } from '@/hooks/student/useStudentPortal'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -36,16 +38,16 @@ export function StudentOverviewPage() {
 
       <section className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
         <DashboardCard
-          title='Kelgusi darslar'
-          value={String(dashboard?.stats.upcomingLessons ?? 0)}
-          icon={CalendarDays}
+          title={`O'qituvchi: ${dashboard?.stats.mainTeacherName || 'Yuklanmoqda...'}`}
+          value={`Guruh: ${dashboard?.stats.mainGroupName || ''}`}
+          icon={Users}
           size='sm'
           valueClassName='text-base'
         />
         <DashboardCard
-          title='Dars kunlari'
-          value={dashboard?.stats.lessonDays || 'Yuklanmoqda...'}
-          icon={ClipboardList}
+          title='Mening guruhlarim'
+          value={`${dashboard?.stats.activeGroupsCount ?? 0} ta`}
+          icon={BookOpen}
           size='sm'
           valueClassName='text-base'
         />
@@ -68,11 +70,9 @@ export function StudentOverviewPage() {
           </CardHeader>
           <CardContent className='grid gap-4'>
             <div className='space-y-4'>
-              <StudentInfoTile title='Navbatdagi dars' value={profile?.nextLesson ?? '-'} muted />
               <div className='flex flex-col gap-3 sm:flex-row'>
-                <StudentInfoTile title='Faol kurs' value={profile?.activeCourse ?? '-'} />
-                <StudentInfoTile title='Davomiylik' value={`${profile?.streak ?? 0} kun`} />
-                <StudentInfoTile title='Davomat' value={`${profile?.attendance ?? 0}%`} />
+                <StudentInfoTile title='Guruhlarim' value={`${dashboard?.stats.activeGroupsCount ?? 0} ta`} />
+                <StudentInfoTile title='Kurs davomiyligi' value={`${dashboard?.stats.durationDays ?? 0} kun`} />
               </div>
             </div>
             <div className='grid gap-3 md:grid-cols-2'>
@@ -82,10 +82,7 @@ export function StudentOverviewPage() {
                   className='rounded-3xl border border-primary/40 bg-card p-4 transition-all hover:border-primary/60 hover:shadow-md'
                 >
                   <p className='text-xs uppercase tracking-[0.18em] text-primary/70 font-bold'>
-                    {highlight.title === 'Next lesson' ? 'Navbatdagi dars' : 
-                     highlight.title === 'Active course' ? 'Faol guruh' : 
-                     highlight.title === 'Streak' ? 'Davomiylik' : 
-                     highlight.title === 'Learning streak' ? 'Davomiylik' :
+                    {highlight.title === 'Active course' ? 'Faol guruh' : 
                      highlight.title === 'Topshirilgan vazifalar' ? 'Vazifalar' : highlight.title}
                   </p>
                   <p className='mt-2 text-base font-semibold text-foreground'>
@@ -104,8 +101,9 @@ export function StudentOverviewPage() {
           </CardHeader>
           <CardContent className='space-y-3'>
             {quickActions.map((action) => (
-                <div
+                <Link
                   key={action.label}
+                  to={action.path}
                   className='flex items-center justify-between rounded-3xl border border-primary/40 bg-card p-4 transition-all hover:border-primary/60 hover:shadow-md cursor-pointer group'
                 >
                 <div>
@@ -121,7 +119,7 @@ export function StudentOverviewPage() {
                   </p>
                 </div>
                 <ArrowRight className='h-5 w-5 text-primary/50 group-hover:text-primary group-hover:translate-x-1 transition-all' />
-              </div>
+              </Link>
             ))}
             <div className='mt-4'>
               <StudentInfoTile title='Maqsad' value={profile?.learning_goal ?? '-'} muted />

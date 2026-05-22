@@ -19,6 +19,11 @@ export interface StudentDashboardStats {
   completedHours: string
   progress: number
   unreadMessages: number
+  lessonDays?: string
+  activeGroupsCount?: number
+  durationDays?: number
+  mainGroupName?: string
+  mainTeacherName?: string
 }
 
 export interface StudentScheduleItem {
