@@ -35,8 +35,8 @@ export const useStudentUnreadCount = (
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
     enabled,
-    staleTime: 30_000, // 30 soniya
-    refetchInterval: 30_000, // 30 soniya
+    staleTime: 0, // Har doim yangi ma'lumot olish
+    refetchInterval: 30_000, // 30 soniya (fallback)
     refetchOnWindowFocus: true,
   })
 }
@@ -49,8 +49,8 @@ export const useStudentMarkAsRead = () => {
     mutationFn: (id: number) =>
       apiClient.patch<{ detail: string }>(NOTIFICATIONS.MARK_READ(id)),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
     },
   })
 }
@@ -63,8 +63,8 @@ export const useStudentMarkAllRead = () => {
     mutationFn: () =>
       apiClient.post<{ updated: number }>(NOTIFICATIONS.MARK_ALL_READ),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
     },
   })
 }
@@ -80,8 +80,8 @@ export const useStudentDeleteNotifications = () => {
         )
       ),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
     },
   })
 }
@@ -148,8 +148,9 @@ export const useNotificationWebSocket = (
   const MAX_RECONNECT_ATTEMPTS = 5
 
   const invalidateNotifications = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-    queryClient.invalidateQueries({
+    // Immediate refetch for instant UI update
+    queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
+    queryClient.refetchQueries({
       queryKey: ['student', 'notifications', 'unread-count'],
     })
   }, [queryClient])
