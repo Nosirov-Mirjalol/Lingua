@@ -3,8 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/api/client'
 import { NOTIFICATIONS } from '@/constants/apiEndPoints'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 export interface StudentNotificationAPI {
   id: number
   title: string
@@ -12,10 +10,6 @@ export interface StudentNotificationAPI {
   is_read: boolean
   created_at: string
 }
-
-// ─── REST Hooks ───────────────────────────────────────────────────────────────
-
-/** Barcha bildirishnomalarni olish */
 export const useStudentNotificationsList = (
   options: { enabled?: boolean } = {}
 ) => {
@@ -41,9 +35,9 @@ export const useStudentUnreadCount = (
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
     enabled,
-    staleTime: 300_000, // 5 daqiqa
-    refetchInterval: 300_000, // 5 daqiqa
-    refetchOnWindowFocus: false,
+    staleTime: 30_000, // 30 soniya
+    refetchInterval: 30_000, // 30 soniya
+    refetchOnWindowFocus: true,
   })
 }
 

@@ -93,16 +93,17 @@ export function StudentNotificationModal({
               {/* Tozalash (O'chirish) */}
               <button
                 onClick={() => {
-                  if (deleteNotifications.isPending || notifications.length === 0) return
-                  deleteNotifications.mutate(notifications.map((n) => n.id), {
-                    onSuccess: () => toast.success('Barcha xabarlar o‘chirildi'),
+                  const readIds = notifications.filter((n) => n.is_read).map((n) => n.id)
+                  if (deleteNotifications.isPending || readIds.length === 0) return
+                  deleteNotifications.mutate(readIds, {
+                    onSuccess: () => toast.success('O‘qilgan xabarlar o‘chirildi'),
                     onError: () => toast.error('Xabarlarni o‘chirishda xato yuz berdi'),
                   })
                 }}
-                disabled={deleteNotifications.isPending || notifications.length === 0}
+                disabled={deleteNotifications.isPending || notifications.filter((n) => n.is_read).length === 0}
                 className={cn(
                   'text-xs font-bold transition-all duration-200 flex items-center gap-1.5 pb-1',
-                  notifications.length > 0
+                  notifications.some((n) => n.is_read)
                     ? 'text-slate-500 hover:text-rose-600'
                     : 'text-slate-400 opacity-50'
                 )}
@@ -112,7 +113,7 @@ export function StudentNotificationModal({
                 ) : (
                   <Trash2 size={13} />
                 )}
-                Tozalash
+                O'qilganlarni tozalash
               </button>
 
             </div>
