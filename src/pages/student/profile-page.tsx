@@ -185,8 +185,6 @@ export function StudentProfilePage() {
                 />
               </div>
             </div>
-
-            {/* Footer — Saqlash tugmasi */}
             <div className='shrink-0 border-t border-slate-100 dark:border-slate-800/60 px-4 py-3 md:px-5 flex justify-start bg-card rounded-b-2xl'>
               <RoseButton
                 type='submit'
