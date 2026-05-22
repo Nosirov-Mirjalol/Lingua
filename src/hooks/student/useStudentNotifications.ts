@@ -19,9 +19,9 @@ export const useStudentNotificationsList = (
     queryFn: () =>
       apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
     enabled,
-    staleTime: 300_000, // 5 daqiqa
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
+    staleTime: 10_000, // 10 soniya
+    refetchInterval: 30_000, // 30 soniya (fallback)
+    refetchOnWindowFocus: true,
   })
 }
 
@@ -107,11 +107,29 @@ function getWsBaseUrl(): string {
 
 function getAccessToken(): string {
   if (typeof window === 'undefined') return ''
-  return (
-    sessionStorage.getItem('linguapro_access_token') ||
-    localStorage.getItem('access_token') ||
-    ''
-  )
+  
+  // 1. Check session storage (set by useLogin hook)
+  const sessionToken = sessionStorage.getItem('linguapro_access_token')
+  if (sessionToken) return sessionToken
+
+  // 2. Check local storage (fallback)
+  const localToken = localStorage.getItem('access_token')
+  if (localToken) return localToken
+
+  // 3. Check cookies (matching auth-store.ts)
+  const ACCESS_TOKEN_KEY = 'thisisjustarandomstring'
+  const cookieValue = `; ${document.cookie}`
+  const parts = cookieValue.split(`; ${ACCESS_TOKEN_KEY}=`)
+  if (parts.length === 2) {
+    try {
+      const token = parts.pop()?.split(';').shift()
+      return token ? JSON.parse(token) : ''
+    } catch {
+      return ''
+    }
+  }
+
+  return ''
 }
 
 /**
