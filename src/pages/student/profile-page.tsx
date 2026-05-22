@@ -117,9 +117,7 @@ export function StudentProfilePage() {
       />
 
       <div className='grid grid-cols-1 gap-4 lg:grid-cols-[250px_minmax(0,680px)] items-start justify-start w-full h-auto'>
-        
-        {/* CHAP PANEL */}
-        <aside className='flex flex-col !rounded-[16px] border border-primary/40 dark:border-slate-800 bg-card p-4 text-card-foreground shadow-sm justify-center items-center shrink-0 h-auto w-full'>
+        <aside className='flex flex-col   border-radius: 16px !important border border-primary/40 dark:border-slate-800 bg-card p-4 text-card-foreground shadow-sm justify-center items-center shrink-0 h-auto w-full'>
           <div className='group relative mb-3 shrink-0'>
             <div className='h-24 w-24 overflow-hidden rounded-full border-4 border-primary/10 dark:border-slate-800 transition-colors group-hover:border-primary/40 bg-white dark:bg-slate-900'>
               {imageSrc && imageSrc !== defaultProfileImage ? (
@@ -161,7 +159,7 @@ export function StudentProfilePage() {
         </aside>
 
         {/* O'NG PANEL */}
-        <section className='!rounded-[16px] border border-primary/40 dark:border-slate-800 bg-card shadow-sm flex flex-col h-auto overflow-hidden w-full'>
+        <section className='!rounded:16px  border border-primary/40 dark:border-slate-800 bg-card shadow-sm flex flex-col h-auto overflow-hidden w-full'>
           <form id='profile-form' onSubmit={handleSubmit(onSubmit)} className='flex flex-col h-auto'>
             
             <div className='p-4 space-y-4 md:p-5 h-auto'>
@@ -233,13 +231,13 @@ export function StudentProfilePage() {
                 />
               </div>
             </div>
-            <div className='shrink-0 border-t border-slate-100 dark:border-slate-800/60 px-4 py-3 md:px-5 flex justify-start bg-card !rounded-b-[16px]'>
+            <div className='shrink-0 border-t border-slate-100 dark:border-slate-800/60 px-4 py-3 md:px-5 flex justify-start bg-card border-bottom-left-radius: 16px'>
               <RoseButton
                 type='submit'
                 form='profile-form'
                 roseVariant='solid'
                 disabled={(!isDirty && !selectedFile) || isFormDisabled}
-                className='w-full sm:w-auto min-w-[135px] h-9 rounded-xl text-xs font-bold transition-all active:scale-[0.97] bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-md hover:from-rose-600 hover:to-pink-700 dark:from-rose-500 dark:to-rose-600 dark:hover:from-rose-400 dark:hover:to-rose-500 dark:shadow-[0_0_18px_rgba(244,63,94,0.35)] disabled:opacity-50 disabled:pointer-events-none'
+                className='w-full sm:w-auto min-w:135px h-9 rounded-xl text-xs font-bold transition-all active:scale-[0.97]   background-image: linear-gradient(var(--tw-gradient-stops)) from-rose-500 to-pink-600 text-white shadow-md hover:from-rose-600 hover:to-pink-700 dark:from-rose-500 dark:to-rose-600 dark:hover:from-rose-400 dark:hover:to-rose-500 dark:shadow-[0_0_18px_rgba(244,63,94,0.35)] disabled:opacity-50 disabled:pointer-events-none'
               >
                 {isFormDisabled ? (
                   <>
