@@ -4,5 +4,9 @@ import { MessagesPage } from '@/pages/MessagesPage'
 export const Route = createFileRoute(
   '/_authenticated/teacher-dashboard/messages'
 )({
-  component: MessagesPage,
+  component: () => (
+    <div className="h-full w-full [&>div]:max-w-none! [&>div]:px-4!">
+      <MessagesPage />
+    </div>
+  ),
 })

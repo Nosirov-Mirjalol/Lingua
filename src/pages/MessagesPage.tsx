@@ -401,7 +401,7 @@ export function MessagesPage() {
                           )}
                         >
                           {showSender && (
-                            <span className='px-1 text-[9px] font-bold uppercase tracking-wider opacity-50'>
+                            <span className='px-1 text-[10px] font-bold uppercase tracking-wider opacity-50'>
                               {msg.sender.full_name}
                             </span>
                           )}
@@ -410,8 +410,8 @@ export function MessagesPage() {
                               className={cn(
                                 'px-2.5 py-1.5 text-xs leading-normal shadow-sm rounded-xl',
                                 isOwn
-                                  ? 'rounded-br-sm bg-primary text-primary-foreground'
-                                  : 'rounded-bl-sm border border-slate-200/60 bg-white text-slate-800 dark:border-slate-800/80 dark:bg-slate-900 dark:text-slate-100'
+                                  ? 'rounded-br-sm text-sm bg-primary text-primary-foreground'
+                                  : 'rounded-bl-sm text-sm border border-slate-200/60 bg-white text-slate-800 dark:border-slate-800/80 dark:bg-slate-900 dark:text-slate-100'
                               )}
                             >
                               {msg.message_type === 'image' && msg.image_url && (

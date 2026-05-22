@@ -9,5 +9,9 @@ export const Route = createFileRoute('/_authenticated/admin-chats/')({
     if (role === 'teacher') throw redirect({ to: '/teacher-dashboard' })
     if (role !== 'admin') throw redirect({ to: '/student' })
   },
-  component: MessagesPage,
+  component: () => (
+    <div className="h-full w-full [&>div]:!max-w-none [&>div]:!px-4">
+      <MessagesPage />
+    </div>
+  ),
 })
