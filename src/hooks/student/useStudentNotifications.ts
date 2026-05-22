@@ -19,13 +19,11 @@ export const useStudentNotificationsList = (
     queryFn: () =>
       apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
     enabled,
-    staleTime: 300_000, // 5 daqiqa
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
+    staleTime: 10_000, 
+    refetchInterval: 30_000, 
+    refetchOnWindowFocus: true,
   })
 }
-
-/** O'qilmagan xabarlar sonini olish */
 export const useStudentUnreadCount = (
   options: { enabled?: boolean } = {}
 ) => {
@@ -35,13 +33,11 @@ export const useStudentUnreadCount = (
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
     enabled,
-    staleTime: 30_000, // 30 soniya
-    refetchInterval: 30_000, // 30 soniya
+    staleTime: 0, 
+    refetchInterval: 30_000, 
     refetchOnWindowFocus: true,
   })
 }
-
-/** Bitta bildirishnomani o'qilgan deb belgilash */
 export const useStudentMarkAsRead = () => {
   const queryClient = useQueryClient()
 
@@ -49,8 +45,8 @@ export const useStudentMarkAsRead = () => {
     mutationFn: (id: number) =>
       apiClient.patch<{ detail: string }>(NOTIFICATIONS.MARK_READ(id)),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
     },
   })
 }
@@ -63,8 +59,8 @@ export const useStudentMarkAllRead = () => {
     mutationFn: () =>
       apiClient.post<{ updated: number }>(NOTIFICATIONS.MARK_ALL_READ),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
     },
   })
 }
@@ -80,8 +76,8 @@ export const useStudentDeleteNotifications = () => {
         )
       ),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.invalidateQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
     },
   })
 }
@@ -107,11 +103,29 @@ function getWsBaseUrl(): string {
 
 function getAccessToken(): string {
   if (typeof window === 'undefined') return ''
-  return (
-    sessionStorage.getItem('linguapro_access_token') ||
-    localStorage.getItem('access_token') ||
-    ''
-  )
+  
+  // 1. Check session storage (set by useLogin hook)
+  const sessionToken = sessionStorage.getItem('linguapro_access_token')
+  if (sessionToken) return sessionToken
+
+  // 2. Check local storage (fallback)
+  const localToken = localStorage.getItem('access_token')
+  if (localToken) return localToken
+
+  // 3. Check cookies (matching auth-store.ts)
+  const ACCESS_TOKEN_KEY = 'thisisjustarandomstring'
+  const cookieValue = `; ${document.cookie}`
+  const parts = cookieValue.split(`; ${ACCESS_TOKEN_KEY}=`)
+  if (parts.length === 2) {
+    try {
+      const token = parts.pop()?.split(';').shift()
+      return token ? JSON.parse(token) : ''
+    } catch {
+      return ''
+    }
+  }
+
+  return ''
 }
 
 /**
@@ -130,8 +144,9 @@ export const useNotificationWebSocket = (
   const MAX_RECONNECT_ATTEMPTS = 5
 
   const invalidateNotifications = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
-    queryClient.invalidateQueries({
+    // Immediate refetch for instant UI update
+    queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
+    queryClient.refetchQueries({
       queryKey: ['student', 'notifications', 'unread-count'],
     })
   }, [queryClient])

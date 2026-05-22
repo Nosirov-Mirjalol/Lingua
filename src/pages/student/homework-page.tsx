@@ -333,11 +333,14 @@ export default function StudentHomeworkPage() {
                           <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-2 shrink-0">
                             <CheckCircle className="w-5 h-5" />
                           </div>
-                          <p className="font-bold text-xs">Siz bu vazifani topshirgansiz ✅</p>
-                          {submittedAt ? (
-                            <p className="text-[10px] mt-0.5 text-muted-foreground">Topshirildi: {formatDate(submittedAt)}</p>
-                          ) : (
-                            <p className="text-[10px] mt-0.5 opacity-80">Tez orada ustozingiz vazifani ko‘rib chiqadi.</p>
+                          <p className="font-bold text-sm">Siz bu vazifani topshirgansiz ✅</p>
+                          <p className="text-[11px] mt-1 text-emerald-600/80 dark:text-emerald-400/80 font-medium">
+                            Tez orada ustozingiz vazifani ko‘rib chiqadi.
+                          </p>
+                          {submittedAt && (
+                            <p className="text-[10px] mt-2 text-muted-foreground bg-white/50 dark:bg-black/20 px-2 py-0.5 rounded-full border border-emerald-100/50">
+                              Topshirildi: {formatDate(submittedAt)}
+                            </p>
                           )}
                         </div>
                       ) : (
