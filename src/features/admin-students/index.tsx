@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  Calendar,
-  Eye,
-  Phone,
-  Plus,
-  Search,
-  Shield,
-  Trash2,
-  User as UserIcon,
-  X,
-} from 'lucide-react'
+import { Calendar, Eye, Phone, Plus, Search, Shield, Trash2, User as UserIcon, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { getStudentApiErrorMessage } from '@/api/service/admin/student.service'
 import type { User } from '@/api/service/teacher/user.type'
@@ -20,32 +10,13 @@ import { useDeleteAdminStudent } from '@/hooks/admin/students/useDeleteAdminStud
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RoseButton } from '@/components/ui/rose-button'
 import { Switch } from '@/components/ui/switch'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -60,13 +31,13 @@ interface StudentFormData {
   is_active: boolean
 }
 
-const getInitialFormData = (): StudentFormData => ({
+const INITIAL_FORM: StudentFormData = {
   username: '',
   full_name: '',
   phone: '+998',
   password: '',
   is_active: true,
-})
+}
 
 const formatPhone = (value: string): string => {
   if (!value.startsWith('+998')) return '+998'
@@ -83,46 +54,32 @@ export default function AdminStudentsPage() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const {
-    data: students = [],
-    isLoading,
-    isError,
-  } = useAdminStudents(search, page, pageSize)
-
-  useEffect(() => {
-    if (isError)
-      toast.error("API ulanishda xatolik! Studentlarni yuklab bo'lmadi.")
-  }, [isError])
-
-  const createMutation = useCreateAdminStudent()
-  const deleteMutation = useDeleteAdminStudent()
-
   const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [formData, setFormData] = useState<StudentFormData>(getInitialFormData)
-
+  const [formData, setFormData] = useState<StudentFormData>(INITIAL_FORM)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalAction, setModalAction] = useState<'delete' | 'detail'>('detail')
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null)
 
-  const handleInputChange = (
-    field: keyof StudentFormData,
-    value: string | boolean
-  ) => {
+  const { data: students = [], isLoading, isError } = useAdminStudents(search, page, pageSize)
+  const createMutation = useCreateAdminStudent()
+  const deleteMutation = useDeleteAdminStudent()
+
+  useEffect(() => {
+    if (isError) toast.error("API ulanishda xatolik! Studentlarni yuklab bo'lmadi.")
+  }, [isError])
+
+  const handleInputChange = (field: keyof StudentFormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const resetForm = () => setFormData(getInitialFormData())
+  const resetForm = () => setFormData(INITIAL_FORM)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!formData.username.trim())
-      return toast.error('Username kiritilishi shart')
-    if (!formData.full_name.trim())
-      return toast.error("To'liq ism to'ldirilishi shart")
+    if (!formData.username.trim()) return toast.error('Username kiritilishi shart')
+    if (!formData.full_name.trim()) return toast.error("To'liq ism to'ldirilishi shart")
     if (!formData.password.trim()) return toast.error('Parol kiritilishi shart')
-    if (formData.password.trim().length < 8)
-      return toast.error("Parol kamida 8 belgi bo'lishi kerak")
+    if (formData.password.trim().length < 8) return toast.error("Parol kamida 8 belgi bo'lishi kerak")
 
     toast.promise(
       createMutation.mutateAsync({
@@ -149,20 +106,15 @@ export default function AdminStudentsPage() {
     setSelectedStudent(null)
   }
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!selectedStudent) return
-    const studentId =
-      typeof selectedStudent.id === 'string'
-        ? parseInt(selectedStudent.id, 10)
-        : selectedStudent.id
-    deleteMutation.mutateAsync(studentId).then(() => {
-      handleModalClose()
-      toast.success("Student o'chirildi")
-    })
+    const id = typeof selectedStudent.id === 'string' ? parseInt(selectedStudent.id, 10) : selectedStudent.id
+    await deleteMutation.mutateAsync(id)
+    handleModalClose()
+    toast.success("Student o'chirildi")
   }
 
   const activeCount = students.filter((s) => s.is_active).length
-  const inactiveCount = students.filter((s) => !s.is_active).length
 
   return (
     <div className='min-h-screen bg-background'>
@@ -184,161 +136,31 @@ export default function AdminStudentsPage() {
 
       <Main>
         <p className='mb-4 text-xs font-semibold tracking-wide text-muted-foreground'>
-          <Link to='/admin-dashboard'>Dashboard</Link> /{' '}
-          <span className='text-primary'>Students</span>
+          <Link to='/admin-dashboard'>Dashboard</Link> / <span className='text-primary'>Students</span>
         </p>
 
         <div className='mb-8 flex items-center justify-between'>
           <div>
-            <h1 className='text-3xl font-extrabold tracking-tight text-foreground'>
-              Students List
-            </h1>
-            <p className='mt-1 text-sm font-medium text-muted-foreground'>
-              All students information and payment status
-            </p>
+            <h1 className='text-3xl font-extrabold tracking-tight text-foreground'>Students List</h1>
+            <p className='mt-1 text-sm font-medium text-muted-foreground'>All students information and payment status</p>
           </div>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <RoseButton
-                className='rounded-2xl'
-                onClick={() => {
-                  resetForm()
-                  setIsCreateOpen(true)
-                }}
-              >
-                <Plus className='mr-2 h-4 w-4' />
-                Add Student
-              </RoseButton>
-            </DialogTrigger>
-            <DialogContent
-              className='max-h-[90vh] overflow-y-auto sm:max-w-lg'
-              showCloseButton={false}
-            >
-              <div className='flex items-start justify-between px-4 pt-4'>
-                <DialogTitle className='text-lg font-semibold'>
-                  Add Student
-                </DialogTitle>
-                <Button
-                  type='button'
-                  variant='ghost'
-                  size='icon'
-                  onClick={() => setIsCreateOpen(false)}
-                  className='h-8 w-8 rounded-full'
-                >
-                  <X size={16} />
-                </Button>
-              </div>
-              <form
-                onSubmit={handleSubmit}
-                className='flex flex-col items-center py-4'
-              >
-                <div className='mb-3 grid w-full grid-cols-2 gap-3'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='full_name' className='text-xs font-medium'>
-                      To'liq ism
-                    </Label>
-                    <Input
-                      id='full_name'
-                      value={formData.full_name}
-                      onChange={(e) =>
-                        handleInputChange('full_name', e.target.value)
-                      }
-                      placeholder='Enter full name'
-                      className='h-9'
-                    />
-                  </div>
-                </div>
-                <div className='mb-3 w-full space-y-1'>
-                  <Label htmlFor='username' className='text-xs font-medium'>
-                    Username
-                  </Label>
-                  <Input
-                    id='username'
-                    value={formData.username}
-                    onChange={(e) =>
-                      handleInputChange('username', e.target.value)
-                    }
-                    placeholder='Enter username'
-                    className='h-9'
-                    required
-                  />
-                </div>
-                <div className='mb-3 w-full space-y-1'>
-                  <Label htmlFor='phone' className='text-xs font-medium'>
-                    Phone Number
-                  </Label>
-                  <Input
-                    id='phone'
-                    value={formData.phone}
-                    onChange={(e) =>
-                      handleInputChange('phone', formatPhone(e.target.value))
-                    }
-                    placeholder='+998 XX XXX XX XX'
-                    className='h-9'
-                    maxLength={18}
-                  />
-                </div>
-                <div className='mb-3 w-full space-y-1'>
-                  <Label htmlFor='password' className='text-xs font-medium'>
-                    Password
-                  </Label>
-                  <Input
-                    id='password'
-                    type='password'
-                    value={formData.password}
-                    onChange={(e) =>
-                      handleInputChange('password', e.target.value)
-                    }
-                    placeholder='Enter password'
-                    className='h-9'
-                    required
-                  />
-                </div>
-                <div className='mb-4 w-full space-y-1'>
-                  <Label htmlFor='is_active' className='text-xs font-medium'>
-                    Status
-                  </Label>
-                  <div className='flex h-9 items-center space-x-2'>
-                    <Switch
-                      id='is_active'
-                      checked={formData.is_active}
-                      onCheckedChange={(checked) =>
-                        handleInputChange('is_active', checked)
-                      }
-                    />
-                    <Label
-                      htmlFor='is_active'
-                      className='text-xs text-muted-foreground'
-                    >
-                      Active
-                    </Label>
-                  </div>
-                </div>
-                <div className='flex w-full justify-end space-x-2 border-t pt-3'>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    onClick={() => {
-                      resetForm()
-                      setIsCreateOpen(false)
-                    }}
-                  >
-                    Bekor qilish
-                  </Button>
-                  <RoseButton type='submit'>Saqlash</RoseButton>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <RoseButton
+            className='rounded-2xl'
+            onClick={() => {
+              resetForm()
+              setIsCreateOpen(true)
+            }}
+          >
+            <Plus className='mr-2 h-4 w-4' />
+            Add Student
+          </RoseButton>
         </div>
 
         {/* Stats */}
         <div className='mb-8 grid gap-4 sm:grid-cols-3'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
-                Jami
-              </CardTitle>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>Jami</CardTitle>
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>{students.length}</div>
@@ -347,9 +169,7 @@ export default function AdminStudentsPage() {
           </Card>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
-                Faol
-              </CardTitle>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>Faol</CardTitle>
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>{activeCount}</div>
@@ -358,12 +178,10 @@ export default function AdminStudentsPage() {
           </Card>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
-                Nofaol
-              </CardTitle>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>Nofaol</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='text-2xl font-bold'>{inactiveCount}</div>
+              <div className='text-2xl font-bold'>{students.length - activeCount}</div>
               <p className='text-xs text-muted-foreground'>Nofaol studentlar</p>
             </CardContent>
           </Card>
@@ -377,17 +195,11 @@ export default function AdminStudentsPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className='py-8 text-center text-sm text-muted-foreground'>
-                Yuklanmoqda...
-              </div>
+              <div className='py-8 text-center text-sm text-muted-foreground'>Yuklanmoqda...</div>
             ) : isError ? (
-              <div className='py-8 text-center text-sm text-destructive'>
-                Xatolik yuz berdi
-              </div>
+              <div className='py-8 text-center text-sm text-destructive'>Xatolik yuz berdi</div>
             ) : students.length === 0 ? (
-              <div className='py-8 text-center text-sm text-muted-foreground'>
-                Studentlar mavjud emas
-              </div>
+              <div className='py-8 text-center text-sm text-muted-foreground'>Studentlar mavjud emas</div>
             ) : (
               <Table>
                 <TableHeader>
@@ -411,19 +223,11 @@ export default function AdminStudentsPage() {
                           </AvatarFallback>
                         </Avatar>
                       </TableCell>
-                      <TableCell className='font-medium'>
-                        {student.first_name} {student.last_name}
-                      </TableCell>
+                      <TableCell className='font-medium'>{student.full_name}</TableCell>
                       <TableCell>@{student.username}</TableCell>
                       <TableCell>{student.phone || '-'}</TableCell>
                       <TableCell>
-                        <Badge
-                          className={
-                            student.is_active
-                              ? 'bg-primary/10 text-primary'
-                              : 'bg-muted text-muted-foreground'
-                          }
-                        >
+                        <Badge className={student.is_active ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}>
                           {student.is_active ? 'Faol' : 'Nofaol'}
                         </Badge>
                       </TableCell>
@@ -433,27 +237,18 @@ export default function AdminStudentsPage() {
                             type='button'
                             variant='ghost'
                             size='sm'
-                            onClick={() => {
-                              setSelectedStudent(student)
-                              setModalAction('detail')
-                              setModalOpen(true)
-                            }}
                             aria-label='View'
+                            onClick={() => { setSelectedStudent(student); setModalAction('detail'); setModalOpen(true) }}
                           >
                             <Eye className='h-4 w-4' />
                           </Button>
-
                           <Button
                             type='button'
                             variant='ghost'
                             size='sm'
-                            onClick={() => {
-                              setSelectedStudent(student)
-                              setModalAction('delete')
-                              setModalOpen(true)
-                            }}
-                            className='text-destructive hover:bg-destructive/10'
                             aria-label='Delete'
+                            className='text-destructive hover:bg-destructive/10'
+                            onClick={() => { setSelectedStudent(student); setModalAction('delete'); setModalOpen(true) }}
                           >
                             <Trash2 className='h-4 w-4' />
                           </Button>
@@ -468,31 +263,66 @@ export default function AdminStudentsPage() {
         </Card>
 
         <div className='mt-6 flex items-center justify-between'>
-          <p className='text-sm text-muted-foreground'>
-            {students.length} ta ko'rsatilmoqda
-          </p>
+          <p className='text-sm text-muted-foreground'>{students.length} ta ko'rsatilmoqda</p>
           <ListPagination
             page={page}
             pageSize={pageSize}
             totalCount={students.length}
             onPageChange={setPage}
-            onPageSizeChange={(size) => {
-              setPageSize(size)
-              setPage(1)
-            }}
+            onPageSizeChange={(size) => { setPageSize(size); setPage(1) }}
           />
         </div>
       </Main>
 
+      {/* Create Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-lg' showCloseButton={false}>
+          <div className='flex items-start justify-between px-4 pt-4'>
+            <DialogTitle className='text-lg font-semibold'>Add Student</DialogTitle>
+            <Button type='button' variant='ghost' size='icon' onClick={() => setIsCreateOpen(false)} className='h-8 w-8 rounded-full'>
+              <X size={16} />
+            </Button>
+          </div>
+          <form onSubmit={handleSubmit} className='flex flex-col items-center py-4'>
+            <div className='mb-3 grid w-full grid-cols-2 gap-3'>
+              <div className='space-y-2'>
+                <Label htmlFor='full_name' className='text-xs font-medium'>To'liq ism</Label>
+                <Input id='full_name' value={formData.full_name} onChange={(e) => handleInputChange('full_name', e.target.value)} placeholder='Enter full name' className='h-9' />
+              </div>
+            </div>
+            <div className='mb-3 w-full space-y-1'>
+              <Label htmlFor='username' className='text-xs font-medium'>Username</Label>
+              <Input id='username' value={formData.username} onChange={(e) => handleInputChange('username', e.target.value)} placeholder='Enter username' className='h-9' required />
+            </div>
+            <div className='mb-3 w-full space-y-1'>
+              <Label htmlFor='phone' className='text-xs font-medium'>Phone Number</Label>
+              <Input id='phone' value={formData.phone} onChange={(e) => handleInputChange('phone', formatPhone(e.target.value))} placeholder='+998 XX XXX XX XX' className='h-9' maxLength={18} />
+            </div>
+            <div className='mb-3 w-full space-y-1'>
+              <Label htmlFor='password' className='text-xs font-medium'>Password</Label>
+              <Input id='password' type='password' value={formData.password} onChange={(e) => handleInputChange('password', e.target.value)} placeholder='Enter password' className='h-9' required />
+            </div>
+            <div className='mb-4 w-full space-y-1'>
+              <Label htmlFor='is_active' className='text-xs font-medium'>Status</Label>
+              <div className='flex h-9 items-center space-x-2'>
+                <Switch id='is_active' checked={formData.is_active} onCheckedChange={(checked) => handleInputChange('is_active', checked)} />
+                <Label htmlFor='is_active' className='text-xs text-muted-foreground'>Active</Label>
+              </div>
+            </div>
+            <div className='flex w-full justify-end space-x-2 border-t pt-3'>
+              <Button type='button' variant='outline' onClick={() => { resetForm(); setIsCreateOpen(false) }}>Bekor qilish</Button>
+              <RoseButton type='submit'>Saqlash</RoseButton>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Action Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className='rounded-2xl border-none bg-card p-6 shadow-xl sm:max-w-lg'>
-          <DialogHeader>
-            <DialogTitle className='text-xl font-bold'>
-              {modalAction === 'detail' && 'Student Tafsilotlari'}
-              {modalAction === 'delete' && "Studentni O'chirish"}
-            </DialogTitle>
-          </DialogHeader>
+          <DialogTitle className='text-xl font-bold'>
+            {modalAction === 'detail' ? 'Student Tafsilotlari' : "Studentni O'chirish"}
+          </DialogTitle>
           {selectedStudent && (
             <div className='space-y-4'>
               {modalAction === 'detail' && (
@@ -501,91 +331,51 @@ export default function AdminStudentsPage() {
                     <Avatar className='h-20 w-20 border-2 border-background shadow-sm'>
                       <AvatarImage src={selectedStudent.avatar} />
                       <AvatarFallback className='bg-primary text-2xl font-bold text-primary-foreground'>
-                        {selectedStudent.first_name?.[0]}
-                        {selectedStudent.last_name?.[0]}
+                        {selectedStudent.full_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div className='flex-1'>
-                      <h3 className='text-xl font-bold text-foreground'>
-                        {selectedStudent.first_name} {selectedStudent.last_name}
-                      </h3>
-                      <p className='text-sm text-muted-foreground'>
-                        @{selectedStudent.username}
-                      </p>
-                      <Badge
-                        className={
-                          selectedStudent.is_active
-                            ? 'mt-2 bg-primary/10 text-primary'
-                            : 'mt-2 bg-muted text-muted-foreground'
-                        }
-                      >
+                      <h3 className='text-xl font-bold text-foreground'>{selectedStudent.full_name}</h3>
+                      <p className='text-sm text-muted-foreground'>@{selectedStudent.username}</p>
+                      <Badge className={selectedStudent.is_active ? 'mt-2 bg-primary/10 text-primary' : 'mt-2 bg-muted text-muted-foreground'}>
                         {selectedStudent.is_active ? 'Faol' : 'Nofaol'}
                       </Badge>
                     </div>
                   </div>
-
                   <div className='grid gap-4 sm:grid-cols-2'>
                     <div className='rounded-xl border bg-card p-4'>
                       <div className='flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase'>
-                        <Phone className='h-4 w-4' />
-                        Telefon
+                        <Phone className='h-4 w-4' /> Telefon
                       </div>
-                      <p className='mt-2 text-sm font-medium text-foreground'>
-                        {selectedStudent.phone || 'Mavjud emas'}
-                      </p>
+                      <p className='mt-2 text-sm font-medium text-foreground'>{selectedStudent.phone || 'Mavjud emas'}</p>
                     </div>
                     <div className='rounded-xl border bg-card p-4'>
                       <div className='flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase'>
-                        <Shield className='h-4 w-4' />
-                        Role
+                        <Shield className='h-4 w-4' /> Role
                       </div>
-                      <p className='mt-2 text-sm font-medium text-foreground capitalize'>
-                        {selectedStudent.role}
-                      </p>
+                      <p className='mt-2 text-sm font-medium text-foreground capitalize'>{selectedStudent.role}</p>
                     </div>
                     <div className='rounded-xl border bg-card p-4'>
                       <div className='flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase'>
-                        <Calendar className='h-4 w-4' />
-                        Yaratilgan
+                        <Calendar className='h-4 w-4' /> Yaratilgan
                       </div>
                       <p className='mt-2 text-sm font-medium text-foreground'>
-                        {selectedStudent.created_at
-                          ? new Date(
-                              selectedStudent.created_at
-                            ).toLocaleDateString('uz-UZ')
-                          : 'Mavjud emas'}
+                        {selectedStudent.created_at ? new Date(selectedStudent.created_at).toLocaleDateString('uz-UZ') : 'Mavjud emas'}
                       </p>
                     </div>
                   </div>
                 </div>
               )}
-
               {modalAction === 'delete' && (
                 <p className='text-sm text-muted-foreground'>
-                  {selectedStudent.first_name} {selectedStudent.last_name} ni
-                  o'chirmoqchimisiz?
+                  {selectedStudent.full_name} ni o'chirmoqchimisiz?
                 </p>
               )}
-
-
               <div className='flex justify-end gap-2 pt-4'>
-                <Button
-                  variant='outline'
-                  onClick={handleModalClose}
-                  className='h-10 rounded-xl'
-                >
-                  Bekor qilish
-                </Button>
+                <Button variant='outline' onClick={handleModalClose} className='h-10 rounded-xl'>Bekor qilish</Button>
                 {modalAction === 'delete' && (
-                  <Button
-                    variant='destructive'
-                    onClick={confirmDelete}
-                    className='h-10 rounded-xl'
-                  >
-                    O'chirish
-                  </Button>
+                  <Button variant='destructive' onClick={confirmDelete} className='h-10 rounded-xl'>O'chirish</Button>
                 )}
-
               </div>
             </div>
           )}

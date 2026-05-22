@@ -9,7 +9,7 @@ export type AdminStudentCreatePayload = {
   role: 'student'
 }
 
-function _parseCreatedUserId(body: unknown): number | null {
+export function _parseCreatedUserId(body: unknown): number | null {
   if (!body || typeof body !== 'object') return null
   const r = body as Record<string, unknown>
   const rawId =
