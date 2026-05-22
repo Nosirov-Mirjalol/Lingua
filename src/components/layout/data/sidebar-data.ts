@@ -35,7 +35,7 @@ export const studentSidebarData: SidebarData = {
     {
       title: 'Ish maydoni',
       items: [
-        { title: 'Bosh sahifa', url: '/student', icon: LayoutDashboard },
+        { title: 'Dashboard', url: '/student', icon: LayoutDashboard },
         { title: 'Dars jadvali', url: '/student/schedule', icon: CalendarDays },
         {
           title: 'Uy vazifalari',

@@ -26,7 +26,7 @@ const studentSidebarData = {
     {
       title: 'Workspace',
       items: [
-        { title: 'Overview', url: '/student', icon: LayoutDashboard },
+        { title: 'Dashboard', url: '/student', icon: LayoutDashboard },
         { title: 'Schedule', url: '/student/schedule', icon: CalendarDays },
         { title: 'Homework', url: '/student/homework', icon: ClipboardList },
         { title: 'Messages', url: '/student/messages', icon: MessageSquare },
