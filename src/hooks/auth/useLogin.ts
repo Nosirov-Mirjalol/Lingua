@@ -54,7 +54,18 @@ export const useLogin = ({ redirectTo }: UseLoginOptions = {}) => {
       })
       useAuthStore.getState().auth.setAccessToken(data.tokens.access)
 
-      const to = redirectTo || getDefaultRouteForRole(normalizedRole)
+      let to = redirectTo || getDefaultRouteForRole(normalizedRole)
+
+      if (redirectTo) {
+        if (normalizedRole === 'teacher' && !redirectTo.startsWith('/teacher-dashboard')) {
+          to = getDefaultRouteForRole(normalizedRole)
+        } else if (normalizedRole === 'student' && !redirectTo.startsWith('/student')) {
+          to = getDefaultRouteForRole(normalizedRole)
+        } else if (normalizedRole === 'admin' && (redirectTo.startsWith('/teacher-dashboard') || redirectTo.startsWith('/student'))) {
+          to = getDefaultRouteForRole(normalizedRole)
+        }
+      }
+
       queueLoginSuccessToast({
         role: normalizedRole,
       })

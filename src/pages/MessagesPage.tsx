@@ -183,7 +183,7 @@ export function MessagesPage() {
           'flex flex-col border-r border-slate-100 bg-slate-50/40 dark:border-slate-800/60 dark:bg-transparent shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-hidden',
           sidebarCollapsed
             ? 'w:64px' // Yopilgandagi eni piktogrammalar kattalashgani uchun biroz kengaytirildi
-            : 'w-full sm:w-48 md:w-52 lg:w-52 xl:w-56',
+            : 'w-full sm:w-48 md:w-56 lg:w-60 xl:w-80',
           selectedGroupId ? 'hidden sm:flex' : 'flex'
         )}>
           {sidebarCollapsed ? (
