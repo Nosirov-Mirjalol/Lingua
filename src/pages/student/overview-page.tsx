@@ -17,7 +17,7 @@ import {
 import { StudentInfoTile } from '@/components/student/common/student-info-tile'
 import { StudentPageHeader } from '@/components/student/common/student-page-header'
 import { StudentProgressMeter } from '@/components/student/common/student-progress-meter'
-import { StudentStatCard } from '@/components/student/common/student-stat-card'
+import { DashboardCard } from '@/components/dashboard-card'
 
 export function StudentOverviewPage() {
   const { data: profile } = useStudentProfile()
@@ -35,25 +35,25 @@ export function StudentOverviewPage() {
       </section>
 
       <section className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-        <StudentStatCard
+        <DashboardCard
           title='Kelgusi darslar'
-          value={dashboard?.stats.upcomingLessons ?? '-'}
-          icon={<CalendarDays className='h-5 w-5 text-primary' />}
+          value={String(dashboard?.stats.upcomingLessons ?? 0)}
+          icon={CalendarDays}
         />
-        <StudentStatCard
+        <DashboardCard
           title='Kurs yakunlanishi'
           value={`${dashboard?.stats.progress ?? 0}%`}
-          icon={<BookOpen className='h-5 w-5 text-primary' />}
+          icon={BookOpen}
         />
-        <StudentStatCard
+        <DashboardCard
           title='O‘qilgan soatlar'
-          value={dashboard?.stats.completedHours ?? '-'}
-          icon={<ClipboardList className='h-5 w-5 text-primary' />}
+          value={dashboard?.stats.completedHours ?? '0h'}
+          icon={ClipboardList}
         />
-        <StudentStatCard
+        <DashboardCard
           title='O‘qilmagan xabarlar'
-          value={dashboard?.stats.unreadMessages ?? '-'}
-          icon={<MessageSquare className='h-5 w-5 text-primary' />}
+          value={String(dashboard?.stats.unreadMessages ?? 0)}
+          icon={MessageSquare}
         />
       </section>
 
