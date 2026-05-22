@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Loader2, Upload, X } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   type AdminCourseCreatePayload,
@@ -18,6 +18,7 @@ import { RoseButton } from '@/components/ui/rose-button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -70,9 +71,17 @@ const emptyForm = (): FormState => ({
   price: '0',
 })
 
-const fieldClass = cn(adminInputClass, 'h-11 border-none bg-muted')
+const fieldClass = cn(
+  adminInputClass,
+  'h-10 border-none bg-muted px-3 text-sm focus-visible:ring-1 focus-visible:ring-primary'
+)
+const labelClass = cn(adminLabelClass, 'text-xs')
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 
-function parsePayload(form: FormState): AdminCourseCreatePayload | null {
+function parsePayload(
+  form: FormState,
+  imageFile: File | null
+): AdminCourseCreatePayload | null {
   const name = form.name.trim()
   if (!name) return null
 
@@ -91,6 +100,7 @@ function parsePayload(form: FormState): AdminCourseCreatePayload | null {
     level: form.level,
     duration_months: months,
     price,
+    image: imageFile ?? undefined,
   }
 }
 
@@ -100,13 +110,43 @@ export function AdminCourseCreateModal({
 }: AdminCourseCreateModalProps) {
   const createMutation = useCreateAdminCourse()
   const [form, setForm] = useState<FormState>(emptyForm)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const resetImage = () => {
+    setImageFile(null)
+    setImagePreview('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   useEffect(() => {
-    if (open) setForm(emptyForm())
+    if (open) {
+      setForm(emptyForm())
+      resetImage()
+    }
   }, [open])
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast.error('Faqat rasm faylini yuklang')
+      return
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error('Rasm hajmi 5 MB dan oshmasin')
+      return
+    }
+    setImageFile(file)
+    const reader = new FileReader()
+    reader.onloadend = () =>
+      setImagePreview(typeof reader.result === 'string' ? reader.result : '')
+    reader.readAsDataURL(file)
+  }
+
   const submit = () => {
-    const payload = parsePayload(form)
+    const payload = parsePayload(form, imageFile)
     if (!payload) {
       toast.error('Kurs nomi kiritilmadi')
       return
@@ -125,20 +165,75 @@ export function AdminCourseCreateModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn(adminDialogClass, 'border-none p-6 shadow-2xl sm:max-w-[440px] sm:p-8')}
+        className={cn(
+          adminDialogClass,
+          'flex max-h-[min(90vh,680px)] flex-col gap-0 overflow-hidden border-none p-0 shadow-2xl sm:max-w-[400px]'
+        )}
       >
-        <DialogHeader className='mb-4'>
-          <DialogTitle className='admin-text-title'>
+        <DialogHeader className='shrink-0 border-b px-4 py-3'>
+          <DialogTitle className='text-base font-bold'>
             Yangi kurs qo&apos;shish
           </DialogTitle>
-          <p className='admin-text-subtitle'>
-            O&apos;quv dasturi uchun asosiy parametrlarni kiriting.
-          </p>
+          <DialogDescription className='sr-only'>
+            Yangi o&apos;quv kursi yaratish formasi
+          </DialogDescription>
         </DialogHeader>
 
-        <div className='space-y-5'>
-          <div className='space-y-2'>
-            <Label className={adminLabelClass}>Kurs nomi</Label>
+        <div className='min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3'>
+          <div className='space-y-1.5'>
+            <Label className={labelClass}>Rasm</Label>
+            {imagePreview ? (
+              <div className='relative h-28 w-full overflow-hidden rounded-lg border bg-muted'>
+                <button
+                  type='button'
+                  onClick={() => fileInputRef.current?.click()}
+                  className='block h-full w-full cursor-pointer'
+                  aria-label='Rasmni almashtirish'
+                >
+                  <img
+                    src={imagePreview}
+                    alt='Kurs rasmi'
+                    className='h-full w-full object-cover'
+                  />
+                  <span className='absolute inset-x-0 bottom-0 bg-black/50 py-1 text-center text-[10px] font-medium text-white'>
+                    Almashtirish
+                  </span>
+                </button>
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    resetImage()
+                  }}
+                  className='absolute top-1.5 right-1.5 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90'
+                  aria-label='Rasmni olib tashlash'
+                >
+                  <X className='h-3.5 w-3.5' />
+                </button>
+              </div>
+            ) : (
+              <button
+                type='button'
+                onClick={() => fileInputRef.current?.click()}
+                className='flex h-28 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/40 transition-colors hover:border-primary hover:bg-muted/70'
+              >
+                <Upload className='mb-1 h-6 w-6 text-muted-foreground' />
+                <span className='text-xs font-medium text-muted-foreground'>
+                  Rasm yuklash
+                </span>
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type='file'
+              accept='image/*'
+              onChange={handleImageChange}
+              className='hidden'
+            />
+          </div>
+
+          <div className='space-y-1.5'>
+            <Label className={labelClass}>Kurs nomi</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
@@ -147,21 +242,22 @@ export function AdminCourseCreateModal({
             />
           </div>
 
-          <div className='space-y-2'>
-            <Label className={adminLabelClass}>Tavsif</Label>
+          <div className='space-y-1.5'>
+            <Label className={labelClass}>Tavsif</Label>
             <Textarea
               value={form.description}
               onChange={(e) =>
                 setForm((p) => ({ ...p, description: e.target.value }))
               }
-              placeholder='Kurs haqida qisqacha...'
-              className={cn(fieldClass, 'min-h-[100px] py-2')}
+              placeholder='Qisqacha...'
+              rows={2}
+              className={cn(fieldClass, 'min-h-[4.5rem] resize-none py-2')}
             />
           </div>
 
-          <div className='admin-dialog__form-grid grid grid-cols-1 gap-4 sm:grid-cols-2'>
-            <div className='space-y-2'>
-              <Label className={adminLabelClass}>Yo&apos;nalish</Label>
+          <div className='grid grid-cols-2 gap-3'>
+            <div className='space-y-1.5'>
+              <Label className={labelClass}>Yo&apos;nalish</Label>
               <Select
                 value={form.couser_objective}
                 onValueChange={(v) =>
@@ -183,8 +279,8 @@ export function AdminCourseCreateModal({
                 </SelectContent>
               </Select>
             </div>
-            <div className='space-y-2'>
-              <Label className={adminLabelClass}>Daraja</Label>
+            <div className='space-y-1.5'>
+              <Label className={labelClass}>Daraja</Label>
               <Select
                 value={form.level}
                 onValueChange={(v) =>
@@ -205,9 +301,9 @@ export function AdminCourseCreateModal({
             </div>
           </div>
 
-          <div className='admin-dialog__form-grid grid grid-cols-1 gap-4 sm:grid-cols-2'>
-            <div className='space-y-2'>
-              <Label className={adminLabelClass}>Davomiyligi (oy)</Label>
+          <div className='grid grid-cols-2 gap-3'>
+            <div className='space-y-1.5'>
+              <Label className={labelClass}>Davomiylik (oy)</Label>
               <Input
                 type='number'
                 value={form.duration_months}
@@ -217,8 +313,8 @@ export function AdminCourseCreateModal({
                 className={fieldClass}
               />
             </div>
-            <div className='space-y-2'>
-              <Label className={adminLabelClass}>Narxi (so&apos;m)</Label>
+            <div className='space-y-1.5'>
+              <Label className={labelClass}>Narx</Label>
               <Input
                 value={form.price}
                 onChange={(e) =>
@@ -231,19 +327,21 @@ export function AdminCourseCreateModal({
           </div>
         </div>
 
-        <DialogFooter className='mt-6 flex-col-reverse gap-3 sm:flex-row'>
+        <DialogFooter className='shrink-0 gap-2 border-t px-4 py-3'>
           <Button
+            type='button'
             variant='ghost'
-            className='h-11 flex-1'
+            className='h-10 flex-1'
             onClick={() => onOpenChange(false)}
             disabled={createMutation.isPending}
           >
-            Bekor qilish
+            Bekor
           </Button>
           <RoseButton
+            type='button'
             onClick={submit}
             disabled={createMutation.isPending}
-            className='h-11 flex-[2]'
+            className='h-10 flex-1'
           >
             {createMutation.isPending ? (
               <Loader2 className='h-4 w-4 animate-spin' />

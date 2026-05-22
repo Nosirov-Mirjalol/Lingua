@@ -5,6 +5,7 @@ import axios, {
   type AxiosResponse,
 } from 'axios'
 import { toast } from 'sonner'
+import { getApiBaseUrl } from '@/lib/api-base-url'
 import useUserStore from '@/stores/userStore'
 
 export interface ApiError {
@@ -80,8 +81,7 @@ function formatDrfErrorDetail(data: unknown): string | null {
 class ApiClient {
   private client: AxiosInstance
   constructor() {
-    const envBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim()
-    const baseURL = envBaseUrl || ''
+    const baseURL = getApiBaseUrl()
 
     this.client = axios.create({
       baseURL,

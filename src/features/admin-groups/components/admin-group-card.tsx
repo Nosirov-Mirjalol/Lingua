@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Clock, Trash2, Users as UsersIcon } from 'lucide-react'
+import { Clock, Trash2, UserPlus, Users as UsersIcon } from 'lucide-react'
 import type { Group } from '@/api/service/teacher/group.type'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -61,6 +61,7 @@ type AdminGroupCardProps = {
   group: Group
   courseName: string
   teacherName: string
+  onManageStudents: () => void
   onDelete: () => void
 }
 
@@ -68,6 +69,7 @@ export function AdminGroupCard({
   group,
   courseName,
   teacherName,
+  onManageStudents,
   onDelete,
 }: AdminGroupCardProps) {
   const studentCount = group.students?.length ?? 0
@@ -133,6 +135,16 @@ export function AdminGroupCard({
           valueClassName='text-primary'
         />
       </div>
+
+      <Button
+        type='button'
+        variant='outline'
+        className='mt-4 h-10 w-full gap-2 border-primary/30 text-primary hover:bg-primary/5'
+        onClick={onManageStudents}
+      >
+        <UserPlus className='h-4 w-4' />
+        Talabalarni boshqarish
+      </Button>
     </article>
   )
 }

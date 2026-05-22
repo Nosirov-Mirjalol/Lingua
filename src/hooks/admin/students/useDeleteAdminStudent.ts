@@ -9,7 +9,7 @@ export const useDeleteAdminStudent = () => {
     mutationFn: (studentId: number | string) => deleteAdminStudent(studentId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['admin', 'students', 'list'],
+        queryKey: ['admin', 'students'],
       })
     },
     onError: (error: unknown) => {

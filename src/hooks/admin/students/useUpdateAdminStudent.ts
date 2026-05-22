@@ -1,9 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import {
-  getStudentApiErrorMessage,
   updateAdminStudent,
-  type AdminStudentCreatePayload,
+  type AdminStudentUpdatePayload,
 } from '@/api/service/admin/student.service'
 
 export const useUpdateAdminStudent = () => {
@@ -15,15 +13,13 @@ export const useUpdateAdminStudent = () => {
       data,
     }: {
       studentId: number
-      data: Partial<AdminStudentCreatePayload>
+      data: AdminStudentUpdatePayload
     }) => updateAdminStudent(studentId, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['admin', 'students', 'list'],
+        queryKey: ['admin', 'students'],
+        refetchType: 'active',
       })
-    },
-    onError: (error: unknown) => {
-      toast.error(getStudentApiErrorMessage(error, 'Yangilashda xatolik'))
     },
   })
 }

@@ -98,12 +98,12 @@ const statusColors = {
 export default function StudentsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [search, setSearch] = useState('')
-  const {
-    data: apiStudents = [],
-    isLoading,
-    isError,
-  } = useAdminStudents(search, 1, 100)
-  const studentsData = apiStudents.map(apiUserToStudent)
+  const { data: studentsPage, isLoading, isError } = useAdminStudents(
+    search,
+    1,
+    100
+  )
+  const studentsData = (studentsPage?.students ?? []).map(apiUserToStudent)
   const createMutation = useCreateAdminStudent()
   const updateMutation = useUpdateAdminStudent()
   const deleteMutation = useDeleteAdminStudent()

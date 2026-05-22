@@ -7,12 +7,19 @@ import {
   type StudentGrowthPeriod,
 } from '@/lib/admin-chart-data'
 
+/** Grafiklar uchun barcha studentlar (pagination emas) */
+const CHART_LIST_PAGE_SIZE = 1000
+
 export const useAdminChartData = () => {
   const [growthPeriod, setGrowthPeriod] =
     useState<StudentGrowthPeriod>('12months')
 
-  const { data: students = [], isLoading: studentsLoading } =
-    useAdminStudents('')
+  const { data: studentsPage, isLoading: studentsLoading } = useAdminStudents(
+    '',
+    1,
+    CHART_LIST_PAGE_SIZE
+  )
+  const students = studentsPage?.students ?? []
   const { data: groups = [], isLoading: groupsLoading } = useAdminGroups()
 
   const studentGrowthData = useMemo(

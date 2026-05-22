@@ -9,6 +9,10 @@ import {
   Trash2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  resolveCourseImageUrl,
+  type AdminCourseLevel,
+} from '@/api/service/admin/course.service'
 import { useAdminCourses } from '@/hooks/admin/courses/useAdminCourses'
 import { useDeleteAdminCourse } from '@/hooks/admin/courses/useDeleteAdminCourse'
 import { Button } from '@/components/ui/button'
@@ -26,6 +30,12 @@ import {
   adminPageTitleClass,
 } from '@/lib/admin-ui'
 import { cn } from '@/lib/utils'
+
+const LEVEL_LABELS: Record<AdminCourseLevel, string> = {
+  beginner: 'Beginner',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced',
+}
 
 export default function AdminCoursesPage() {
   const [search, setSearch] = useState('')
@@ -97,55 +107,77 @@ export default function AdminCoursesPage() {
             </div>
           ) : (
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-              {filtered.map((course) => (
-                <Card
-                  key={course.id}
-                  className='overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:shadow-md'
-                >
-                  <CardContent className='p-5'>
-                    <div className='mb-6 flex items-center gap-3'>
-                      <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary'>
-                        <BookOpen className='h-5 w-5' />
-                      </div>
-                      <div>
-                        <h3 className='leading-tight font-bold text-foreground'>
-                          {course.name}
-                        </h3>
-                        <p className='admin-text-caption text-muted-foreground'>
-                          ID: #{course.id}
-                        </p>
-                      </div>
+              {filtered.map((course) => {
+                const imageUrl = resolveCourseImageUrl(course)
+                const durationLabel =
+                  course.duration_months != null
+                    ? `${course.duration_months} oy`
+                    : '—'
+                const levelLabel = course.level
+                  ? LEVEL_LABELS[course.level] ?? course.level
+                  : '—'
+
+                return (
+                  <Card
+                    key={course.id}
+                    className='overflow-hidden rounded-xl border bg-card p-0 shadow-sm transition-all hover:shadow-md'
+                  >
+                    <div className='relative aspect-[16/10] w-full bg-muted'>
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={course.name}
+                          className='h-full w-full object-cover'
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                      ) : (
+                        <div className='flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground'>
+                          <BookOpen className='h-10 w-10 opacity-40' />
+                          <span className='text-xs font-medium'>Rasm yo&apos;q</span>
+                        </div>
+                      )}
                     </div>
 
-                    <div className='flex items-center justify-between border-t py-3'>
-                      <div className='flex items-center gap-1.5'>
-                        <Clock className='h-3.5 w-3.5 text-muted-foreground' />
-                        <span className='text-xs font-bold text-muted-foreground'>
-                          4 oy
-                        </span>
-                      </div>
-                      <div className='flex items-center gap-1.5'>
-                        <BarChart3 className='h-3.5 w-3.5 text-muted-foreground' />
-                        <span className='text-xs font-bold text-muted-foreground'>
-                          A1-C1
-                        </span>
-                      </div>
-                    </div>
+                    <CardContent className='p-4'>
+                      <h3 className='line-clamp-2 leading-tight font-bold text-foreground'>
+                        {course.name}
+                      </h3>
+                      <p className='admin-text-caption mt-1 text-muted-foreground'>
+                        ID: #{course.id}
+                      </p>
 
-                    <div className='mt-4'>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        className='h-9 w-full border text-destructive hover:bg-destructive/10'
-                        onClick={() => setDeleteId(course.id)}
-                      >
-                        <Trash2 className='mr-2 h-3.5 w-3.5' />
-                        O'chirish
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div className='mt-4 flex items-center justify-between border-t pt-3'>
+                        <div className='flex items-center gap-1.5'>
+                          <Clock className='h-3.5 w-3.5 text-muted-foreground' />
+                          <span className='text-xs font-bold text-muted-foreground'>
+                            {durationLabel}
+                          </span>
+                        </div>
+                        <div className='flex items-center gap-1.5'>
+                          <BarChart3 className='h-3.5 w-3.5 text-muted-foreground' />
+                          <span className='text-xs font-bold text-muted-foreground'>
+                            {levelLabel}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className='mt-3'>
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          className='h-9 w-full border text-destructive hover:bg-destructive/10'
+                          onClick={() => setDeleteId(course.id)}
+                        >
+                          <Trash2 className='mr-2 h-3.5 w-3.5' />
+                          O&apos;chirish
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
             </div>
           )}
         </div>

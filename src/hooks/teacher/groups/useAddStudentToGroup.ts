@@ -8,9 +8,8 @@ export const useAddStudentToGroup = (groupId: number) => {
   return useMutation({
     mutationFn: (data: AddStudentPayload) => addStudentToGroup(groupId, data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ['teacher', 'groups', 'my'],
-      })
+      await queryClient.invalidateQueries({ queryKey: ['teacher', 'groups'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] })
       await queryClient.invalidateQueries({
         queryKey: ['students', 'available', groupId],
       })
