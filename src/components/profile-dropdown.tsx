@@ -39,15 +39,13 @@ export function ProfileDropdown() {
   const profileData = useMemo(() => {
     if (role === 'teacher' && teacherProfile) {
       return {
-        name: teacherProfile.full_name || teacherProfile.username || 'Teacher',
-        email: teacherProfile.email || '',
+        name: teacherProfile.full_name || teacherProfile.username || 'Ustoz',
         avatar: teacherProfile.avatar || '',
       }
     }
     if ((role === 'student' || role === 'user') && studentProfile) {
       return {
-        name: studentProfile.full_name || studentProfile.username || 'Student',
-        email: studentProfile.email || '',
+        name: studentProfile.full_name || studentProfile.username || 'Talaba',
         avatar: studentProfile.avatar || '',
       }
     }
@@ -59,7 +57,6 @@ export function ProfileDropdown() {
           const data = JSON.parse(raw)
           return {
             name: data.name || 'Admin',
-            email: data.email || '',
             avatar: data.avatar || '',
           }
         }
@@ -68,8 +65,7 @@ export function ProfileDropdown() {
       }
     }
     return {
-      name: 'User',
-      email: '',
+      name: 'Foydalanuvchi',
       avatar: '',
     }
   }, [role, teacherProfile, studentProfile])
@@ -106,9 +102,7 @@ export function ProfileDropdown() {
           <DropdownMenuLabel className='font-normal'>
             <div className='flex flex-col gap-1.5'>
               <p className='text-sm leading-none font-medium'>{profileData.name}</p>
-              <p className='text-xs leading-none text-muted-foreground'>
-                {profileData.email}
-              </p>
+
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

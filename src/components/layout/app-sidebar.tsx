@@ -54,14 +54,12 @@ export function AppSidebar() {
     if (role === 'teacher' && teacherProfile) {
       return {
         name: teacherProfile.full_name || teacherProfile.username || 'Ustoz',
-        email: teacherProfile.email || '',
         avatar: teacherProfile.avatar || '',
       }
     }
     if (role === 'student' && studentProfile) {
       return {
         name: studentProfile.full_name || studentProfile.username || 'Talaba',
-        email: studentProfile.email || '',
         avatar: studentProfile.avatar || '',
       }
     }
@@ -73,7 +71,6 @@ export function AppSidebar() {
           const data = JSON.parse(raw)
           return {
             name: data.name || 'Admin',
-            email: data.email || '',
             avatar: data.avatar || '',
           }
         }
@@ -83,7 +80,6 @@ export function AppSidebar() {
     }
     return {
       name: 'Foydalanuvchi',
-      email: '',
       avatar: '',
     }
   }, [role, teacherProfile, studentProfile])

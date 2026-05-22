@@ -44,7 +44,6 @@ export function StudentSidebar() {
   const user = useMemo(
     () => ({
       name: profile?.full_name || 'Student',
-      email: profile?.username || 'student@linguapro.com',
       avatar: '/avatars/student1.jpg',
     }),
     [profile]

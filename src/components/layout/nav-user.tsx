@@ -20,7 +20,6 @@ import { SignOutDialog } from '@/components/sign-out-dialog'
 type NavUserProps = {
   user: {
     name: string
-    email: string
     avatar: string
   }
   role?: string

@@ -12,7 +12,6 @@ export interface AdminTeacher {
 
 export type AdminTeacherCreatePayload = {
   username: string
-  email: string
   full_name: string
   phone?: string
   learning_goal?: string
@@ -37,15 +36,8 @@ export const createAdminTeacher = (
 ): Promise<AdminTeacher> => {
   // Validation
   if (!data.username?.trim()) throw new Error('Username kiritilmadi')
-  if (!data.email?.trim()) throw new Error('Email kiritilmadi')
   if (!data.full_name?.trim()) throw new Error("To'liq ism kiritilmadi")
   if (!data.password?.trim()) throw new Error('Parol kiritilmadi')
-
-  // Email format validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(data.email.trim())) {
-    throw new Error("Email formati noto'g'ri")
-  }
 
   // Phone number validation and formatting
   let formattedPhone: string | undefined = undefined
@@ -70,7 +62,6 @@ export const createAdminTeacher = (
   if (data.avatar) {
     const formData = new FormData()
     formData.append('username', data.username.trim())
-    formData.append('email', data.email.trim())
     formData.append('full_name', fullName)
     if (formattedPhone) formData.append('phone', formattedPhone)
     if (data.learning_goal?.trim())
@@ -90,7 +81,6 @@ export const createAdminTeacher = (
   // Otherwise, use JSON payload
   const payload = {
     username: data.username.trim(),
-    email: data.email.trim(),
     full_name: fullName,
     phone: formattedPhone,
     learning_goal: data.learning_goal?.trim() || undefined,

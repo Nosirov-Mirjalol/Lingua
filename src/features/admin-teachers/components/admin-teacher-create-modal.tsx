@@ -23,7 +23,6 @@ export function AdminTeacherCreateModal({
 }) {
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
     full_name: '',
     phone: '',
     password: '',
@@ -96,7 +95,6 @@ export function AdminTeacherCreateModal({
         success: () => {
           setFormData({
             username: '',
-            email: '',
             full_name: '',
             phone: '',
             password: '',
@@ -192,18 +190,8 @@ export function AdminTeacherCreateModal({
             </div>
           </div>
 
-          {/* Email + Telefon — 2 kolonnada */}
-          <div className='grid grid-cols-2 gap-2.5'>
-            <div className='space-y-1'>
-              <Label className='text-xs font-bold text-slate-500'>Email</Label>
-              <Input
-                type='email'
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                required
-                className='h-9 rounded-[10px]'
-              />
-            </div>
+          {/* Telefon */}
+          <div className='grid grid-cols-1 gap-2.5'>
             <div className='space-y-1'>
               <Label className='text-xs font-bold text-slate-500'>
                 Telefon

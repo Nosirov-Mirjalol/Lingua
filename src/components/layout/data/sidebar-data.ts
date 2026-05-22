@@ -22,7 +22,6 @@ export type SidebarRole = 'admin' | 'teacher' | 'student'
 export const studentSidebarData: SidebarData = {
   user: {
     name: 'Talaba',
-    email: '',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
@@ -55,7 +54,6 @@ export const studentSidebarData: SidebarData = {
 export const adminSidebarData: SidebarData = {
   user: {
     name: 'satnaing',
-    email: 'satnaingdev@gmail.com',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
@@ -124,7 +122,6 @@ export const sidebarData = adminSidebarData
 export const teacherSidebarData = {
   user: {
     name: 'Teacher',
-    email: '',
     avatar: '/avatars/shadcn.jpg',
   },
   navItems: [
