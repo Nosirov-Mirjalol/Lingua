@@ -9,6 +9,7 @@ interface DashboardCardProps {
   size?: 'sm' | 'md'
   icon: LucideIcon
   className?: string
+  valueClassName?: string
 }
 
 const statusVariants = {
@@ -26,6 +27,7 @@ export function DashboardCard({
   size = 'md',
   icon: Icon,
   className,
+  valueClassName,
 }: DashboardCardProps) {
   return (
     <div
@@ -67,7 +69,8 @@ export function DashboardCard({
           <p
             className={cn(
               'leading-none font-bold tracking-tight text-foreground',
-              size === 'sm' ? 'text-2xl' : 'text-3xl'
+              size === 'sm' ? 'text-2xl' : 'text-3xl',
+              valueClassName
             )}
           >
             {value}

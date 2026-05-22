@@ -14,6 +14,7 @@ export interface StudentGroup {
   week_days?: string
   week_days_label?: string
   week_days_active?: string
+  week_days_names?: string[]
   student_count?: number
   teacher_name?: string
   teacher?: {
