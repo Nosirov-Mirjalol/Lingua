@@ -13,6 +13,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RoseButton } from '@/components/ui/rose-button'
+import { adminInputClass, adminLabelClass } from '@/lib/admin-ui'
+import { cn } from '@/lib/utils'
 
 export function AdminTeacherCreateModal({
   open,
@@ -111,9 +113,9 @@ export function AdminTeacherCreateModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='rounded-xl p-5 sm:max-w-[400px]'>
+      <DialogContent className='admin-dialog p-5 sm:max-w-[400px]'>
         <DialogHeader>
-          <DialogTitle className='text-lg font-bold'>Yangi Ustoz</DialogTitle>
+          <DialogTitle>Yangi ustoz</DialogTitle>
         </DialogHeader>
 
         <form
@@ -124,7 +126,7 @@ export function AdminTeacherCreateModal({
           {/* Rasm + To'liq ism + Username — bir qatorda */}
           <div className='flex items-start gap-3'>
             <div className='space-y-1.5'>
-              <Label className='text-xs font-bold text-slate-500'>Rasm</Label>
+              <Label className={adminLabelClass}>Rasm</Label>
               {imagePreview ? (
                 <div className='relative h-16 w-16 overflow-hidden rounded-[10px] border-2 border-border'>
                   <img
@@ -162,29 +164,25 @@ export function AdminTeacherCreateModal({
 
             <div className='flex flex-1 flex-col gap-2.5'>
               <div className='space-y-1'>
-                <Label className='text-xs font-bold text-slate-500'>
-                  To'liq ism
-                </Label>
+                <Label className={adminLabelClass}>To&apos;liq ism</Label>
                 <Input
                   value={formData.full_name}
                   onChange={(e) =>
                     handleInputChange('full_name', e.target.value)
                   }
                   required
-                  className='h-9 rounded-[10px]'
+                  className='admin-field h-9'
                 />
               </div>
               <div className='space-y-1'>
-                <Label className='text-xs font-bold text-slate-500'>
-                  Username
-                </Label>
+                <Label className={adminLabelClass}>Username</Label>
                 <Input
                   value={formData.username}
                   onChange={(e) =>
                     handleInputChange('username', e.target.value)
                   }
                   required
-                  className='h-9 rounded-[10px]'
+                  className='admin-field h-9'
                 />
               </div>
             </div>
@@ -193,26 +191,24 @@ export function AdminTeacherCreateModal({
           {/* Telefon */}
           <div className='grid grid-cols-1 gap-2.5'>
             <div className='space-y-1'>
-              <Label className='text-xs font-bold text-slate-500'>
-                Telefon
-              </Label>
+              <Label className={adminLabelClass}>Telefon</Label>
               <Input
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                className='h-9 rounded-[10px]'
+                className={cn(adminInputClass, 'h-9')}
               />
             </div>
           </div>
 
           {/* Parol */}
           <div className='space-y-1'>
-            <Label className='text-xs font-bold text-slate-500'>Parol</Label>
+            <Label className={adminLabelClass}>Parol</Label>
             <Input
               type='password'
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               required
-              className='h-9 rounded-[10px]'
+              className={cn(adminInputClass, 'h-9')}
             />
           </div>
         </form>
@@ -221,7 +217,7 @@ export function AdminTeacherCreateModal({
           <Button
             variant='ghost'
             onClick={() => onOpenChange(false)}
-            className='h-9 rounded-lg'
+            className='h-9'
           >
             Bekor qilish
           </Button>

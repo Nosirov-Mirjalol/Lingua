@@ -18,43 +18,31 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 const data = [
-  { month: 'Jan', enrollment: 80 },
-  { month: 'Feb', enrollment: 120 },
-  { month: 'Mar', enrollment: 140 },
-  { month: 'Apr', enrollment: 180 },
-  { month: 'May', enrollment: 200 },
-  { month: 'Jun', enrollment: 220 },
-  { month: 'Jul', enrollment: 240 },
-  { month: 'Aug', enrollment: 260 },
-  { month: 'Sep', enrollment: 280 },
-  { month: 'Oct', enrollment: 290 },
-  { month: 'Nov', enrollment: 300 },
-  { month: 'Dec', enrollment: 320 },
+  { month: 'Yan', studentsAdded: 15 },
+  { month: 'Fev', studentsAdded: 28 },
+  { month: 'Mar', studentsAdded: 22 },
+  { month: 'Apr', studentsAdded: 35 },
+  { month: 'May', studentsAdded: 42 },
+  { month: 'Iyun', studentsAdded: 38 },
+  { month: 'Iyul', studentsAdded: 25 },
+  { month: 'Avg', studentsAdded: 30 },
+  { month: 'Sen', studentsAdded: 45 },
+  { month: 'Okt', studentsAdded: 33 },
+  { month: 'Noy', studentsAdded: 28 },
+  { month: 'Dek', studentsAdded: 40 },
 ]
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const current = payload[0].payload
-    const currentIndex = data.findIndex((d) => d.month === current.month)
-    const previous = data[currentIndex - 1]
-
-    let growthText = ''
-    if (previous) {
-      const growthPercent =
-        ((current.enrollment - previous.enrollment) / previous.enrollment) * 100
-      const sign = growthPercent >= 0 ? '+' : ''
-      growthText = `${sign}${growthPercent.toFixed(1)}% from ${previous.month}`
-    } else {
-      growthText = 'First month'
-    }
 
     return (
       <div className='rounded-xl border border-border/50 bg-background/95 p-4 shadow-xl backdrop-blur-sm'>
         <p className='text-sm font-semibold text-foreground'>{current.month}</p>
         <p className='text-lg font-bold text-foreground'>
-          {current.enrollment} students
+          {current.studentsAdded} students
         </p>
-        <p className='text-xs text-muted-foreground'>{growthText}</p>
+        <p className='text-xs text-muted-foreground'>Qo'shilgan o'quvchilar</p>
       </div>
     )
   }
@@ -164,8 +152,8 @@ export function StudentGrowthChart() {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }}
-                domain={[0, 320]}
-                ticks={[0, 80, 160, 240, 320]}
+                domain={[0, 50]}
+                ticks={[0, 10, 20, 30, 40, 50]}
                 width={40}
               />
               <Tooltip
@@ -174,7 +162,7 @@ export function StudentGrowthChart() {
                 animationDuration={200}
               />
               <Bar
-                dataKey='enrollment'
+                dataKey='studentsAdded'
                 fill='url(#barGradient)'
                 radius={[6, 6, 0, 0]}
                 className='transition-all duration-300 hover:opacity-80'

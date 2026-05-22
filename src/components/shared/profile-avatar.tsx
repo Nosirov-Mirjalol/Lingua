@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, type ChangeEvent } from 'react'
 import { Camera, User as UserIcon, Loader2 } from 'lucide-react'
+import { getFullAvatarUrl } from '@/lib/avatar-url'
 import { cn } from '@/lib/utils'
 
 interface ProfileAvatarProps {
@@ -10,27 +11,6 @@ interface ProfileAvatarProps {
   isPending?: boolean
   className?: string
   size?: 'sm' | 'md' | 'lg'
-}
-
-/**
- * URL ni normallashtirish:
- * 1. "string" literalini olib tashlash
- * 2. Agar nisbiy bo'lsa, API base URL ni qo'shish
- */
-export function getFullAvatarUrl(url: string | undefined | null): string | null {
-  if (!url || typeof url !== 'string' || !url.trim()) return null
-  if (url.trim().toLowerCase() === 'string') return null
-  
-  // Agar allaqachon to'liq URL bo'lsa (http/https bilan boshlansa)
-  if (/^https?:\/\//i.test(url)) {
-    return url
-  }
-
-  // Aks holda base URL ni qo'shamiz
-  const baseUrl = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '')
-  const cleanPath = url.startsWith('/') ? url : `/${url}`
-  
-  return `${baseUrl}${cleanPath}`
 }
 
 export function ProfileAvatar({

@@ -7,6 +7,12 @@ import {
   type AdminCourseObjective,
 } from '@/api/service/admin/course.service'
 import { useCreateAdminCourse } from '@/hooks/admin/courses/useCreateAdminCourse'
+import { cn } from '@/lib/utils'
+import {
+  adminDialogClass,
+  adminInputClass,
+  adminLabelClass,
+} from '@/lib/admin-ui'
 import { Button } from '@/components/ui/button'
 import { RoseButton } from '@/components/ui/rose-button'
 import {
@@ -64,6 +70,8 @@ const emptyForm = (): FormState => ({
   price: '0',
 })
 
+const fieldClass = cn(adminInputClass, 'h-11 border-none bg-muted')
+
 function parsePayload(form: FormState): AdminCourseCreatePayload | null {
   const name = form.name.trim()
   if (!name) return null
@@ -110,50 +118,50 @@ export function AdminCourseCreateModal({
         onOpenChange(false)
         return 'Kurs yaratildi'
       },
-      error: (err: any) => err?.message || 'Xato yuz berdi',
+      error: (err: { message?: string }) => err?.message || 'Xato yuz berdi',
     })
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='rounded-[32px] sm:max-w-[440px] p-8 border-none shadow-2xl'>
-        <DialogHeader className="mb-6">
-          <DialogTitle className='text-2xl font-bold text-foreground'>
-            Yangi kurs qo'shish
+      <DialogContent
+        className={cn(adminDialogClass, 'border-none p-6 shadow-2xl sm:max-w-[440px] sm:p-8')}
+      >
+        <DialogHeader className='mb-4'>
+          <DialogTitle className='admin-text-title'>
+            Yangi kurs qo&apos;shish
           </DialogTitle>
-          <p className="text-sm text-muted-foreground font-medium">O'quv dasturi uchun asosiy parametrlarni kiriting.</p>
+          <p className='admin-text-subtitle'>
+            O&apos;quv dasturi uchun asosiy parametrlarni kiriting.
+          </p>
         </DialogHeader>
 
-        <div className='space-y-6'>
+        <div className='space-y-5'>
           <div className='space-y-2'>
-            <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-              Kurs nomi
-            </Label>
+            <Label className={adminLabelClass}>Kurs nomi</Label>
             <Input
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder='IELTS Foundation'
-            className='h-12 rounded-2xl bg-muted border-none px-4 text-sm font-bold'
+              className={fieldClass}
             />
           </div>
 
           <div className='space-y-2'>
-            <Label className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>
-              Tavsif
-            </Label>
+            <Label className={adminLabelClass}>Tavsif</Label>
             <Textarea
               value={form.description}
               onChange={(e) =>
                 setForm((p) => ({ ...p, description: e.target.value }))
               }
               placeholder='Kurs haqida qisqacha...'
-              className='rounded-2xl bg-muted border-none px-4 text-sm font-medium min-h-[100px]'
+              className={cn(fieldClass, 'min-h-[100px] py-2')}
             />
           </div>
 
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='admin-dialog__form-grid grid grid-cols-1 gap-4 sm:grid-cols-2'>
             <div className='space-y-2'>
-              <Label className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>Yo'nalish</Label>
+              <Label className={adminLabelClass}>Yo&apos;nalish</Label>
               <Select
                 value={form.couser_objective}
                 onValueChange={(v) =>
@@ -163,7 +171,7 @@ export function AdminCourseCreateModal({
                   }))
                 }
               >
-                <SelectTrigger className='h-12 rounded-2xl bg-muted border-none px-4 font-bold text-foreground'>
+                <SelectTrigger className={fieldClass}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -176,14 +184,14 @@ export function AdminCourseCreateModal({
               </Select>
             </div>
             <div className='space-y-2'>
-              <Label className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>Daraja</Label>
+              <Label className={adminLabelClass}>Daraja</Label>
               <Select
                 value={form.level}
                 onValueChange={(v) =>
                   setForm((p) => ({ ...p, level: v as AdminCourseLevel }))
                 }
               >
-                <SelectTrigger className='h-12 rounded-2xl bg-muted border-none px-4 font-bold text-foreground'>
+                <SelectTrigger className={fieldClass}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -197,40 +205,36 @@ export function AdminCourseCreateModal({
             </div>
           </div>
 
-          <div className='grid grid-cols-2 gap-4'>
+          <div className='admin-dialog__form-grid grid grid-cols-1 gap-4 sm:grid-cols-2'>
             <div className='space-y-2'>
-              <Label className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
-                Davomiyligi (oy)
-              </Label>
+              <Label className={adminLabelClass}>Davomiyligi (oy)</Label>
               <Input
                 type='number'
                 value={form.duration_months}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, duration_months: e.target.value }))
                 }
-                className='h-12 rounded-2xl bg-muted border-none px-4 font-bold'
+                className={fieldClass}
               />
             </div>
             <div className='space-y-2'>
-              <Label className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
-                Narxi (so'm)
-              </Label>
+              <Label className={adminLabelClass}>Narxi (so&apos;m)</Label>
               <Input
                 value={form.price}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, price: e.target.value }))
                 }
                 placeholder='0'
-                className='h-12 rounded-2xl bg-muted border-none px-4 font-bold'
+                className={fieldClass}
               />
             </div>
           </div>
         </div>
 
-        <DialogFooter className='mt-8 gap-3 sm:gap-0'>
+        <DialogFooter className='mt-6 flex-col-reverse gap-3 sm:flex-row'>
           <Button
             variant='ghost'
-            className='flex-1 h-12 rounded-full font-bold text-muted-foreground hover:bg-muted'
+            className='h-11 flex-1'
             onClick={() => onOpenChange(false)}
             disabled={createMutation.isPending}
           >
@@ -239,7 +243,7 @@ export function AdminCourseCreateModal({
           <RoseButton
             onClick={submit}
             disabled={createMutation.isPending}
-            className="flex-[2] h-12 rounded-full"
+            className='h-11 flex-[2]'
           >
             {createMutation.isPending ? (
               <Loader2 className='h-4 w-4 animate-spin' />

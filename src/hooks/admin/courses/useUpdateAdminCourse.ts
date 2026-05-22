@@ -15,18 +15,13 @@ export const useUpdateAdminCourse = () => {
     }: {
       id: number
       data: AdminCourseUpdatePayload
-    }) => {
-      console.log('Updating course:', id, data)
-      return updateAdminCourse(id, data)
-    },
+    }) => updateAdminCourse(id, data),
     onSuccess: async () => {
-      console.log('Course update successful')
       await queryClient.invalidateQueries({
         queryKey: ['admin', 'courses', 'list'],
       })
     },
     onError: (error: unknown) => {
-      console.error('Course update error:', error)
       toast.error((error as Error)?.message || 'Yangilashda xatolik')
     },
   })

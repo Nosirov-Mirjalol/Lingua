@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getStudentApiErrorMessage } from '@/api/service/admin/student.service'
+import { cn } from '@/lib/utils'
 import type { User } from '@/api/service/teacher/user.type'
 import { useAdminStudents } from '@/hooks/admin/students/useAdminStudents'
 import { useCreateAdminStudent } from '@/hooks/admin/students/useCreateAdminStudent'
@@ -50,10 +51,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ConfigDrawer } from '@/components/config-drawer'
-import { Header } from '@/components/layout/header'
+import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { ListPagination } from '@/components/list-pagination'
-import { ThemeSwitch } from '@/components/theme-switch'
+import {
+  adminDialogClass,
+  adminPageSubtitleClass,
+  adminPageTitleClass,
+} from '@/lib/admin-ui'
 
 interface StudentFormData {
   username: string
@@ -290,27 +295,21 @@ export default function AdminStudentsPage() {
   const inactiveCount = students.filter((s) => !s.is_active).length
 
   return (
-    <div className='min-h-screen bg-background'>
-      <Header>
-        <div className='me-auto w-full sm:w-auto'>
-          <div className='flex items-center gap-2 rounded-2xl border bg-background px-3 py-2 shadow-sm md:w-80'>
-            <Search className='h-4 w-4 text-muted-foreground' />
-
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder='Search students...'
-              className='h-8 w-full border-0 bg-transparent px-0 text-sm focus-visible:ring-0'
-            />
-          </div>
+    <div className='admin-page min-h-screen bg-background'>
+      <AdminHeader fixed>
+        <div className='mr-auto flex w-full max-w-md items-center gap-2 border border-border bg-background px-3 py-2 shadow-sm'>
+          <Search className='h-4 w-4 shrink-0 text-muted-foreground' />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder='Talabalarni qidirish...'
+            className='h-8 w-full border-0 bg-transparent px-0 text-sm focus-visible:ring-0'
+          />
         </div>
-
-        <ThemeSwitch />
-
         <ConfigDrawer />
-      </Header>
+      </AdminHeader>
 
-      <Main>
+      <Main className='admin-page'>
         <p className='mb-4 text-xs font-semibold tracking-wide text-muted-foreground'>
           <Link to='/admin-dashboard'>Dashboard</Link> /{' '}
           <span className='text-primary'>Students</span>
@@ -318,11 +317,9 @@ export default function AdminStudentsPage() {
 
         <div className='mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between'>
           <div>
-            <h1 className='text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl'>
-              Students List
-            </h1>
+            <h1 className={adminPageTitleClass}>Students List</h1>
 
-            <p className='mt-1 text-xs font-medium text-muted-foreground sm:text-sm'>
+            <p className={cn(adminPageSubtitleClass, 'mt-1')}>
               All students information and payment status
             </p>
           </div>
@@ -330,7 +327,7 @@ export default function AdminStudentsPage() {
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <RoseButton
-                className='w-full rounded-2xl sm:w-auto'
+                className='w-full sm:w-auto'
                 onClick={() => {
                   resetForm()
 
@@ -343,7 +340,10 @@ export default function AdminStudentsPage() {
             </DialogTrigger>
 
             <DialogContent
-              className='max-h-[90vh] overflow-y-auto p-4 sm:max-w-lg sm:p-6'
+              className={cn(
+                adminDialogClass,
+                'max-h-[90vh] overflow-y-auto p-4 sm:max-w-lg sm:p-6'
+              )}
               showCloseButton={false}
             >
               <div className='flex items-start justify-between px-0 pt-4 sm:px-4'>
@@ -722,7 +722,12 @@ export default function AdminStudentsPage() {
       {/* Action Modal */}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className='rounded-2xl border-none bg-card p-6 shadow-xl sm:max-w-lg'>
+        <DialogContent
+          className={cn(
+            adminDialogClass,
+            'border-none bg-card p-6 shadow-xl sm:max-w-lg'
+          )}
+        >
           <DialogHeader>
             <DialogTitle className='text-xl font-bold'>
               {modalAction === 'detail' && 'Student Tafsilotlari'}

@@ -16,7 +16,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { SignOutDialog } from '@/components/sign-out-dialog'
-import { getFullAvatarUrl } from '@/components/shared/profile-avatar'
+import { getFullAvatarUrl } from '@/lib/avatar-url'
 
 type NavUserProps = {
   user: {

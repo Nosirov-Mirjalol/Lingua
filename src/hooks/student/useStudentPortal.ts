@@ -198,8 +198,8 @@ export const useStudentProfile = () => {
           sessionStorage.setItem('linguapro_user', JSON.stringify(updated))
           return buildProfile(profileData)
         }
-      } catch (error) {
-        console.error('Failed to fetch student profile:', error)
+      } catch {
+        /* API xatosi — buildProfile() fallback ishlatiladi */
       }
       return buildProfile()
     },
@@ -221,7 +221,7 @@ export const useStudentDashboard = () => {
   return useQuery({
     // ✅ FIX: profile?.id ni dependency dan olib tashladik — profile o'zgarganda
     // dashboard qayta hisoblanmaydi, faqat unreadCount o'zgarganda
-    queryKey: ['student', 'dashboard', unreadCount],
+    queryKey: ['student', 'dashboard', unreadCount, profile],
     queryFn: async () => {
       const activeProfile = profile || buildProfile()
       const completion = activeProfile.completion ?? 0

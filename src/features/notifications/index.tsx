@@ -31,8 +31,25 @@ import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { ListPagination } from '@/components/list-pagination'
 import { NotificationCard } from '@/components/shared/NotificationCard'
+import {
+  adminDialogClass,
+  adminInputClass,
+  adminLabelClass,
+  adminPageSubtitleClass,
+  adminPageTitleClass,
+} from '@/lib/admin-ui'
 import { useBroadcastList, useSendBroadcast } from './hooks'
 import type { BroadcastTargetRole } from './types'
+
+const TABS: Array<{
+  id: BroadcastTargetRole
+  label: string
+  icon: typeof Inbox
+}> = [
+  { id: 'all', label: 'Barchasi', icon: Inbox },
+  { id: 'teacher', label: 'Teacher', icon: BellRing },
+  { id: 'student', label: 'Student', icon: BellRing },
+]
 
 export default function NotificationsPage() {
   const { data: apiNotifications, isLoading, error } = useBroadcastList()
@@ -73,6 +90,7 @@ export default function NotificationsPage() {
       return []
     }
   }, [apiNotifications, error])
+
   const [activeTab, setActiveTab] = useState<BroadcastTargetRole>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(1)
@@ -127,222 +145,234 @@ export default function NotificationsPage() {
       <AdminHeader fixed>
         <ConfigDrawer />
       </AdminHeader>
-      <Main>
-        <div className='bg-white font-outfit dark:bg-slate-950'>
-          <div className='flex min-h-[calc(100vh-7rem)] flex-col border-x border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900'>
-            <div className='flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-slate-800'>
-              <div>
-                <h1 className='text-xl font-bold text-slate-900 dark:text-slate-50'>
-                  Bildirishnomalar
-                </h1>
-                <p className='text-xs text-slate-400 dark:text-slate-400'>
-                  Tizim xabarlari ro'yxati
-                </p>
-              </div>
-              <Dialog
-                open={isCreateModalOpen}
-                onOpenChange={setIsCreateModalOpen}
-              >
-                <DialogTrigger asChild>
-                  <RoseButton roseSize='sm' className='h-9 px-4'>
-                    <Plus className='mr-2 h-4 w-4' /> Yangi xabar
-                  </RoseButton>
-                </DialogTrigger>
-                <DialogContent className='rounded-xl bg-white sm:max-w-md dark:bg-slate-900'>
-                  <DialogHeader>
-                    <DialogTitle className='text-lg font-bold dark:text-slate-50'>
-                      Xabar yuborish
-                    </DialogTitle>
-                  </DialogHeader>
-                  <div className='space-y-4 py-4'>
-                    <div className='space-y-1'>
-                      <Label className='text-xs font-bold text-slate-500 dark:text-slate-400'>
-                        Sarlavha
-                      </Label>
-                      <Input
-                        value={formData.title}
-                        onChange={(e) =>
-                          setFormData({ ...formData, title: e.target.value })
-                        }
-                        className='h-10 rounded-lg dark:bg-slate-800 dark:text-slate-100'
-                      />
-                    </div>
-                    <div className='space-y-1'>
-                      <Label className='text-xs font-bold text-slate-500 dark:text-slate-400'>
-                        Xabar
-                      </Label>
-                      <Textarea
-                        value={formData.message}
-                        onChange={(e) =>
-                          setFormData({ ...formData, message: e.target.value })
-                        }
-                        className='rounded-lg dark:bg-slate-800 dark:text-slate-100'
-                      />
-                    </div>
-                    <div className='space-y-1'>
-                      <Label className='text-xs font-bold text-slate-500 dark:text-slate-400'>
-                        Kimga
-                      </Label>
-                      <Select
-                        value={formData.target_role}
-                        onValueChange={(v) =>
-                          setFormData({
-                            ...formData,
-                            target_role: v as BroadcastTargetRole,
-                          })
-                        }
-                      >
-                        <SelectTrigger className='h-10 rounded-lg dark:bg-slate-800 dark:text-slate-100'>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value='teacher'>Teacher</SelectItem>
-                          <SelectItem value='student'>Student</SelectItem>
-                          <SelectItem value='all'>All</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      variant='ghost'
-                      onClick={() => setIsCreateModalOpen(false)}
-                      className='rounded-lg dark:hover:bg-slate-800'
-                    >
-                      Bekor qilish
-                    </Button>
-                    <RoseButton
-                      onClick={handleCreate}
-                      disabled={sendBroadcastMutation.isPending}
-                      className='px-8'
-                    >
-                      {sendBroadcastMutation.isPending ? (
-                        <Loader2 className='h-4 w-4 animate-spin' />
-                      ) : (
-                        'Yuborish'
-                      )}
-                    </RoseButton>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+      <Main className='admin-page bg-background font-outfit'>
+        <div className='admin-notifications admin-page__container flex min-h-0 flex-1 flex-col'>
+          <header className='admin-notifications__header admin-page__header shrink-0'>
+            <div>
+              <h1 className={adminPageTitleClass}>Bildirishnomalar</h1>
+              <p className={adminPageSubtitleClass}>
+                Tizim xabarlari ro&apos;yxati
+              </p>
             </div>
-
-            <div className='flex min-h-0 flex-1'>
-              <div className='w-64 border-r border-slate-100 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-950/40'>
-                <nav className='space-y-1'>
-                  {[
-                    { id: 'all', label: 'Barchasi', icon: Inbox },
-                    { id: 'teacher', label: 'Teacher', icon: BellRing },
-                    { id: 'student', label: 'Student', icon: BellRing },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => {
-                        setActiveTab(tab.id as BroadcastTargetRole)
-                        setPage(1)
-                      }}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-all',
-                        activeTab === tab.id
-                          ? 'border border-slate-100 bg-white text-rose-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-rose-400 dark:shadow-none'
-                          : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-                      )}
-                    >
-                      <tab.icon className='h-4 w-4' />
-                      {tab.label}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-
-              <div className='flex min-w-0 flex-1 flex-col'>
-                <div className='border-b border-slate-100 p-4 dark:border-slate-800'>
-                  <div className='relative'>
-                    <Search className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500' />
+            <Dialog
+              open={isCreateModalOpen}
+              onOpenChange={setIsCreateModalOpen}
+            >
+              <DialogTrigger asChild>
+                <RoseButton roseSize='sm' className='admin-page__cta h-9 px-4'>
+                  <Plus className='mr-2 h-4 w-4' /> Yangi xabar
+                </RoseButton>
+              </DialogTrigger>
+              <DialogContent className={cn(adminDialogClass, 'sm:max-w-md')}>
+                <DialogHeader>
+                  <DialogTitle>Xabar yuborish</DialogTitle>
+                </DialogHeader>
+                <div className='space-y-4 py-4'>
+                  <div className='space-y-1'>
+                    <Label className={adminLabelClass}>Sarlavha</Label>
                     <Input
-                      placeholder='Qidirish...'
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value)
-                        setPage(1)
-                      }}
-                      className='h-10 w-full rounded-lg border-slate-200 bg-slate-50/50 pl-10 focus:bg-white dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:bg-slate-950'
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
+                      className={cn(adminInputClass, 'h-10')}
                     />
                   </div>
+                  <div className='space-y-1'>
+                    <Label className={adminLabelClass}>Xabar</Label>
+                    <Textarea
+                      value={formData.message}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
+                      className={adminInputClass}
+                    />
+                  </div>
+                  <div className='space-y-1'>
+                    <Label className={adminLabelClass}>Kimga</Label>
+                    <Select
+                      value={formData.target_role}
+                      onValueChange={(v) =>
+                        setFormData({
+                          ...formData,
+                          target_role: v as BroadcastTargetRole,
+                        })
+                      }
+                    >
+                      <SelectTrigger className={cn(adminInputClass, 'h-10')}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='teacher'>Teacher</SelectItem>
+                        <SelectItem value='student'>Student</SelectItem>
+                        <SelectItem value='all'>All</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-
-                <div className='min-h-0 flex-1'>
-                  <ScrollArea className='h-full'>
-                    {isLoading ? (
-                      <div className='flex h-40 items-center justify-center'>
-                        <Loader2 className='animate-spin text-slate-200 dark:text-slate-700' />
-                      </div>
-                    ) : error ? (
-                      <div className='flex h-40 flex-col items-center justify-center gap-2'>
-                        <p className='text-sm font-bold text-slate-500 dark:text-slate-400'>
-                          Xatolik yuz berdi
-                        </p>
-                        <p className='text-xs text-slate-400 dark:text-slate-500'>
-                          Server bilan bog'lanishda muammo
-                        </p>
-                      </div>
+                <DialogFooter className='flex-col-reverse gap-2 sm:flex-row'>
+                  <Button
+                    variant='ghost'
+                    onClick={() => setIsCreateModalOpen(false)}
+                    className='w-full sm:w-auto'
+                  >
+                    Bekor qilish
+                  </Button>
+                  <RoseButton
+                    onClick={handleCreate}
+                    disabled={sendBroadcastMutation.isPending}
+                    className='w-full px-8 sm:w-auto'
+                  >
+                    {sendBroadcastMutation.isPending ? (
+                      <Loader2 className='h-4 w-4 animate-spin' />
                     ) : (
-                      <div className='divide-y divide-slate-50 dark:divide-slate-800'>
-                        {paginatedNotifications.map((n) => (
-                          <div
-                            key={n.id}
-                            className='group relative flex w-full items-center gap-2' // w-full qo'shildi
-                          >
-                            <NotificationCard
-                              title={n.title}
-                              message={n.message}
-                              time={format(n.timestamp, 'dd.MM.yyyy HH:mm')}
-                              isRead={n.read}
-                              className='flex-1 pr-24' // O'ng tarafdagi tugmalar uchun joy qoldiradi
-                            />
-
-                            {/* Absolute Actions (Badge + Delete) */}
-                            <div className='absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-1.5'>
-                              <Badge
-                                variant='outline'
-                                className='h-5 border-slate-100 px-1.5 text-[10px] font-bold text-slate-400 dark:border-slate-700 dark:text-slate-500'
-                              >
-                                {roleLabel[n.target_role]}
-                              </Badge>
-                              <Button
-                                type='button'
-                                variant='ghost'
-                                size='icon'
-                                aria-label='Delete'
-                                className='h-7 w-7 rounded-lg text-slate-300 opacity-0 transition-opacity group-hover:opacity-100 hover:text-rose-500 dark:text-slate-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400'
-                                onClick={() => setDeleteId(n.id)}
-                              >
-                                <Trash2 className='h-4 w-4' />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      'Yuborish'
                     )}
-                  </ScrollArea>
+                  </RoseButton>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </header>
 
-                  {!isLoading && !error && filtered.length > 0 && (
-                    <div className='border-t pt-10 border-slate-100 px-4 py-2 dark:border-slate-800'>
-                      <ListPagination
-                        page={safePage}
-                        pageSize={pageSize}
-                        totalCount={filtered.length}
-                        onPageChange={setPage}
-                        onPageSizeChange={(nextPageSize) => {
-                          setPageSize(nextPageSize)
-                          setPage(1)
-                        }}
-                        className='mt-0'
-                      />
-                    </div>
-                  )}
+          {/* Mobil: gorizontal tablar */}
+          <nav
+            className='admin-notifications__tabs-mobile flex shrink-0 gap-2 overflow-x-auto pb-3 md:hidden'
+            aria-label='Filtr'
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type='button'
+                onClick={() => {
+                  setActiveTab(tab.id)
+                  setPage(1)
+                }}
+                className={cn(
+                  'flex shrink-0 items-center gap-2 px-4 py-2 transition-all',
+                  activeTab === tab.id
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted text-muted-foreground'
+                )}
+              >
+                <tab.icon className='h-3.5 w-3.5' />
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className='admin-notifications__body flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm md:flex-row'>
+            {/* Desktop: yon menyu */}
+            <aside className='admin-notifications__sidebar hidden shrink-0 border-r border-border bg-muted/30 p-4 md:block md:w-52 lg:w-56'>
+              <nav className='space-y-1'>
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type='button'
+                    onClick={() => {
+                      setActiveTab(tab.id)
+                      setPage(1)
+                    }}
+                    className={cn(
+                      'flex w-full items-center gap-3 px-3 py-2 transition-all',
+                      activeTab === tab.id
+                        ? 'border border-border bg-card text-primary shadow-sm'
+                        : 'text-muted-foreground hover:bg-muted'
+                    )}
+                  >
+                    <tab.icon className='h-4 w-4 shrink-0' />
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+            </aside>
+
+            <div className='flex min-h-0 min-w-0 flex-1 flex-col'>
+              <div className='shrink-0 border-b border-border p-3 sm:p-4'>
+                <div className='relative'>
+                  <Search className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+                  <Input
+                    placeholder='Qidirish...'
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value)
+                      setPage(1)
+                    }}
+                    className={cn(adminInputClass, 'h-10 bg-muted/50 pl-10')}
+                  />
                 </div>
               </div>
+
+              <ScrollArea className='min-h-0 flex-1'>
+                {isLoading ? (
+                  <div className='flex h-40 items-center justify-center'>
+                    <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+                  </div>
+                ) : error ? (
+                  <div className='flex h-40 flex-col items-center justify-center gap-2 px-4 text-center'>
+                    <p className='text-sm font-bold text-muted-foreground'>
+                      Xatolik yuz berdi
+                    </p>
+                    <p className='text-xs text-muted-foreground'>
+                      Server bilan bog&apos;lanishda muammo
+                    </p>
+                  </div>
+                ) : paginatedNotifications.length === 0 ? (
+                  <div className='flex h-40 items-center justify-center px-4 text-sm text-muted-foreground'>
+                    Bildirishnomalar topilmadi
+                  </div>
+                ) : (
+                  <div className='divide-y divide-border'>
+                    {paginatedNotifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className='admin-notifications__item flex flex-col gap-2 sm:flex-row sm:items-center'
+                      >
+                        <NotificationCard
+                          title={n.title}
+                          message={n.message}
+                          time={format(n.timestamp, 'dd.MM.yyyy HH:mm')}
+                          isRead={n.read}
+                          className='min-w-0 flex-1'
+                        />
+                        <div className='flex shrink-0 items-center justify-end gap-2 px-4 pb-3 sm:flex-col sm:items-end sm:justify-center sm:px-3 sm:pb-0'>
+                          <Badge
+                            variant='outline'
+                            className='admin-text-caption h-5 px-1.5'
+                          >
+                            {roleLabel[n.target_role]}
+                          </Badge>
+                          <Button
+                            type='button'
+                            variant='ghost'
+                            size='icon'
+                            aria-label="O'chirish"
+                            className='h-8 w-8 text-muted-foreground hover:text-destructive'
+                            onClick={() => setDeleteId(n.id)}
+                          >
+                            <Trash2 className='h-4 w-4' />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+
+              {!isLoading && !error && filtered.length > 0 && (
+                <div className='shrink-0 border-t border-border px-3 py-2 sm:px-4'>
+                  <ListPagination
+                    page={safePage}
+                    pageSize={pageSize}
+                    totalCount={filtered.length}
+                    onPageChange={setPage}
+                    onPageSizeChange={(nextPageSize) => {
+                      setPageSize(nextPageSize)
+                      setPage(1)
+                    }}
+                    className='mt-0'
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

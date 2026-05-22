@@ -9,11 +9,18 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { RoseButton } from '@/components/ui/rose-button'
+import { ConfigDrawer } from '@/components/config-drawer'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { ListPagination } from '@/components/list-pagination'
 import { AdminTeacherCreateModal } from '@/features/admin-teachers/components/admin-teacher-create-modal'
+import {
+  adminInputClass,
+  adminPageSubtitleClass,
+  adminPageTitleClass,
+} from '@/lib/admin-ui'
+import { cn } from '@/lib/utils'
 
 /** full_name dan avatar uchun bosh harf(lar) olish */
 function getInitials(fullName: string): string {
@@ -30,13 +37,8 @@ export default function AdminTeachersPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<number | null>(null)
 
-  const { data: rawTeachers = [], isLoading } = useAdminTeachers()
+  const { data: teachers = [], isLoading, isError } = useAdminTeachers()
   const deleteMutation = useDeleteAdminTeacher()
-
-  const teachers = useMemo(
-    () => (Array.isArray(rawTeachers) ? rawTeachers : []),
-    [rawTeachers]
-  )
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -54,34 +56,42 @@ export default function AdminTeachersPage() {
 
   const confirmDelete = () => {
     if (!deleteId) return
-    deleteMutation.mutateAsync(deleteId).then(() => {
-      setDeleteId(null)
-      toast.success("O'chirildi")
+    toast.promise(deleteMutation.mutateAsync(deleteId), {
+      loading: "O'chirilmoqda...",
+      success: () => {
+        setDeleteId(null)
+        return "O'chirildi"
+      },
+      error: (err: unknown) =>
+        (err as Error)?.message || "O'chirishda xatolik",
     })
   }
 
   return (
     <>
-      <AdminHeader fixed />
+      <AdminHeader fixed>
+        <ConfigDrawer />
+      </AdminHeader>
 
-      <Main className='bg-background/40'>
-        <div className='container mx-auto max-w-7xl p-6'>
-          <div className='mb-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between'>
+      <Main className='admin-page bg-background/40'>
+        <div className='admin-page__container max-w-7xl'>
+          <header className='admin-page__header md:items-end'>
             <div>
-              <p className='mb-1 text-xs font-black tracking-widest text-primary uppercase'>
+              <p className={cn(adminPageSubtitleClass, 'mb-1 text-primary')}>
                 Ustozlar boshqaruvi
               </p>
-              <h1 className='text-3xl font-bold text-foreground'>
-                O'qituvchilar
-              </h1>
+              <h1 className={adminPageTitleClass}>O&apos;qituvchilar</h1>
             </div>
 
-            <div className='flex flex-col gap-3 sm:flex-row sm:items-center'>
-              <div className='relative'>
+            <div className='flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center'>
+              <div className='admin-page__search-wrap relative sm:w-72'>
                 <Search className='absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
                 <Input
                   placeholder='Qidirish...'
-                  className='h-10 w-full rounded-full bg-background pl-11 text-sm shadow-sm sm:w-72'
+                  className={cn(
+                    adminInputClass,
+                    'h-10 border bg-background pl-11 shadow-sm'
+                  )}
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value)
@@ -91,12 +101,12 @@ export default function AdminTeachersPage() {
               </div>
               <RoseButton
                 onClick={() => setCreateOpen(true)}
-                className='h-10 rounded-full px-6 shadow-sm'
+                className='admin-page__cta h-10 px-6 shadow-sm'
               >
                 <Plus className='mr-2 h-4 w-4' /> Qo'shish
               </RoseButton>
             </div>
-          </div>
+          </header>
 
           <Card className='border-border shadow-md'>
             <div className='overflow-x-auto'>
@@ -117,9 +127,18 @@ export default function AdminTeachersPage() {
                 <tbody className='divide-y divide-border/50'>
                   {isLoading ? (
                     <tr>
-                      {/* colSpan 5 dan 4 ga o'zgardi */}
                       <td colSpan={4} className='p-10 text-center'>
                         <Loader2 className='inline-block animate-spin text-muted-foreground' />
+                      </td>
+                    </tr>
+                  ) : isError ? (
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className='p-10 text-center text-sm text-destructive'
+                      >
+                        Ma&apos;lumotlarni yuklashda xatolik. Qayta urinib
+                        ko&apos;ring.
                       </td>
                     </tr>
                   ) : paginated.length === 0 ? (
@@ -187,7 +206,7 @@ export default function AdminTeachersPage() {
           <ListPagination
             page={page}
             pageSize={pageSize}
-            totalCount={teachers.length}
+            totalCount={filtered.length}
             onPageChange={setPage}
             onPageSizeChange={(size) => {
               setPageSize(size)

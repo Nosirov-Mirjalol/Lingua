@@ -27,8 +27,20 @@ export type AdminTeacherUpdatePayload = Partial<
   >
 >
 
-export const getAdminTeachers = (): Promise<AdminTeacher[]> => {
-  return apiClient.get<AdminTeacher[]>(GROUP.TEACHER_LIST)
+function normalizeTeacherList(data: unknown): AdminTeacher[] {
+  if (Array.isArray(data)) return data as AdminTeacher[]
+  if (data && typeof data === 'object') {
+    const record = data as Record<string, unknown>
+    const list =
+      record.results ?? record.data ?? record.teachers ?? record.user_list
+    if (Array.isArray(list)) return list as AdminTeacher[]
+  }
+  return []
+}
+
+export const getAdminTeachers = async (): Promise<AdminTeacher[]> => {
+  const data = await apiClient.get<unknown>(GROUP.TEACHER_LIST)
+  return normalizeTeacherList(data)
 }
 
 export const createAdminTeacher = (

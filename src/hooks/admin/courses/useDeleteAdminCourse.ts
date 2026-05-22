@@ -6,18 +6,13 @@ export const useDeleteAdminCourse = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (courseId: number) => {
-      console.log('Deleting course:', courseId)
-      return deleteAdminCourse(courseId)
-    },
+    mutationFn: (courseId: number) => deleteAdminCourse(courseId),
     onSuccess: async () => {
-      console.log('Course delete successful')
       await queryClient.invalidateQueries({
         queryKey: ['admin', 'courses', 'list'],
       })
     },
     onError: (error: unknown) => {
-      console.error('Course delete error:', error)
       toast.error((error as Error)?.message || "O'chirishda xatolik")
     },
   })

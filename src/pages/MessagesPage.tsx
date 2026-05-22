@@ -2,7 +2,7 @@ import { useMemo, useReducer, useRef, useEffect } from 'react'
 import { format } from 'date-fns'
 import { ArrowLeft, Plus, Search as SearchIcon, Trash2, Send, ChevronRight, ChevronLeft } from 'lucide-react'
 import { toast } from 'sonner'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { ChatEmptyState } from '@/components/shared/chat/chat-empty-state'
 import { ChatListHeader } from '@/components/shared/chat/chat-list-header'
 import { ChatListItem } from '@/components/shared/chat/chat-list-item'
@@ -86,10 +86,10 @@ export function MessagesPage() {
   const { selectedGroupId, createConversationDialogOpened, search, chatSearch, showChatSearch, sidebarCollapsed } = state
   const messagesContainerRef = useRef<HTMLDivElement | null>(null)
 
-  const { register, handleSubmit, reset, watch } = useForm<MessageForm>({
+  const { register, handleSubmit, reset, control } = useForm<MessageForm>({
     defaultValues: { content: '' },
   })
-  const contentValue = watch('content')
+  const contentValue = useWatch({ control, name: 'content' })
 
   const { data: groups = [], isLoading: groupsLoading, isError: groupsIsError } = useMessageGroups()
   const { data: messagesResp, isLoading: messagesLoading } = useGroupMessages(selectedGroupId ?? 0)
@@ -142,8 +142,8 @@ export function MessagesPage() {
         )
           return true
       }
-    } catch (error) {
-      console.error('isOwnMessage mantiqida xatolik:', error)
+    } catch {
+      /* localStorage parse xatosi — is_own false qaytadi */
     }
     return false
   }
@@ -175,14 +175,14 @@ export function MessagesPage() {
   }
 
   return (
-    <div className='w-full max-w-5xl mx-auto p-1 text-slate-900 dark:text-white/95 h-[calc(100vh-9.5rem)] overflow-hidden relative select-none'>
-      <div className='flex h-full w-full overflow-hidden rounded-xl border border-primary/20 bg-white shadow-sm dark:bg-slate-950/40 backdrop-blur-md'>
+    <div className='admin-chats-page relative mx-auto flex h-full min-h-0 w-full max-w-5xl flex-1 flex-col overflow-hidden p-0 text-slate-900 select-none sm:p-1 dark:text-white/95'>
+      <div className='flex h-full min-h-0 w-full flex-1 overflow-hidden rounded-xl border border-primary/20 bg-white shadow-sm backdrop-blur-md dark:bg-slate-950/40'>
 
         {/* SIDEBAR */}
         <div className={cn(
           'flex flex-col border-r border-slate-100 bg-slate-50/40 dark:border-slate-800/60 dark:bg-transparent shrink-0 transition-all duration-300 ease-in-out relative h-full overflow-hidden',
           sidebarCollapsed
-            ? 'w:64px' // Yopilgandagi eni piktogrammalar kattalashgani uchun biroz kengaytirildi
+            ? 'w-16'
             : 'w-full sm:w-48 md:w-56 lg:w-60 xl:w-80',
           selectedGroupId ? 'hidden sm:flex' : 'flex'
         )}>

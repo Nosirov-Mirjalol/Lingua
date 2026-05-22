@@ -19,8 +19,6 @@ import { useProfile } from '@/hooks/teacher/profile/useProfile'
 import { useStudentProfile } from '@/hooks/student/useStudentPortal'
 import { adminProfileStorageKey } from '@/components/layout/data/sidebar-data'
 
-import { getFullAvatarUrl } from '@/components/shared/profile-avatar'
-
 function getInitials(name?: string): string {
   if (!name) return 'U'
   const parts = name

@@ -6,13 +6,15 @@ import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { GroupCapacity } from './components/group-capacity'
 import { StudentGrowth } from './components/student-growth'
+import { useAdminChartData } from '@/hooks/admin/useAdminChartData'
 import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 
 export default function Dashboard() {
   const stats = useAdminDashboardStats()
+  const chartData = useAdminChartData()
 
   return (
-    <div className='min-h-screen bg-background'>
+    <div className='admin-page min-h-screen bg-background'>
       <AdminHeader fixed>
         <ConfigDrawer />
       </AdminHeader>
@@ -67,8 +69,17 @@ export default function Dashboard() {
 
             {/* ── Charts ── */}
             <div className='grid grid-cols-1 gap-5 lg:grid-cols-7'>
-              <StudentGrowth />
-              <GroupCapacity />
+              <StudentGrowth
+                data={chartData.studentGrowthData}
+                period={chartData.growthPeriod}
+                onPeriodChange={chartData.setGrowthPeriod}
+                maxValue={chartData.maxStudentsInMonth}
+                isLoading={chartData.isLoading}
+              />
+              <GroupCapacity
+                stats={chartData.groupEnrollment}
+                isLoading={chartData.isLoading}
+              />
             </div>
           </TabsContent>
         </Tabs>

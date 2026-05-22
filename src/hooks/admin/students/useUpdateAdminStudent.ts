@@ -16,18 +16,13 @@ export const useUpdateAdminStudent = () => {
     }: {
       studentId: number
       data: Partial<AdminStudentCreatePayload>
-    }) => {
-      console.log('Updating student:', studentId, data)
-      return updateAdminStudent(studentId, data)
-    },
+    }) => updateAdminStudent(studentId, data),
     onSuccess: async () => {
-      console.log('Student update successful')
       await queryClient.invalidateQueries({
         queryKey: ['admin', 'students', 'list'],
       })
     },
     onError: (error: unknown) => {
-      console.error('Student update error:', error)
       toast.error(getStudentApiErrorMessage(error, 'Yangilashda xatolik'))
     },
   })
