@@ -28,23 +28,18 @@ function unwrap<T>(
   raw: unknown,
   nestedKeys: string[] = ['results', 'data', 'items', 'groups', 'schedule']
 ): T[] {
-  // If it's already an array, return it
   if (Array.isArray(raw)) return raw as T[]
 
   if (raw && typeof raw === 'object') {
     const record = raw as Record<string, unknown>
 
-    // Search in provided nested keys
     for (const key of nestedKeys) {
       if (Array.isArray(record[key])) {
         return record[key] as T[]
       }
     }
 
-    // If it's a single object that looks like the type (not an empty object)
     if (Object.keys(record).length > 0 && !record.results && !record.data) {
-      // Special case: if it's a single object, we might want to wrap it in an array for list-based hooks
-      // But we must be careful not to return the whole response object as a single item if it's metadata
       if ('id' in record || 'name' in record || 'title' in record) {
         return [record as unknown as T]
       }
@@ -54,14 +49,12 @@ function unwrap<T>(
   return []
 }
 
-// Helper to find a single object in a response
 function unwrapSingle<T>(
   raw: unknown,
   nestedKeys: string[] = ['results', 'data', 'profile', 'user']
 ): T | null {
   if (!raw) return null
 
-  // If it's an array, take the first item
   if (Array.isArray(raw)) {
     return raw.length > 0 ? (raw[0] as T) : null
   }
@@ -69,7 +62,6 @@ function unwrapSingle<T>(
   if (typeof raw === 'object') {
     const record = raw as Record<string, unknown>
 
-    // Search in nested keys
     for (const key of nestedKeys) {
       const val = record[key]
       if (val && typeof val === 'object') {
@@ -81,7 +73,6 @@ function unwrapSingle<T>(
       }
     }
 
-    // If it's the object itself
     if ('id' in record || 'username' in record || 'full_name' in record) {
       return record as unknown as T
     }
@@ -127,6 +118,7 @@ function normalizeStudentScheduleItem(item: any): StudentScheduleItem {
     end_date: item.end_date || '-',
   }
 }
+
 function formatRelativeTime(iso: string): string {
   try {
     const date = new Date(iso)
@@ -160,7 +152,6 @@ const buildProfile = (overrides?: Partial<StudentProfile>): StudentProfile => {
   const stored = getStoredUser()
   const data = { ...stored, ...overrides }
 
-  // Filter out placeholder "string" values from API
   const username =
     data?.username && data.username !== 'string' ? data.username : ''
   const full_name =
@@ -197,13 +188,8 @@ export const useStudentProfile = () => {
     queryKey: ['student', 'profile'],
     queryFn: async (): Promise<StudentProfile> => {
       try {
-        // Bypass caching/304 with timestamp and no-cache headers
-        const cacheBuster = `t=${Date.now()}`
-        const url = AUTH.PROFILE_GET.includes('?')
-          ? `${AUTH.PROFILE_GET}&${cacheBuster}`
-          : `${AUTH.PROFILE_GET}?${cacheBuster}`
-
-        const response = await apiClient.get<unknown>(url)
+        // ✅ Cache buster olib tashlandi — React Query o'zi cache boshqaradi
+        const response = await apiClient.get<unknown>(AUTH.PROFILE_GET)
         const profileData = unwrapSingle<any>(response)
 
         if (profileData) {
@@ -217,19 +203,25 @@ export const useStudentProfile = () => {
       }
       return buildProfile()
     },
-    staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchOnMount: 'always',
+    // ✅ FIX: Ko'p so'rovlar muammosi hal qilindi
+    staleTime: 5 * 60 * 1000,      // 5 daqiqa cache — bu vaqt ichida qayta so'rov yo'q
+    gcTime: 10 * 60 * 1000,        // 10 daqiqa xotirada saqlash
+    refetchOnWindowFocus: false,    // Oynaga qaytganda qayta so'rov yubormaslik
+    refetchOnMount: false,          // Cache bo'lsa mountda qayta yuklamaslik
   })
 }
 
 export const useStudentDashboard = () => {
   const { data: unreadRes } = useStudentUnreadCount()
   const unreadCount = unreadRes?.unread_count ?? 0
+  // ✅ FIX: useStudentProfile ni bu yerda chaqirmaslik — ikki joyda alohida so'rov ketmasligi uchun
+  // Profile ma'lumotlari cache dan keladi (yuqoridagi hook allaqachon yuklab olgan)
   const { data: profile } = useStudentProfile()
 
   return useQuery({
-    queryKey: ['student', 'dashboard', unreadCount, profile?.id],
+    // ✅ FIX: profile?.id ni dependency dan olib tashladik — profile o'zgarganda
+    // dashboard qayta hisoblanmaydi, faqat unreadCount o'zgarganda
+    queryKey: ['student', 'dashboard', unreadCount],
     queryFn: async () => {
       const activeProfile = profile || buildProfile()
       const completion = activeProfile.completion ?? 0
@@ -348,7 +340,6 @@ export const useStudentGroups = () => {
     queryKey: ['student', 'groups'],
     queryFn: async (): Promise<StudentGroup[]> => {
       const data = await getMyGroups()
-      // getMyGroups already calls unwrapGroups, but we add an extra safety layer here
       return unwrap<StudentGroup>(data, [
         'results',
         'data',

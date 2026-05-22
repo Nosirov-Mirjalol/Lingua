@@ -35,8 +35,8 @@ export default function StudentHomeworkPage() {
 
   const activeSubmission = activeAssignment
     ? submissionMeta[activeAssignment.id] ??
-      (activeAssignment.is_submitted && activeAssignment.submitted_at
-        ? { is_submitted: true, submitted_at: activeAssignment.submitted_at }
+      (activeAssignment.is_submitted || (activeAssignment as any).status === 'topshirgan' || (activeAssignment as any).status === 'submitted' || !!activeAssignment.submitted_at
+        ? { is_submitted: true, submitted_at: activeAssignment.submitted_at || '' }
         : undefined)
     : undefined
 
@@ -44,7 +44,12 @@ export default function StudentHomeworkPage() {
   const submittedAt = activeSubmission?.submitted_at
 
   const getStatus = (assignment: Assignment): 'Pending' | 'Submitted' | 'Late' => {
-    if (assignment.is_submitted || !assignment.is_active) return 'Submitted'
+    const meta = submissionMeta[assignment.id]
+    const isSubmitted = meta 
+      ? meta.is_submitted 
+      : (assignment.is_submitted || (assignment as any).status === 'topshirgan' || (assignment as any).status === 'submitted' || !!assignment.submitted_at)
+
+    if (isSubmitted || !assignment.is_active) return 'Submitted'
     const isPastDue = new Date(assignment.deadline).getTime() < now
     return isPastDue ? 'Late' : 'Pending'
   }
@@ -120,15 +125,14 @@ export default function StudentHomeworkPage() {
         payload: submitForm,
       })
 
-      if (response?.is_submitted) {
-        setSubmissionMeta((prev) => ({
-          ...prev,
-          [activeAssignment.id]: {
-            is_submitted: true,
-            submitted_at: response.submitted_at,
-          },
-        }))
-      }
+      // Always update local state on success to show "Submitted" UI immediately
+      setSubmissionMeta((prev) => ({
+        ...prev,
+        [activeAssignment.id]: {
+          is_submitted: true,
+          submitted_at: response?.submitted_at || new Date().toISOString(),
+        },
+      }))
 
       toast.success('Vazifa muvaffaqiyatli topshirildi!')
       setSelectedFile(null)
@@ -338,7 +342,7 @@ export default function StudentHomeworkPage() {
                         </div>
                       ) : (
                         <>
-                          {!(activeAssignment.is_submitted ?? false) && activeAssignment.submission_type === 'file' && (
+                          {!hasSubmitted && activeAssignment.submission_type === 'file' && (
                             <>
                               <input
                                 ref={fileInputRef}
@@ -390,7 +394,7 @@ export default function StudentHomeworkPage() {
                             />
                           </div>
 
-                          {!(activeAssignment.is_submitted ?? false) && (
+                          {!hasSubmitted && (
                             <Button
                               className='mt-3 h-9 w-full rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90'
                               onClick={handleSubmit}
