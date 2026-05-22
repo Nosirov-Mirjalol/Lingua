@@ -6,8 +6,11 @@ import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { GroupCapacity } from './components/group-capacity'
 import { StudentGrowth } from './components/student-growth'
+import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 
 export default function Dashboard() {
+  const stats = useAdminDashboardStats()
+
   return (
     <div className='min-h-screen bg-background'>
       <AdminHeader fixed>
@@ -34,29 +37,29 @@ export default function Dashboard() {
             <div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4'>
               <DashboardCard
                 title="JAMI O'QUVCHILAR"
-                value='248'
-                status='+12%'
+                value={String(stats.totalStudents || 0)}
+                status={`${stats.activeStudents || 0} ta faol`}
                 statusVariant='success'
                 icon={Users}
               />
               <DashboardCard
-                title='FAOL GURUHLAR'
-                value='12'
-                status='Barqaror'
+                title='JAMI USTOZLAR'
+                value={String(stats.totalTeachers || 0)}
+                status='O`qituvchilar'
                 statusVariant='neutral'
                 icon={Network}
               />
               <DashboardCard
-                title='OYLIK DAROMAD'
-                value='48.5M'
-                status='+4.2M'
+                title='JAMI GURUHLAR'
+                value={String(stats.totalGroups || 0)}
+                status={`${stats.activeGroups || 0} ta faol`}
                 statusVariant='success'
                 icon={DollarSign}
               />
               <DashboardCard
-                title="TO'LOV KUTMOQDA"
-                value='23'
-                status='Diqqat'
+                title="JAMI KURSLAR"
+                value={String(stats.totalCourses || 0)}
+                status='Mavjud'
                 statusVariant='warning'
                 icon={ClipboardCheck}
               />

@@ -1,22 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { AdminTeacher } from '@/api/service/admin/teacher.service'
 import { useAdminTeachers } from '@/hooks/admin/teachers/useAdminTeachers'
 import { useDeleteAdminTeacher } from '@/hooks/admin/teachers/useDeleteAdminTeacher'
-import { useUpdateAdminTeacher } from '@/hooks/admin/teachers/useUpdateAdminTeacher'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { RoseButton } from '@/components/ui/rose-button'
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
@@ -37,19 +28,10 @@ export default function AdminTeachersPage() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [createOpen, setCreateOpen] = useState(false)
-  const [editingTeacher, setEditingTeacher] = useState<AdminTeacher | null>(
-    null
-  )
   const [deleteId, setDeleteId] = useState<number | null>(null)
-  const [editForm, setEditForm] = useState({
-    full_name: '',
-    phone: '',
-    learning_goal: '',
-  })
 
   const { data: rawTeachers = [], isLoading } = useAdminTeachers()
   const deleteMutation = useDeleteAdminTeacher()
-  const updateMutation = useUpdateAdminTeacher()
 
   const teachers = useMemo(
     () => (Array.isArray(rawTeachers) ? rawTeachers : []),
@@ -69,32 +51,6 @@ export default function AdminTeachersPage() {
     const start = (page - 1) * pageSize
     return filtered.slice(start, start + pageSize)
   }, [filtered, page, pageSize])
-
-  const startEdit = (teacher: AdminTeacher) => {
-    setEditingTeacher(teacher)
-    setEditForm({
-      full_name: teacher.full_name || '',
-      phone: teacher.phone || '',
-      learning_goal: teacher.learning_goal || '',
-    })
-  }
-
-  const submitEdit = () => {
-    if (!editingTeacher) return
-    updateMutation
-      .mutateAsync({
-        id: editingTeacher.id,
-        data: {
-          full_name: editForm.full_name,
-          phone: editForm.phone,
-          learning_goal: editForm.learning_goal,
-        },
-      })
-      .then(() => {
-        setEditingTeacher(null)
-        toast.success('Yangilandi')
-      })
-  }
 
   const confirmDelete = () => {
     if (!deleteId) return
@@ -214,14 +170,6 @@ export default function AdminTeachersPage() {
                               type='button'
                               variant='ghost'
                               size='sm'
-                              onClick={() => startEdit(t)}
-                            >
-                              <Pencil className='h-4 w-4' />
-                            </Button>
-                            <Button
-                              type='button'
-                              variant='ghost'
-                              size='sm'
                               onClick={() => setDeleteId(t.id)}
                             >
                               <Trash2 className='h-4 w-4' />
@@ -248,99 +196,6 @@ export default function AdminTeachersPage() {
             className='mt-4 px-1'
           />
         </div>
-
-        <Dialog
-          open={editingTeacher !== null}
-          onOpenChange={(v) => !v && setEditingTeacher(null)}
-        >
-          <DialogContent className='rounded-2xl sm:max-w-md'>
-            <DialogHeader>
-              <DialogTitle className='text-xl font-bold'>
-                Ustozni tahrirlash
-              </DialogTitle>
-            </DialogHeader>
-            <div className='space-y-4 pt-2'>
-              <div className='flex items-center gap-4 border-b pb-4'>
-                <Avatar className='h-16 w-16 border-2 border-primary/20'>
-                  <AvatarImage src={editingTeacher?.avatar || undefined} />
-                  <AvatarFallback className='bg-primary/10 text-lg font-bold text-primary'>
-                    {getInitials(editForm.full_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className='text-sm font-semibold text-foreground'>
-                    {editingTeacher?.username}
-                  </p>
-                  <p className='text-xs text-muted-foreground'>
-                    ID: #{editingTeacher?.id}
-                  </p>
-                </div>
-              </div>
-
-              <div className='space-y-2'>
-                <Label className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
-                  To'liq ism
-                </Label>
-                <Input
-                  value={editForm.full_name}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, full_name: e.target.value })
-                  }
-                  placeholder='Ism Familiya'
-                  className='rounded-xl'
-                />
-              </div>
-
-              <div className='space-y-2'>
-                <Label className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
-                  Telefon
-                </Label>
-                <Input
-                  value={editForm.phone}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, phone: e.target.value })
-                  }
-                  placeholder='+998 90 123 45 67'
-                  className='rounded-xl'
-                />
-              </div>
-
-              <div className='space-y-2'>
-                <Label className='text-xs font-semibold tracking-wider text-muted-foreground uppercase'>
-                  O'quv maqsadi
-                </Label>
-                <Input
-                  value={editForm.learning_goal}
-                  onChange={(e) =>
-                    setEditForm({ ...editForm, learning_goal: e.target.value })
-                  }
-                  placeholder='Masalan: next.js, react...'
-                  className='rounded-xl'
-                />
-              </div>
-            </div>
-            <DialogFooter className='mt-6 gap-2'>
-              <Button
-                variant='outline'
-                onClick={() => setEditingTeacher(null)}
-                className='rounded-xl'
-              >
-                Bekor qilish
-              </Button>
-              <RoseButton
-                onClick={submitEdit}
-                disabled={updateMutation.isPending}
-                className='rounded-xl'
-              >
-                {updateMutation.isPending ? (
-                  <Loader2 className='h-4 w-4 animate-spin' />
-                ) : (
-                  'Saqlash'
-                )}
-              </RoseButton>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         <DeleteConfirmDialog
           open={deleteId !== null}

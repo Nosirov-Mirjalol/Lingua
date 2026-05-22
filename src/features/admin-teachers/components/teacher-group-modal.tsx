@@ -33,38 +33,16 @@ interface TeacherGroupModalProps {
   courses: AdminCourse[]
 }
 
-const formSchema = z
-  .object({
-    name: z.string().min(1, 'Nom kiritilishi shart'),
-    course: z.string().min(1, 'Kursni tanlang'),
-    start_date: z.string().min(1, 'Sanani tanlang'),
-    time_from: z.string().min(1, 'Vaqtni tanlang'),
-    time_to: z.string().min(1, 'Vaqtni tanlang'),
-    week_days_type: z.enum(['ODD', 'EVEN', 'CUSTOM']),
-    days: z.array(z.string()).optional(),
-  })
-  .refine(
-    (values) =>
-      values.week_days_type !== 'CUSTOM' || Boolean(values.days?.length),
-    {
-      message: 'Kamida bitta kun tanlang',
-      path: ['days'],
-    }
-  )
+const formSchema = z.object({
+  name: z.string().min(1, 'Nom kiritilishi shart'),
+  course: z.string().min(1, 'Kursni tanlang'),
+  start_date: z.string().min(1, 'Sanani tanlang'),
+  time_from: z.string().min(1, 'Vaqtni tanlang'),
+  time_to: z.string().min(1, 'Vaqtni tanlang'),
+  week_days_type: z.enum(['toq_kunlar', 'juft_kunlar', 'har_kuni']),
+})
 
 type FormValues = z.infer<typeof formSchema>
-
-const DAY_MAP: Record<string, string> = {
-  Du: 'Mon',
-  Se: 'Tue',
-  Cho: 'Wed',
-  Pa: 'Thu',
-  Ju: 'Fri',
-  Sha: 'Sat',
-  Yak: 'Sun',
-}
-
-const DAYS_UZ = ['Du', 'Se', 'Cho', 'Pa', 'Ju', 'Sha', 'Yak']
 
 export function TeacherGroupModal({
   isOpen,
@@ -88,28 +66,11 @@ export function TeacherGroupModal({
       start_date: new Date().toISOString().split('T')[0],
       time_from: '09:00',
       time_to: '10:30',
-      days: [],
-      week_days_type: 'ODD',
+      week_days_type: 'toq_kunlar',
     },
   })
 
-  const weekDaysType = useWatch({ control, name: 'week_days_type' })
-  const selectedDays = useWatch({ control, name: 'days' }) || []
-
-  const toggleDay = (day: string) => {
-    const currentDays = selectedDays || []
-    if (currentDays.includes(day)) {
-      setValue(
-        'days',
-        currentDays.filter((d) => d !== day)
-      )
-    } else {
-      setValue('days', [...currentDays, day])
-    }
-  }
-
   const onSubmit = (values: FormValues) => {
-    const engDays = (values.days || []).map((d) => DAY_MAP[d])
     const payload: AdminGroupCreatePayload = {
       name: values.name.trim(),
       course: Number(values.course),
@@ -117,7 +78,6 @@ export function TeacherGroupModal({
       start_date: values.start_date,
       start_time: values.time_from,
       end_time: values.time_to,
-      week_days: values.week_days_type === 'CUSTOM' ? engDays.join(',') : '',
       week_days_type: values.week_days_type,
       status: 'active',
     }
@@ -272,37 +232,14 @@ export function TeacherGroupModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='ODD'>Toq kunlar</SelectItem>
-                    <SelectItem value='EVEN'>Juft kunlar</SelectItem>
-                    <SelectItem value='CUSTOM'>Tanlangan kunlar</SelectItem>
+                    <SelectItem value='toq_kunlar'>Toq kunlar</SelectItem>
+                    <SelectItem value='juft_kunlar'>Juft kunlar</SelectItem>
+                    <SelectItem value='har_kuni'>Har kuni</SelectItem>
                   </SelectContent>
                 </Select>
               )}
             />
           </div>
-
-          {weekDaysType === 'CUSTOM' && (
-            <div className='space-y-2'>
-              <Label>Kunlar</Label>
-              <div className='flex flex-wrap gap-2'>
-                {DAYS_UZ.map((day) => (
-                  <button
-                    key={day}
-                    type='button'
-                    onClick={() => toggleDay(day)}
-                    className={cn(
-                      'rounded-full px-3 py-1 text-xs font-bold transition-all',
-                      selectedDays.includes(day)
-                        ? 'bg-primary text-white'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    )}
-                  >
-                    {day}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           <DialogFooter className='gap-2'>
             <Button
