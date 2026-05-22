@@ -4,7 +4,6 @@ import {
   Calendar,
   Edit,
   Eye,
-  Mail,
   Phone,
   Plus,
   Search,
@@ -15,8 +14,13 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getStudentApiErrorMessage } from '@/api/service/admin/student.service'
-import { cn } from '@/lib/utils'
 import type { User } from '@/api/service/teacher/user.type'
+import {
+  adminDialogClass,
+  adminPageSubtitleClass,
+  adminPageTitleClass,
+} from '@/lib/admin-ui'
+import { cn } from '@/lib/utils'
 import { useAdminStudents } from '@/hooks/admin/students/useAdminStudents'
 import { useCreateAdminStudent } from '@/hooks/admin/students/useCreateAdminStudent'
 import { useDeleteAdminStudent } from '@/hooks/admin/students/useDeleteAdminStudent'
@@ -54,37 +58,20 @@ import { ConfigDrawer } from '@/components/config-drawer'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { ListPagination } from '@/components/list-pagination'
-import {
-  adminDialogClass,
-  adminPageSubtitleClass,
-  adminPageTitleClass,
-} from '@/lib/admin-ui'
 
 interface StudentFormData {
   username: string
-
-  email: string
-
   full_name: string
-
   phone: string
-
   password: string
-
   is_active: boolean
 }
 
 const getInitialFormData = (): StudentFormData => ({
   username: '',
-
-  email: '',
-
   full_name: '',
-
   phone: '+998',
-
   password: '',
-
   is_active: true,
 })
 
@@ -146,14 +133,9 @@ export default function AdminStudentsPage() {
 
   const [editDraft, setEditDraft] = useState({
     username: '',
-
     full_name: '',
-
     phone: '+998',
-
     is_active: true,
-
-    email: '',
   })
 
   const handleInputChange = (
@@ -172,10 +154,7 @@ export default function AdminStudentsPage() {
     if (!formData.username.trim())
       return toast.error('Username kiritilishi shart')
 
-    if (!formData.email.trim()) return toast.error('Email kiritilishi shart')
-
-    if (!formData.full_name.trim())
-      return toast.error("To'liq ism to'ldirilishi shart")
+    if (!formData.full_name.trim()) return toast.error('Full name is required')
 
     if (!formData.password.trim()) return toast.error('Parol kiritilishi shart')
 
@@ -185,15 +164,9 @@ export default function AdminStudentsPage() {
     toast.promise(
       createMutation.mutateAsync({
         username: formData.username.trim(),
-
-        email: formData.email.trim(),
-
         full_name: formData.full_name.trim(),
-
         phone: formData.phone !== '+998' ? formData.phone : undefined,
-
         password: formData.password.trim(),
-
         role: 'student' as const,
       }),
 
@@ -218,14 +191,8 @@ export default function AdminStudentsPage() {
 
     setEditDraft({
       username: student.username ?? '',
-
-      email: student.email ?? '',
-
-      full_name:
-        `${student.first_name || ''} ${student.last_name || ''}`.trim(),
-
+      full_name: student.full_name || '',
       phone: student.phone || '+998',
-
       is_active: Boolean(student.is_active),
     })
 
@@ -258,8 +225,7 @@ export default function AdminStudentsPage() {
   const confirmEdit = () => {
     if (!selectedStudent) return
 
-    if (!editDraft.full_name.trim())
-      return toast.error("To'liq ism to'ldirilishi shart")
+    if (!editDraft.full_name.trim()) return toast.error('Full name is required')
 
     if (!editDraft.username.trim())
       return toast.error('Username kiritilishi shart')
@@ -366,25 +332,23 @@ export default function AdminStudentsPage() {
                 onSubmit={handleSubmit}
                 className='flex flex-col items-center py-4'
               >
-                <div className='mb-3 grid w-full grid-cols-1 gap-3 sm:grid-cols-2'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='full_name' className='text-xs font-medium'>
-                      To'liq ism
-                    </Label>
+                <div className='mb-3 w-full space-y-2'>
+                  <Label htmlFor='full_name' className='text-xs font-medium'>
+                    Full name
+                  </Label>
 
-                    <Input
-                      id='full_name'
-                      value={formData.full_name}
-                      onChange={(e) =>
-                        handleInputChange('full_name', e.target.value)
-                      }
-                      placeholder='Enter full name'
-                      className='h-9'
-                    />
-                  </div>
+                  <Input
+                    id='full_name'
+                    value={formData.full_name}
+                    onChange={(e) =>
+                      handleInputChange('full_name', e.target.value)
+                    }
+                    placeholder='Enter full name'
+                    className='h-9 w-full'
+                  />
                 </div>
 
-                <div className='mb-3 w-full space-y-1'>
+                <div className='mb-3 w-full space-y-2'>
                   <Label htmlFor='username' className='text-xs font-medium'>
                     Username
                   </Label>
@@ -396,22 +360,6 @@ export default function AdminStudentsPage() {
                       handleInputChange('username', e.target.value)
                     }
                     placeholder='Enter username'
-                    className='h-9'
-                    required
-                  />
-                </div>
-
-                <div className='mb-3 w-full space-y-1'>
-                  <Label htmlFor='email' className='text-xs font-medium'>
-                    Email
-                  </Label>
-
-                  <Input
-                    id='email'
-                    type='email'
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder='Enter email'
                     className='h-9'
                     required
                   />
@@ -620,7 +568,7 @@ export default function AdminStudentsPage() {
                         </TableCell>
 
                         <TableCell className='px-3 py-2 text-xs font-medium sm:px-4 sm:py-3 sm:text-sm'>
-                          {student.first_name} {student.last_name}
+                          {student.full_name}
                         </TableCell>
 
                         <TableCell className='px-3 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm'>
@@ -747,15 +695,13 @@ export default function AdminStudentsPage() {
                       <AvatarImage src={selectedStudent.avatar} />
 
                       <AvatarFallback className='bg-primary text-2xl font-bold text-primary-foreground'>
-                        {selectedStudent.first_name?.[0]}
-
-                        {selectedStudent.last_name?.[0]}
+                        {selectedStudent.full_name?.[0] || 'U'}
                       </AvatarFallback>
                     </Avatar>
 
                     <div className='flex-1'>
                       <h3 className='text-xl font-bold text-foreground'>
-                        {selectedStudent.first_name} {selectedStudent.last_name}
+                        {selectedStudent.full_name}
                       </h3>
 
                       <p className='text-sm text-muted-foreground'>
@@ -775,17 +721,6 @@ export default function AdminStudentsPage() {
                   </div>
 
                   <div className='grid gap-4 sm:grid-cols-2'>
-                    <div className='rounded-xl border bg-card p-4'>
-                      <div className='flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase'>
-                        <Mail className='h-4 w-4' />
-                        Email
-                      </div>
-
-                      <p className='mt-2 text-sm font-medium text-foreground'>
-                        {selectedStudent.email}
-                      </p>
-                    </div>
-
                     <div className='rounded-xl border bg-card p-4'>
                       <div className='flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase'>
                         <Phone className='h-4 w-4' />
@@ -828,8 +763,7 @@ export default function AdminStudentsPage() {
 
               {modalAction === 'delete' && (
                 <p className='text-sm text-muted-foreground'>
-                  {selectedStudent.first_name} {selectedStudent.last_name} ni
-                  o'chirmoqchimisiz?
+                  {selectedStudent.full_name} ni o'chirmoqchimisiz?
                 </p>
               )}
 
@@ -853,7 +787,7 @@ export default function AdminStudentsPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor='edit-full-name'>To'liq ism</Label>
+                    <Label htmlFor='edit-full-name'>Full name</Label>
 
                     <Input
                       id='edit-full-name'
@@ -865,7 +799,7 @@ export default function AdminStudentsPage() {
                           full_name: e.target.value,
                         }))
                       }
-                      className='mt-1'
+                      className='mt-1 w-full'
                     />
                   </div>
 

@@ -1,18 +1,12 @@
 import React, { useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Edit, Eye, Plus, Search, Trash2, User, X } from 'lucide-react'
-import {
-  formatPhoneDisplay,
-  getStudentApiErrorMessage,
-} from '@/api/service/admin/student.service'
+import { getStudentApiErrorMessage } from '@/api/service/admin/student.service'
 import type { User as ApiUser } from '@/api/service/teacher/user.type'
 import { cn } from '@/lib/utils'
 import { SearchProvider } from '@/context/search-provider'
 import { useAdminStudents } from '@/hooks/admin/students/useAdminStudents'
-import {
-  getCreateStudentErrorMessage,
-  useCreateAdminStudent,
-} from '@/hooks/admin/students/useCreateAdminStudent'
+import { useCreateAdminStudent } from '@/hooks/admin/students/useCreateAdminStudent'
 import { useDeleteAdminStudent } from '@/hooks/admin/students/useDeleteAdminStudent'
 import { useUpdateAdminStudent } from '@/hooks/admin/students/useUpdateAdminStudent'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -59,7 +53,6 @@ import { StudentModal } from './components/StudentModal'
 export interface Student {
   id: number
   username: string
-  email: string
   fullName: string
   phone: string
   group: string
@@ -70,10 +63,8 @@ export interface Student {
 
 const getInitialFormData = () => ({
   username: '',
-  email: '',
+  full_name: '',
   password: '',
-  name: '',
-  surname: '',
   phone: '+998',
   level: '',
   status: true,
@@ -84,29 +75,13 @@ const getInitialFormData = () => ({
 const apiUserToStudent = (student: ApiUser): Student => ({
   id: student.id,
   username: student.username ?? '',
-  email: student.email ?? '',
-  fullName:
-    `${student.first_name ?? ''} ${student.last_name ?? ''}`
-      .replace(/\s+/g, ' ')
-      .trim() ||
-    student.username ||
-    `Student #${student.id}`,
-  phone: formatPhoneDisplay(student.phone),
+  fullName: student.full_name || student.username || `Student #${student.id}`,
+  phone: student.phone || '',
   group: 'Belgilanmagan',
   paymentStatus: 'pending',
   status: student.is_active ? 'active' : 'inactive',
   avatar: student.avatar || null,
 })
-
-function splitFullName(fullName: string) {
-  const parts = fullName.trim().replace(/\s+/g, ' ').split(' ')
-  const firstName = parts.shift() ?? ''
-  const lastName = parts.join(' ')
-  return {
-    firstName,
-    lastName: lastName || firstName,
-  }
-}
 
 const paymentStatusColors = {
   paid: 'bg-green-100 text-green-800',
@@ -201,23 +176,18 @@ export default function StudentsPage() {
     try {
       await createMutation.mutateAsync({
         username: formData.username,
-        email: formData.email,
-        first_name: formData.name,
-        last_name: formData.surname,
+        full_name: formData.full_name,
         phone: formData.phone,
         password: formData.password,
         role: 'student',
       })
 
-      addToast(
-        `${formData.name} ${formData.surname} muvaffaqiyatli qo'shildi!`,
-        'success'
-      )
+      addToast(`${formData.full_name} muvaffaqiyatli qo'shildi!`, 'success')
       setFormData(getInitialFormData())
       setAvatarPreview('')
       setIsModalOpen(false)
     } catch (error) {
-      addToast(getCreateStudentErrorMessage(error), 'error')
+      addToast(getStudentApiErrorMessage(error), 'error')
     }
   }
 
@@ -270,15 +240,12 @@ export default function StudentsPage() {
           'success'
         )
       } else if (modalAction === 'edit') {
-        const { firstName, lastName } = splitFullName(updatedStudent.fullName)
         await updateMutation.mutateAsync({
           studentId: updatedStudent.id,
           data: {
             username: updatedStudent.username,
-            first_name: firstName,
-            last_name: lastName,
+            full_name: updatedStudent.fullName,
             phone: updatedStudent.phone,
-            is_active: updatedStudent.status === 'active',
           },
         })
         addToast(
@@ -407,53 +374,19 @@ export default function StudentsPage() {
                         />
                       </div>
                       <div className='space-y-2'>
-                        <Label htmlFor='email' className='text-sm font-medium'>
-                          Email
-                        </Label>
-                        <Input
-                          id='email'
-                          type='email'
-                          value={formData.email}
-                          onChange={(e) =>
-                            handleInputChange('email', e.target.value)
-                          }
-                          placeholder='student@example.com'
-                          className='h-10'
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className='mb-4 grid w-full grid-cols-2 gap-4'>
-                      <div className='space-y-2'>
-                        <Label htmlFor='name' className='text-sm font-medium'>
-                          First Name
-                        </Label>
-                        <Input
-                          id='name'
-                          value={formData.name}
-                          onChange={(e) =>
-                            handleInputChange('name', e.target.value)
-                          }
-                          placeholder='Enter first name'
-                          className='h-10'
-                          required
-                        />
-                      </div>
-                      <div className='space-y-2'>
                         <Label
-                          htmlFor='surname'
+                          htmlFor='full_name'
                           className='text-sm font-medium'
                         >
-                          Last Name
+                          Full name
                         </Label>
                         <Input
-                          id='surname'
-                          value={formData.surname}
+                          id='full_name'
+                          value={formData.full_name}
                           onChange={(e) =>
-                            handleInputChange('surname', e.target.value)
+                            handleInputChange('full_name', e.target.value)
                           }
-                          placeholder='Enter last name'
+                          placeholder='Enter full name'
                           className='h-10'
                           required
                         />
@@ -677,7 +610,7 @@ export default function StudentsPage() {
           {/* Students Table */}
           <Card>
             <CardHeader>
-              <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+              <div className='flex flex-col gap-4'>
                 <div>
                   <CardTitle>Students Table</CardTitle>
                   <CardDescription>
