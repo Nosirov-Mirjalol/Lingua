@@ -19,13 +19,11 @@ export const useStudentNotificationsList = (
     queryFn: () =>
       apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
     enabled,
-    staleTime: 10_000, // 10 soniya
-    refetchInterval: 30_000, // 30 soniya (fallback)
+    staleTime: 10_000, 
+    refetchInterval: 30_000, 
     refetchOnWindowFocus: true,
   })
 }
-
-/** O'qilmagan xabarlar sonini olish */
 export const useStudentUnreadCount = (
   options: { enabled?: boolean } = {}
 ) => {
@@ -35,13 +33,11 @@ export const useStudentUnreadCount = (
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
     enabled,
-    staleTime: 0, // Har doim yangi ma'lumot olish
-    refetchInterval: 30_000, // 30 soniya (fallback)
+    staleTime: 0, 
+    refetchInterval: 30_000, 
     refetchOnWindowFocus: true,
   })
 }
-
-/** Bitta bildirishnomani o'qilgan deb belgilash */
 export const useStudentMarkAsRead = () => {
   const queryClient = useQueryClient()
 
