@@ -51,7 +51,7 @@ function unwrap<T>(
 
 function unwrapSingle<T>(
   raw: unknown,
-  nestedKeys: string[] = ['results', 'data', 'profile', 'user']
+  nestedKeys: string[] = ['results', 'data', 'profile', 'user', 'User Data']
 ): T | null {
   if (!raw) return null
 
@@ -169,7 +169,7 @@ const buildProfile = (overrides?: Partial<StudentProfile>): StudentProfile => {
     username: username || '',
     full_name: full_name || '',
     role: data?.role ?? 'student',
-    avatar: data?.avatar || '/avatars/student1.jpg',
+    avatar: data?.avatar || '',
     timezone: timezone || '',
     bio: bio || '',
     learning_goal: learning_goal || '',

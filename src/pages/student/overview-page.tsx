@@ -29,7 +29,7 @@ export function StudentOverviewPage() {
     <div className='mx-auto max-w-7xl space-y-6'>
       <section className='mb-7'>
         <StudentPageHeader
-          title={`Xush kelibsiz, ${profile?.username ?? 'O‘quvchi'}`}
+          title={`Xush kelibsiz, ${profile?.full_name || profile?.username || ''}`}
           description='Sizning shaxsiy talaba portalingiz tayyor. O‘qishda davom eting.'
         />
       </section>

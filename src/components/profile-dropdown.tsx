@@ -19,6 +19,8 @@ import { useProfile } from '@/hooks/teacher/profile/useProfile'
 import { useStudentProfile } from '@/hooks/student/useStudentPortal'
 import { adminProfileStorageKey } from '@/components/layout/data/sidebar-data'
 
+import { getFullAvatarUrl } from '@/components/shared/profile-avatar'
+
 function getInitials(name?: string): string {
   if (!name) return 'U'
   const parts = name
@@ -41,14 +43,14 @@ export function ProfileDropdown() {
       return {
         name: teacherProfile.full_name || teacherProfile.username || 'Teacher',
         email: teacherProfile.email || '',
-        avatar: teacherProfile.avatar || '',
+        avatar: getFullAvatarUrl(teacherProfile.avatar) || '',
       }
     }
     if ((role === 'student' || role === 'user') && studentProfile) {
       return {
         name: studentProfile.full_name || studentProfile.username || 'Student',
         email: studentProfile.email || '',
-        avatar: studentProfile.avatar || '',
+        avatar: getFullAvatarUrl(studentProfile.avatar) || '',
       }
     }
     // Admin - get from localStorage
@@ -60,7 +62,7 @@ export function ProfileDropdown() {
           return {
             name: data.name || 'Admin',
             email: data.email || '',
-            avatar: data.avatar || '',
+            avatar: getFullAvatarUrl(data.avatar) || '',
           }
         }
       } catch {

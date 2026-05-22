@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { createFileRoute } from '@tanstack/react-router'
-import { Loader2, Save, Camera, User } from 'lucide-react'
+import { Loader2, Save } from 'lucide-react'
 import { useProfile } from '@/hooks/teacher/profile/useProfile'
 import { useUpdateProfile } from '@/hooks/teacher/profile/useUpdateProfile'
 import { Input } from '@/components/ui/input'
 import { RoseButton } from '@/components/ui/rose-button'
 import { Textarea } from '@/components/ui/textarea'
+import { ProfileAvatar } from '@/components/shared/profile-avatar'
 
 export const Route = createFileRoute(
   '/_authenticated/teacher-dashboard/profile'
@@ -28,20 +29,6 @@ function ProfilePage() {
   const updateProfileMutation = useUpdateProfile()
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-
-  // Mahalliy (local) preview uchun URL yaratish
-  const previewUrl = useMemo(() => {
-    if (selectedFile) return URL.createObjectURL(selectedFile)
-    return profile?.avatar ?? null
-  }, [profile?.avatar, selectedFile])
-
-  // Xotira sizib chiqishini (memory leak) oldini olish
-  useEffect(() => {
-    if (!selectedFile || !previewUrl) return
-    return () => {
-      URL.revokeObjectURL(previewUrl)
-    }
-  }, [previewUrl, selectedFile])
 
   const {
     register,
@@ -66,13 +53,6 @@ function ProfilePage() {
       })
     }
   }, [profile, reset])
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-    }
-  }
 
   const onSubmit = async (data: ProfileForm) => {
     const formData = new FormData()
@@ -130,37 +110,14 @@ function ProfilePage() {
         {/* Chap ustun: Avatar */}
         <div className='w-full md:w-1/3 lg:w-1/4'>
           <div className='flex flex-col items-center rounded-xl border border-slate-200 bg-card p-6 text-card-foreground shadow-sm dark:border-slate-800 dark:bg-slate-900'>
-            <div className='group relative mb-4'>
-              <div className='h-32 w-32 overflow-hidden rounded-full border-4 border-muted'>
-                {previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt='Profile'
-                    className='h-full w-full object-cover'
-                  />
-                ) : (
-                  <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
-                    <User size={48} />
-                  </div>
-                )}
-              </div>
-              <label className='absolute right-1 bottom-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-2 border-background bg-[#b80035] text-white shadow-sm transition-transform hover:scale-105 dark:border-slate-800'>
-                <Camera size={16} />
-                <input
-                  type='file'
-                  className='hidden'
-                  accept='image/jpeg, image/png, image/webp'
-                  onChange={handleFileChange}
-                  disabled={isFormDisabled}
-                />
-              </label>
-            </div>
-            <h2 className='text-lg font-semibold text-foreground dark:text-white'>
-              {profile.full_name || profile.username || 'User'}
-            </h2>
-            <span className='mt-1 text-sm text-muted-foreground dark:text-slate-400'>
-              Teacher
-            </span>
+            <ProfileAvatar
+              avatarUrl={profile.avatar}
+              name={profile.full_name || profile.username}
+              role="Teacher"
+              onFileSelect={setSelectedFile}
+              isPending={isFormDisabled}
+              size="lg"
+            />
           </div>
         </div>
 

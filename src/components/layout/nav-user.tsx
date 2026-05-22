@@ -16,6 +16,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { SignOutDialog } from '@/components/sign-out-dialog'
+import { getFullAvatarUrl } from '@/components/shared/profile-avatar'
 
 type NavUserProps = {
   user: {
@@ -30,6 +31,8 @@ export function NavUser({ user, role }: NavUserProps) {
   const { isMobile } = useSidebar()
   const [open, setOpen] = useDialogState()
 
+  const avatarUrl = getFullAvatarUrl(user.avatar)
+
   return (
     <>
       <SidebarMenu className='-mt-5'>
@@ -41,8 +44,8 @@ export function NavUser({ user, role }: NavUserProps) {
                 className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
               >
                 <Avatar className='h-8 w-8 rounded-lg'>
-                  {user.avatar && (
-                    <AvatarImage src={user.avatar} alt={user.name} />
+                  {avatarUrl && (
+                    <AvatarImage src={avatarUrl} alt={user.name} />
                   )}
                   <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
                 </Avatar>
@@ -66,8 +69,8 @@ export function NavUser({ user, role }: NavUserProps) {
               <DropdownMenuLabel className='p-0 font-normal'>
                 <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
                   <Avatar className='h-8 w-8 rounded-lg'>
-                    {user.avatar && (
-                      <AvatarImage src={user.avatar} alt={user.name} />
+                    {avatarUrl && (
+                      <AvatarImage src={avatarUrl} alt={user.name} />
                     )}
                     <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
                   </Avatar>
