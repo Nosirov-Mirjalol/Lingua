@@ -95,8 +95,7 @@ export const getMyGroups = async (): Promise<StudentGroup[]> => {
   try {
     const response = await apiClient.get<unknown>(STUDENT.ASSIGNED_GROUPS)
     return unwrapGroups(response)
-  } catch (error) {
-    console.error('Error fetching student groups:', error)
+  } catch {
     return []
   }
 }

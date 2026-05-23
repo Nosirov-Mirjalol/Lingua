@@ -6,18 +6,13 @@ export const useDeleteAdminTeacher = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (teacherId: number) => {
-      console.log('Deleting teacher:', teacherId)
-      return deleteAdminTeacher(teacherId)
-    },
+    mutationFn: (teacherId: number) => deleteAdminTeacher(teacherId),
     onSuccess: async () => {
-      console.log('Teacher delete successful')
       await queryClient.invalidateQueries({
         queryKey: ['admin', 'teachers', 'list'],
       })
     },
     onError: (error: unknown) => {
-      console.error('Teacher delete error:', error)
       toast.error((error as Error)?.message || "O'chirishda xatolik")
     },
   })

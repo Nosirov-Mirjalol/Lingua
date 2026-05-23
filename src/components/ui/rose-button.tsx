@@ -52,7 +52,7 @@ function RoseButton({
       variant={null as any}
       size={null as any}
       className={cn(
-        'font-bold tracking-tight rounded-lg select-none transition-all duration-200 active:scale-95 border-none',
+        'font-bold tracking-tight select-none transition-all duration-200 active:scale-95 border-none',
         variantClassNames[roseVariant],
         sizeClassNames[roseSize],
         className

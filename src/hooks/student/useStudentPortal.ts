@@ -81,7 +81,11 @@ function unwrapSingle<T>(
   return null
 }
 
-function formatTimeRange(start?: string, end?: string, fallback?: string): string {
+function formatTimeRange(
+  start?: string,
+  end?: string,
+  fallback?: string
+): string {
   if (fallback?.trim()) return fallback
   const parts = [start, end].filter((value): value is string => !!value?.trim())
   return parts.length === 2
@@ -98,8 +102,13 @@ function normalizeLessonStatus(status?: string): string {
   return status
 }
 
-function normalizeStudentScheduleItem(item: any): StudentScheduleItem {
-  const rawDays = item.week_days_names || item.days || []
+function normalizeStudentScheduleItem(
+  item: Record<string, unknown>
+): StudentScheduleItem {
+  const rawDays =
+    (item.week_days_names as string[] | undefined) ||
+    (item.days as string[] | undefined) ||
+    []
   const formattedDaysString = formatLessonDays(rawDays)
   const cleanDays =
     formattedDaysString === 'No lesson days available'
@@ -107,15 +116,25 @@ function normalizeStudentScheduleItem(item: any): StudentScheduleItem {
       : formattedDaysString.split(', ')
 
   return {
-    id: item.id ?? 0,
+    id: (item.id as number) ?? 0,
     title:
-      item.title || item.name || item.group_name || item.course_name || 'Dars',
-    time: formatTimeRange(item.start_time, item.end_time, item.time),
-    week_days_type: item.week_days_type || 'Dars jadvali',
+      (item.title as string) ||
+      (item.name as string) ||
+      (item.group_name as string) ||
+      (item.course_name as string) ||
+      'Dars',
+    time: formatTimeRange(
+      item.start_time as string | undefined,
+      item.end_time as string | undefined,
+      item.time as string | undefined
+    ),
+    week_days_type: (item.week_days_type as string) || 'Dars jadvali',
     week_days_names: cleanDays,
-    status: normalizeLessonStatus(item.status || item.lesson_status),
-    start_date: item.start_date || '-',
-    end_date: item.end_date || '-',
+    status: normalizeLessonStatus(
+      (item.status as string) || (item.lesson_status as string)
+    ),
+    start_date: (item.start_date as string) || '-',
+    end_date: (item.end_date as string) || '-',
   }
 }
 
@@ -160,7 +179,7 @@ const buildProfile = (overrides?: Partial<StudentProfile>): StudentProfile => {
     data?.timezone && data.timezone !== 'string' ? data.timezone : ''
   const bio = data?.bio && data.bio !== 'string' ? data.bio : ''
   const learning_goal =
-    data?.learning_goal && data.learning_goal !== 'string' && data.learning_goal !== 'fsdfds'
+    data?.learning_goal && data.learning_goal !== 'string'
       ? data.learning_goal
       : 'Ingliz tilida erkin so‘zlashish va barcha ko‘nikmalarni mukammal rivojlantirish'
 
@@ -190,7 +209,7 @@ export const useStudentProfile = () => {
       try {
         // ✅ Cache buster olib tashlandi — React Query o'zi cache boshqaradi
         const response = await apiClient.get<unknown>(AUTH.PROFILE_GET)
-        const profileData = unwrapSingle<any>(response)
+        const profileData = unwrapSingle<Record<string, unknown>>(response)
 
         if (profileData) {
           const current = getStoredUser()
@@ -198,48 +217,63 @@ export const useStudentProfile = () => {
           sessionStorage.setItem('linguapro_user', JSON.stringify(updated))
           return buildProfile(profileData)
         }
-      } catch (error) {
-        console.error('Failed to fetch student profile:', error)
+      } catch {
+        /* API xatosi — buildProfile() fallback ishlatiladi */
       }
       return buildProfile()
     },
     // ✅ FIX: Ko'p so'rovlar muammosi hal qilindi
-    staleTime: 5 * 60 * 1000,      // 5 daqiqa cache — bu vaqt ichida qayta so'rov yo'q
-    gcTime: 10 * 60 * 1000,        // 10 daqiqa xotirada saqlash
-    refetchOnWindowFocus: false,    // Oynaga qaytganda qayta so'rov yubormaslik
-    refetchOnMount: false,          // Cache bo'lsa mountda qayta yuklamaslik
+    staleTime: 5 * 60 * 1000, // 5 daqiqa cache — bu vaqt ichida qayta so'rov yo'q
+    gcTime: 10 * 60 * 1000, // 10 daqiqa xotirada saqlash
+    refetchOnWindowFocus: false, // Oynaga qaytganda qayta so'rov yubormaslik
+    refetchOnMount: false, // Cache bo'lsa mountda qayta yuklamaslik
   })
 }
 
 export const useStudentDashboard = () => {
   const { data: unreadRes } = useStudentUnreadCount()
   const unreadCount = unreadRes?.unread_count ?? 0
-  const { data: profile } = useStudentProfile()
   const { data: schedule } = useStudentSchedule()
   const { data: homework } = useStudentHomework()
   const { data: groups } = useStudentGroups()
 
   return useQuery({
-    queryKey: ['student', 'dashboard', unreadCount, profile?.id, schedule?.length, homework?.length, groups?.length],
+    // ✅ FIX: profile?.id ni dependency dan olib tashladik — profile o'zgarganda
+    // dashboard qayta hisoblanmaydi, faqat unreadCount o'zgarganda
+    queryKey: ['student', 'dashboard', unreadCount, schedule, homework, groups],
     queryFn: async () => {
-      const activeProfile = profile || buildProfile()
-      
-      const upcomingLessonsCount = schedule?.filter(s => s.status === 'Kutilmoqda').length ?? 0
-      
+      const upcomingLessonsCount =
+        schedule?.filter((s) => s.status === 'Kutilmoqda').length ?? 0
+
       // Uy vazifalari statistikasi
       const totalHomework = homework?.length ?? 0
-      const submittedHomework = (homework as any)?.filter((h: any) => h.status === 'submitted' || h.status === 'completed').length ?? 0
+      const submittedHomework = homework?.filter(h => h.is_submitted || !!h.submitted_at).length ?? 0
 
       // Dars kunlari ma'lumotlari
-      const lessonDays = groups?.[0]?.week_days_names?.join(', ') || 'Seshanba, Payshanba, Shanba'
+      const lessonDays =
+        groups?.[0]?.week_days_names?.join(', ') ||
+        'Seshanba, Payshanba, Shanba'
       const firstGroupName = groups?.[0]?.name || 'Guruh mavjud emas'
-      const firstTeacherName = groups?.[0]?.teacher?.full_name || groups?.[0]?.teacher_name || 'Ustoz belgilanmagan'
+      const firstTeacherName =
+        groups?.[0]?.teacher?.full_name ||
+        groups?.[0]?.teacher_name ||
+        'Ustoz belgilanmagan'
 
-      // Kurs davomiyligini (jami kunlarni) hisoblash (2026-02-10 dan 2026-05-10 gacha)
-      const startDate = new Date('2026-02-10')
-      const endDate = new Date('2026-05-10')
-      const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
-      const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      // Kurs davomiyligini (jami kunlarni) hisoblash - guruh boshlanish va tugash sanalaridan
+      const groupStartDate = groups?.[0]?.start_date
+      const groupEndDate = groups?.[0]?.end_date
+      let totalDays = 89 // Default: 3 months (approximate)
+
+      if (groupStartDate && groupEndDate) {
+        try {
+          const startDate = new Date(groupStartDate)
+          const endDate = new Date(groupEndDate)
+          const diffTime = Math.abs(endDate.getTime() - startDate.getTime())
+          totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        } catch {
+          // Date parsing failed, use default
+        }
+      }
 
       return {
         stats: {
@@ -258,7 +292,7 @@ export const useStudentDashboard = () => {
           },
           {
             title: 'Topshirilgan vazifalar',
-            value: `${totalHomework}`,
+            value: `${submittedHomework} / ${totalHomework}`,
           }
         ],
         quickActions: [
@@ -279,7 +313,7 @@ export const useStudentSchedule = () => {
     queryKey: ['student', 'schedule'],
     queryFn: async (): Promise<StudentScheduleItem[]> => {
       const data = await apiClient.get<unknown>(GROUP.MY_SCHEDULE)
-      return unwrap<any>(data, [
+      return unwrap<Record<string, unknown>>(data, [
         'results',
         'data',
         'schedule',
@@ -328,21 +362,25 @@ export const useStudentMessages = () => {
     queryKey: ['student', 'messages'],
     queryFn: async (): Promise<StudentConversation[]> => {
       const res = await apiClient.get<unknown>(MESSAGES.GROUPS)
-      const data = unwrap<any>(res, [
+      const data = unwrap<Record<string, unknown>>(res, [
         'results',
         'data',
         'groups',
         'conversations',
       ])
-      return data.map((c: any) => ({
-        id: c.id,
-        participant: c.group_name || 'Guruh',
+      return data.map((c: Record<string, unknown>) => ({
+        id: c.id as number,
+        participant: (c.group_name as string) || 'Guruh',
         subject: 'Guruh xabari',
-        lastMessage: c.last_message?.text || "Xabarlar yo'q",
-        time: c.last_message?.created_at
-          ? formatRelativeTime(c.last_message.created_at)
+        lastMessage:
+          ((c.last_message as Record<string, unknown>)?.text as string) ||
+          "Xabarlar yo'q",
+        time: (c.last_message as Record<string, unknown>)?.created_at
+          ? formatRelativeTime(
+              (c.last_message as Record<string, unknown>).created_at as string
+            )
           : '',
-        unread: c.unread_count || 0,
+        unread: (c.unread_count as number) || 0,
         messages: [],
       }))
     },

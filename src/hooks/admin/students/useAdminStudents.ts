@@ -1,30 +1,14 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getAdminStudents } from '@/api/service/admin/student.service'
-import type { User } from '@/api/service/teacher/user.type'
 
 export const useAdminStudents = (
   search: string,
-  page?: number,
-  pageSize?: number
+  page = 1,
+  pageSize = 10
 ) => {
-  const { data, isLoading, isError } = useQuery({
+  return useQuery({
     queryKey: ['admin', 'students', 'list', { search, page, pageSize }],
-    queryFn: () => getAdminStudents(page, pageSize),
+    queryFn: () => getAdminStudents(page, pageSize, search),
+    placeholderData: (prev) => prev,
   })
-
-  const students = useMemo(() => {
-    if (!data?.length) return []
-    return data.filter((user: User) => {
-      const role = user.role != null ? String(user.role).toLowerCase() : ''
-      return !role || role === 'student'
-    })
-  }, [data])
-
-  return {
-    data: students,
-    isLoading,
-    isError,
-    totalCount: data?.length ?? 0,
-  }
 }

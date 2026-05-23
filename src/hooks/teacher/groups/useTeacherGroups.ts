@@ -1,10 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMyGroups } from '@/hooks/groups/useMyGroups'
 
-import { getTeacherGroups } from '@/api/service/teacher/group.service'
-
-export const useTeacherGroups = () => {
-  return useQuery({
-    queryKey: ['teacher', 'groups', 'my'],
-    queryFn: () => getTeacherGroups(),
-  })
-}
+export const useTeacherGroups = () => useMyGroups()

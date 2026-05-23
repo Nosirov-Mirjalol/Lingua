@@ -1,0 +1,327 @@
+/* ═══════════════════════════════════════════════════════════════
+   Admin panel — dizayn tizimi
+   Input: 10px | Modal: 16px | Button: 24px | Tipografiya: bir xil
+   ═══════════════════════════════════════════════════════════════ */
+
+html.admin-shell {
+  --admin-radius-input: 10px;
+  --admin-radius-modal: 16px;
+  --admin-radius-button: 24px;
+
+  --admin-font-title: 1.5rem;
+  --admin-weight-title: 600;
+  --admin-font-subtitle: 0.875rem;
+  --admin-weight-subtitle: 400;
+  --admin-font-body: 0.875rem;
+  --admin-weight-body: 500;
+  --admin-font-label: 0.75rem;
+  --admin-weight-label: 600;
+  --admin-font-caption: 0.75rem;
+  --admin-weight-caption: 500;
+}
+
+/* ── Inputlar ── */
+html.admin-shell [data-slot='input'],
+html.admin-shell [data-slot='textarea'],
+html.admin-shell [data-slot='select-trigger'],
+html.admin-shell .admin-field,
+html.admin-shell input:not([type='checkbox']):not([type='radio']):not([type='file']):not(
+    [type='hidden']
+  ):not([type='range']):not([type='color']),
+html.admin-shell textarea,
+html.admin-shell select {
+  border-radius: var(--admin-radius-input) !important;
+  font-size: var(--admin-font-body) !important;
+  font-weight: var(--admin-weight-body) !important;
+}
+
+html.admin-shell [data-slot='select-content'] {
+  border-radius: var(--admin-radius-input) !important;
+}
+
+/* ── Tugmalar ── */
+html.admin-shell button:not([data-slot='dialog-close']):not([data-slot='alert-dialog-cancel']),
+html.admin-shell [data-slot='button'],
+html.admin-shell a.admin-btn {
+  border-radius: var(--admin-radius-button) !important;
+  font-size: var(--admin-font-body) !important;
+  font-weight: var(--admin-weight-body) !important;
+}
+
+/* Icon-only kichik tugmalar — doira emas, 10px */
+html.admin-shell button[data-slot='dialog-close'],
+html.admin-shell button[size='icon'].h-7,
+html.admin-shell button[size='icon'].h-8:not(.admin-page__cta) {
+  border-radius: var(--admin-radius-input) !important;
+}
+
+/* ── Modallar ── */
+html.admin-shell [data-slot='dialog-content'],
+html.admin-shell [data-slot='alert-dialog-content'],
+html.admin-shell .admin-dialog {
+  border-radius: var(--admin-radius-modal) !important;
+}
+
+/* ── Tipografiya ── */
+html.admin-shell .admin-page__title,
+html.admin-shell [data-slot='dialog-title'],
+html.admin-shell [data-slot='alert-dialog-title'],
+html.admin-shell .admin-text-title {
+  font-size: var(--admin-font-title) !important;
+  font-weight: var(--admin-weight-title) !important;
+  line-height: 1.3 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+html.admin-shell .admin-page__subtitle,
+html.admin-shell [data-slot='dialog-description'],
+html.admin-shell [data-slot='alert-dialog-description'],
+html.admin-shell .admin-text-subtitle {
+  font-size: var(--admin-font-subtitle) !important;
+  font-weight: var(--admin-weight-subtitle) !important;
+  line-height: 1.45 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  color: var(--muted-foreground);
+}
+
+html.admin-shell label,
+html.admin-shell .admin-label,
+html.admin-shell [data-slot='label'] {
+  font-size: var(--admin-font-label) !important;
+  font-weight: var(--admin-weight-label) !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+html.admin-shell p,
+html.admin-shell span,
+html.admin-shell td,
+html.admin-shell th,
+html.admin-shell .admin-text-body {
+  font-size: var(--admin-font-body);
+  font-weight: var(--admin-weight-body);
+}
+
+html.admin-shell .admin-text-caption,
+html.admin-shell small {
+  font-size: var(--admin-font-caption);
+  font-weight: var(--admin-weight-caption);
+}
+
+html.admin-shell h1:not([class*='text-']) {
+  font-size: var(--admin-font-title);
+  font-weight: var(--admin-weight-title);
+}
+
+html.admin-shell h2:not([class*='text-']),
+html.admin-shell h3:not([class*='text-']) {
+  font-size: var(--admin-font-body);
+  font-weight: var(--admin-weight-title);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Layout (avvalgi qoidalar)
+   ═══════════════════════════════════════════════════════════════ */
+
+.admin-page {
+  width: 100%;
+}
+
+.admin-page__container {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: 1.5rem;
+}
+
+.admin-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-page__title {
+  font-size: var(--admin-font-title, 1.5rem);
+  font-weight: var(--admin-weight-title, 600);
+  line-height: 1.3;
+  color: var(--foreground);
+}
+
+.admin-page__subtitle {
+  margin-top: 0.25rem;
+  font-size: var(--admin-font-subtitle, 0.875rem);
+  font-weight: var(--admin-weight-subtitle, 400);
+  color: var(--muted-foreground);
+}
+
+.admin-page__toolbar {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-page__search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-page__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.875rem;
+}
+
+.admin-page__grid-empty {
+  grid-column: 1 / -1;
+}
+
+.admin-group-card__row {
+  padding-block: 0.625rem;
+}
+
+/* Mobile */
+@media screen and (max-width: 639px) {
+  .admin-page__container {
+    padding-inline: 0.875rem;
+    padding-block: 1.25rem;
+  }
+
+  .admin-page__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-page__header .admin-page__cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-page__toolbar {
+    margin-bottom: 1.25rem;
+  }
+
+  .admin-group-card {
+    padding: 0.875rem;
+  }
+
+  .admin-dialog {
+    max-width: calc(100vw - 1.5rem) !important;
+    padding: 1.25rem !important;
+  }
+
+  .admin-dialog__form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Tablet */
+@media screen and (min-width: 640px) {
+  .admin-page__container {
+    padding-inline: 1.5rem;
+    padding-block: 2rem;
+  }
+
+  .admin-page__header {
+    flex-wrap: nowrap;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .admin-page__toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .admin-page__search-wrap {
+    max-width: 20rem;
+  }
+
+  .admin-page__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* Desktop */
+@media screen and (min-width: 1024px) {
+  .admin-page__container {
+    padding-block: 2.5rem;
+  }
+
+  .admin-page__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.125rem;
+  }
+
+  .admin-page__search-wrap {
+    max-width: 24rem;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  .admin-page__grid--groups {
+    gap: 1.25rem;
+  }
+}
+
+/* Notifications */
+.admin-notifications {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.admin-notifications__body {
+  min-height: 280px;
+}
+
+@media screen and (min-width: 768px) {
+  .admin-notifications__body {
+    min-height: calc(100svh - 11rem);
+    max-height: calc(100svh - 11rem);
+  }
+}
+
+.admin-notifications__tabs-mobile {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.admin-notifications__tabs-mobile::-webkit-scrollbar {
+  display: none;
+}
+
+/* Admin chats */
+.admin-chats-page {
+  min-height: 0;
+}
+
+@media screen and (max-width: 639px) {
+  .admin-chats-page {
+    min-height: calc(100svh - 5.5rem);
+    max-height: calc(100svh - 5.5rem);
+  }
+}
+
+@media screen and (min-width: 640px) {
+  .admin-chats-page {
+    min-height: calc(100svh - 7rem);
+    max-height: calc(100svh - 7rem);
+  }
+}
+
+main[data-layout='fixed'].admin-page {
+  overflow: hidden;
+}

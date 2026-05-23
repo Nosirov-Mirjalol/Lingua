@@ -53,8 +53,8 @@ export function StudentProfilePage() {
       await updateProfileMutation.mutateAsync(formData)
       setSelectedFile(null)
       reset(data)
-    } catch (error) {
-      console.error('Profile update failed', error)
+    } catch {
+      /* toast mutation onError orqali ko'rsatiladi */
     }
   }
 

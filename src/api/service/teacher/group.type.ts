@@ -1,4 +1,4 @@
-export type GroupStatus = 'active'
+export type GroupStatus = 'active' | 'completed'
 
 export interface GroupStudent {
   id: number
@@ -29,12 +29,19 @@ export interface Group {
   start_time?: string
   end_time?: string
   week_days?: string | string[]
-  week_days_type?: 'odd' | 'even' | 'custom'
+  week_days_type?:
+    | 'odd'
+    | 'even'
+    | 'custom'
+    | 'toq_kunlar'
+    | 'juft_kunlar'
+    | 'har_kuni'
   students: GroupStudent[]
 }
 
 export interface AddStudentPayload {
-  username: string
+  username?: string
+  student?: number
 }
 
 export interface MessageResponse {

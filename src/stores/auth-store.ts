@@ -36,8 +36,8 @@ const getInitialUser = (): AuthUser | null => {
         exp: Math.floor(Date.now() / 1000) + 3600,
       }
     }
-  } catch (error) {
-    console.error('Error parsing stored user:', error)
+  } catch {
+    /* noto'g'ri saqlangan user — null qaytaramiz */
   }
 
   return null
@@ -53,8 +53,7 @@ const getInitialToken = (): string => {
 
     const cookieState = getCookie(ACCESS_TOKEN)
     return cookieState ? JSON.parse(cookieState) : ''
-  } catch (error) {
-    console.error('Error getting initial token:', error)
+  } catch {
     return ''
   }
 }

@@ -22,6 +22,14 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     pathname.startsWith('/teacher-dashboard/')
   const isStudentArea =
     pathname === '/student' || pathname.startsWith('/student/')
+  const isAdminArea = !isTeacherArea && !isStudentArea
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('admin-shell', isAdminArea)
+    return () => {
+      document.documentElement.classList.remove('admin-shell')
+    }
+  }, [isAdminArea])
 
   useEffect(() => {
     const feedback = consumeLoginSuccessToast()

@@ -8,9 +8,8 @@ export const useRemoveStudentFromGroup = (groupId: number) => {
     mutationFn: (studentId: number) =>
       removeStudentFromGroup(groupId, studentId),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ['teacher', 'groups', 'my'],
-      })
+      await queryClient.invalidateQueries({ queryKey: ['teacher', 'groups'] })
+      await queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] })
       await queryClient.invalidateQueries({
         queryKey: ['students', 'available', groupId],
       })

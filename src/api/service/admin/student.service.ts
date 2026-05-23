@@ -1,5 +1,5 @@
 import { apiClient } from '@/api/client'
-import type { User } from '@/api/service/teacher/user.type'
+import type { User, UserListResponse } from '@/api/service/teacher/user.type'
 
 export type AdminStudentCreatePayload = {
   username: string
@@ -7,6 +7,18 @@ export type AdminStudentCreatePayload = {
   phone?: string
   password?: string
   role: 'student'
+}
+
+export type AdminStudentUpdatePayload = {
+  username?: string
+  full_name?: string
+  phone?: string
+  is_active?: boolean
+}
+
+export type AdminStudentListResult = {
+  students: User[]
+  totalCount: number
 }
 
 export function _parseCreatedUserId(body: unknown): number | null {
@@ -40,6 +52,35 @@ function assertStudentId(studentId: number | string): number {
   return id
 }
 
+function filterStudents(users: User[]): User[] {
+  return users.filter((u) => {
+    const role = u.role != null ? String(u.role).toLowerCase() : ''
+    return !role || role === 'student'
+  })
+}
+
+function matchesSearch(student: User, search: string): boolean {
+  const q = search.trim().toLowerCase()
+  if (!q) return true
+  return (
+    (student.full_name ?? '').toLowerCase().includes(q) ||
+    (student.username ?? '').toLowerCase().includes(q) ||
+    (student.phone ?? '').toLowerCase().includes(q)
+  )
+}
+
+function formatPhoneDigits(phone?: string): string | undefined {
+  if (!phone?.trim()) return undefined
+  const normalized = phone.trim().replace(/\s/g, '')
+  const digits = normalized.replace(/\+998/, '').replace(/^998/, '')
+  if (digits.length !== 9 || !/^\d{9}$/.test(digits)) {
+    throw new Error(
+      "Telefon raqami noto'g'ri formatda. Masalan: +998901234567 yoki 901234567"
+    )
+  }
+  return digits
+}
+
 /**
  * Admin talaba yaratish — POST /api/auth/register/
  */
@@ -54,22 +95,7 @@ export const createAdminStudent = async (
   if (password.length < 8)
     throw new Error("Parol kamida 8 belgi bo'lishi kerak")
 
-  // Phone number validation and formatting
-  let formattedPhone: string | undefined = undefined
-  if (data.phone && data.phone.trim()) {
-    const phone = data.phone.trim().replace(/\s/g, '')
-    // Remove +998 prefix if present to get just the 9 digits
-    const digits = phone.replace(/\+998/, '').replace(/^998/, '')
-
-    // Validate that we have exactly 9 digits
-    if (digits.length !== 9 || !/^\d{9}$/.test(digits)) {
-      throw new Error(
-        "Telefon raqami noto'g'ri formatda. Masalan: +998901234567 yoki 901234567"
-      )
-    }
-    formattedPhone = digits
-  }
-
+  const formattedPhone = formatPhoneDigits(data.phone)
   const fullName = data.full_name.trim().replace(/\s+/g, ' ')
   const registerPayload: Record<string, unknown> = {
     username: data.username.trim(),
@@ -89,17 +115,47 @@ export const createAdminStudent = async (
 }
 
 /**
- * Barcha talabalarni olish
+ * Talabalar ro'yxati (server pagination + qidiruv)
  */
 export const getAdminStudents = async (
-  page?: number,
-  pageSize?: number
-): Promise<User[]> => {
-  const params: Record<string, unknown> = {}
-  if (page !== undefined) params.page = page
-  if (pageSize !== undefined) params.page_size = pageSize
-  const data = await apiClient.get<User[]>('/api/auth/user-list/', { params })
-  return (data || []).filter((u) => u.role === 'student')
+  page = 1,
+  pageSize = 10,
+  search = ''
+): Promise<AdminStudentListResult> => {
+  const params: Record<string, unknown> = {
+    page,
+    page_size: pageSize,
+  }
+  const q = search.trim()
+  if (q) params.search = q
+
+  const raw = await apiClient.get<unknown>('/api/auth/user-list/', { params })
+
+  if (Array.isArray(raw)) {
+    let list = filterStudents(raw)
+    if (q) list = list.filter((s) => matchesSearch(s, q))
+    const totalCount = list.length
+    const start = (page - 1) * pageSize
+    return {
+      students: list.slice(start, start + pageSize),
+      totalCount,
+    }
+  }
+
+  if (raw && typeof raw === 'object' && 'results' in raw) {
+    const res = raw as UserListResponse
+    let list = filterStudents(res.results ?? [])
+    const serverCount = res.count ?? list.length
+    if (q) {
+      list = list.filter((s) => matchesSearch(s, q))
+    }
+    return {
+      students: list,
+      totalCount: q ? list.length : serverCount,
+    }
+  }
+
+  return { students: [], totalCount: 0 }
 }
 
 /**
@@ -107,18 +163,36 @@ export const getAdminStudents = async (
  */
 export const updateAdminStudent = async (
   id: number | string,
-  data: Partial<AdminStudentCreatePayload>
+  data: AdminStudentUpdatePayload
 ): Promise<User> => {
   const numericId = assertStudentId(id)
   const payload: Record<string, unknown> = {}
-  if (data.full_name) payload.full_name = data.full_name.trim()
-  if (data.phone) {
-    const phone = data.phone.trim().replace(/\s/g, '')
-    const digits = phone.replace(/\+998/, '').replace(/^998/, '')
-    if (digits.length === 9 && /^\d{9}$/.test(digits)) {
-      payload.phone = digits
+
+  if (data.username !== undefined) {
+    const username = data.username.trim()
+    if (!username) throw new Error('Username kiritilmadi')
+    payload.username = username
+  }
+
+  if (data.full_name !== undefined) {
+    const fullName = data.full_name.trim()
+    if (!fullName) throw new Error("To'liq ism kiritilmadi")
+    payload.full_name = fullName
+  }
+
+  if (data.phone !== undefined) {
+    const trimmed = data.phone.trim()
+    if (!trimmed || trimmed === '+998') {
+      payload.phone = null
+    } else {
+      payload.phone = formatPhoneDigits(trimmed)
     }
   }
+
+  if (data.is_active !== undefined) {
+    payload.is_active = data.is_active
+  }
+
   return await apiClient.put<User>(`/api/auth/users/${numericId}/`, payload)
 }
 

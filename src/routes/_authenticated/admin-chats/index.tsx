@@ -1,6 +1,26 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { getSessionUserRole } from '@/lib/auth-role'
+import { ConfigDrawer } from '@/components/config-drawer'
+import { AdminHeader } from '@/components/layout/admin-header'
+import { Main } from '@/components/layout/main'
 import { MessagesPage } from '@/pages/MessagesPage'
+
+function AdminChatsPage() {
+  return (
+    <>
+      <AdminHeader fixed>
+        <ConfigDrawer />
+      </AdminHeader>
+      <Main
+        fixed
+        fluid
+        className='admin-page flex min-h-0 flex-1 flex-col overflow-hidden py-3 sm:py-4'
+      >
+        <MessagesPage />
+      </Main>
+    </>
+  )
+}
 
 export const Route = createFileRoute('/_authenticated/admin-chats/')({
   beforeLoad: () => {
@@ -9,9 +29,5 @@ export const Route = createFileRoute('/_authenticated/admin-chats/')({
     if (role === 'teacher') throw redirect({ to: '/teacher-dashboard' })
     if (role !== 'admin') throw redirect({ to: '/student' })
   },
-  component: () => (
-    <div className="h-full w-full [&>div]:!max-w-none [&>div]:!px-4">
-      <MessagesPage />
-    </div>
-  ),
+  component: AdminChatsPage,
 })

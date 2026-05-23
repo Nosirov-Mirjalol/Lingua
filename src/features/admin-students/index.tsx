@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import {
   Calendar,
-  Edit,
   Eye,
-  Mail,
   Phone,
   Plus,
   Search,
@@ -16,10 +15,16 @@ import {
 import { toast } from 'sonner'
 import { getStudentApiErrorMessage } from '@/api/service/admin/student.service'
 import type { User } from '@/api/service/teacher/user.type'
+import {
+  adminDialogClass,
+  adminInputClass,
+  adminPageSubtitleClass,
+  adminPageTitleClass,
+} from '@/lib/admin-ui'
+import { cn } from '@/lib/utils'
 import { useAdminStudents } from '@/hooks/admin/students/useAdminStudents'
 import { useCreateAdminStudent } from '@/hooks/admin/students/useCreateAdminStudent'
 import { useDeleteAdminStudent } from '@/hooks/admin/students/useDeleteAdminStudent'
-import { useUpdateAdminStudent } from '@/hooks/admin/students/useUpdateAdminStudent'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -50,36 +55,23 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ConfigDrawer } from '@/components/config-drawer'
-import { Header } from '@/components/layout/header'
+import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { ListPagination } from '@/components/list-pagination'
-import { ThemeSwitch } from '@/components/theme-switch'
 
 interface StudentFormData {
   username: string
-
-  email: string
-
   full_name: string
-
   phone: string
-
   password: string
-
   is_active: boolean
 }
 
 const getInitialFormData = (): StudentFormData => ({
   username: '',
-
-  email: '',
-
   full_name: '',
-
   phone: '+998',
-
   password: '',
-
   is_active: true,
 })
 
@@ -108,24 +100,29 @@ export default function AdminStudentsPage() {
 
   const [pageSize, setPageSize] = useState(10)
 
-  const {
-    data: students = [],
+  const queryClient = useQueryClient()
 
-    isLoading,
+  const { data: studentsPage, isLoading, isError } = useAdminStudents(
+    search,
+    page,
+    pageSize
+  )
 
-    isError,
-  } = useAdminStudents(search, page, pageSize)
+  const students = studentsPage?.students ?? []
+  const totalCount = studentsPage?.totalCount ?? 0
 
   useEffect(() => {
     if (isError)
       toast.error("API ulanishda xatolik! Studentlarni yuklab bo'lmadi.")
   }, [isError])
 
+  useEffect(() => {
+    setPage(1)
+  }, [search])
+
   const createMutation = useCreateAdminStudent()
 
   const deleteMutation = useDeleteAdminStudent()
-
-  const updateMutation = useUpdateAdminStudent()
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
 
@@ -133,23 +130,9 @@ export default function AdminStudentsPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
 
-  const [modalAction, setModalAction] = useState<'edit' | 'delete' | 'detail'>(
-    'detail'
-  )
+  const [modalAction, setModalAction] = useState<'delete' | 'detail'>('detail')
 
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null)
-
-  const [editDraft, setEditDraft] = useState({
-    username: '',
-
-    full_name: '',
-
-    phone: '+998',
-
-    is_active: true,
-
-    email: '',
-  })
 
   const handleInputChange = (
     field: keyof StudentFormData,
@@ -167,10 +150,7 @@ export default function AdminStudentsPage() {
     if (!formData.username.trim())
       return toast.error('Username kiritilishi shart')
 
-    if (!formData.email.trim()) return toast.error('Email kiritilishi shart')
-
-    if (!formData.full_name.trim())
-      return toast.error("To'liq ism to'ldirilishi shart")
+    if (!formData.full_name.trim()) return toast.error('Full name is required')
 
     if (!formData.password.trim()) return toast.error('Parol kiritilishi shart')
 
@@ -180,15 +160,9 @@ export default function AdminStudentsPage() {
     toast.promise(
       createMutation.mutateAsync({
         username: formData.username.trim(),
-
-        email: formData.email.trim(),
-
         full_name: formData.full_name.trim(),
-
         phone: formData.phone !== '+998' ? formData.phone : undefined,
-
         password: formData.password.trim(),
-
         role: 'student' as const,
       }),
 
@@ -200,33 +174,14 @@ export default function AdminStudentsPage() {
 
           resetForm()
 
+          queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
+
           return 'Student muvaffaqiyatli yaratildi'
         },
 
         error: (err) => getStudentApiErrorMessage(err, 'Yaratishda xatolik'),
       }
     )
-  }
-
-  const openEditModal = (student: User) => {
-    setSelectedStudent(student)
-
-    setEditDraft({
-      username: student.username ?? '',
-
-      email: student.email ?? '',
-
-      full_name:
-        `${student.first_name || ''} ${student.last_name || ''}`.trim(),
-
-      phone: student.phone || '+998',
-
-      is_active: Boolean(student.is_active),
-    })
-
-    setModalAction('edit')
-
-    setModalOpen(true)
   }
 
   const handleModalClose = () => {
@@ -246,43 +201,10 @@ export default function AdminStudentsPage() {
     deleteMutation.mutateAsync(studentId).then(() => {
       handleModalClose()
 
+      queryClient.invalidateQueries({ queryKey: ['admin', 'students'] })
+
       toast.success("Student o'chirildi")
     })
-  }
-
-  const confirmEdit = () => {
-    if (!selectedStudent) return
-
-    if (!editDraft.full_name.trim())
-      return toast.error("To'liq ism to'ldirilishi shart")
-
-    if (!editDraft.username.trim())
-      return toast.error('Username kiritilishi shart')
-
-    const studentId =
-      typeof selectedStudent.id === 'string'
-        ? parseInt(selectedStudent.id, 10)
-        : selectedStudent.id
-
-    updateMutation
-
-      .mutateAsync({
-        studentId,
-
-        data: {
-          username: editDraft.username.trim(),
-
-          full_name: editDraft.full_name.trim(),
-
-          phone: editDraft.phone,
-        },
-      })
-
-      .then(() => {
-        handleModalClose()
-
-        toast.success('Student yangilandi')
-      })
   }
 
   const activeCount = students.filter((s) => s.is_active).length
@@ -290,47 +212,45 @@ export default function AdminStudentsPage() {
   const inactiveCount = students.filter((s) => !s.is_active).length
 
   return (
-    <div className='min-h-screen bg-background'>
-      <Header>
-        <div className='me-auto w-full sm:w-auto'>
-          <div className='flex items-center gap-2 rounded-2xl border bg-background px-3 py-2 shadow-sm md:w-80'>
-            <Search className='h-4 w-4 text-muted-foreground' />
-
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder='Search students...'
-              className='h-8 w-full border-0 bg-transparent px-0 text-sm focus-visible:ring-0'
-            />
-          </div>
-        </div>
-
-        <ThemeSwitch />
-
+    <div className='admin-page min-h-screen bg-background'>
+      <AdminHeader fixed>
         <ConfigDrawer />
-      </Header>
+      </AdminHeader>
 
-      <Main>
+      <Main className='admin-page'>
         <p className='mb-4 text-xs font-semibold tracking-wide text-muted-foreground'>
           <Link to='/admin-dashboard'>Dashboard</Link> /{' '}
           <span className='text-primary'>Students</span>
         </p>
 
-        <div className='mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between'>
-          <div>
-            <h1 className='text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl'>
-              Students List
-            </h1>
+        <div className='admin-page__container max-w-7xl'>
+          <header className='admin-page__header mb-6 md:items-end sm:mb-8'>
+            <div>
+              <h1 className={adminPageTitleClass}>Students List</h1>
 
-            <p className='mt-1 text-xs font-medium text-muted-foreground sm:text-sm'>
-              All students information and payment status
-            </p>
-          </div>
+              <p className={cn(adminPageSubtitleClass, 'mt-1')}>
+                All students information and payment status
+              </p>
+            </div>
 
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <RoseButton
-                className='w-full rounded-2xl sm:w-auto'
+            <div className='flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center'>
+              <div className='admin-page__search-wrap relative sm:w-72'>
+                <Search className='absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder='Talabalarni qidirish...'
+                  className={cn(
+                    adminInputClass,
+                    'h-10 border bg-background pl-11 shadow-sm'
+                  )}
+                />
+              </div>
+
+              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogTrigger asChild>
+                  <RoseButton
+                    className='admin-page__cta h-10 w-full px-6 shadow-sm sm:w-auto'
                 onClick={() => {
                   resetForm()
 
@@ -343,7 +263,10 @@ export default function AdminStudentsPage() {
             </DialogTrigger>
 
             <DialogContent
-              className='max-h-[90vh] overflow-y-auto p-4 sm:max-w-lg sm:p-6'
+              className={cn(
+                adminDialogClass,
+                'max-h-[90vh] overflow-y-auto p-4 sm:max-w-lg sm:p-6'
+              )}
               showCloseButton={false}
             >
               <div className='flex items-start justify-between px-0 pt-4 sm:px-4'>
@@ -366,25 +289,23 @@ export default function AdminStudentsPage() {
                 onSubmit={handleSubmit}
                 className='flex flex-col items-center py-4'
               >
-                <div className='mb-3 grid w-full grid-cols-1 gap-3 sm:grid-cols-2'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='full_name' className='text-xs font-medium'>
-                      To'liq ism
-                    </Label>
+                <div className='mb-3 w-full space-y-2'>
+                  <Label htmlFor='full_name' className='text-xs font-medium'>
+                    Full name
+                  </Label>
 
-                    <Input
-                      id='full_name'
-                      value={formData.full_name}
-                      onChange={(e) =>
-                        handleInputChange('full_name', e.target.value)
-                      }
-                      placeholder='Enter full name'
-                      className='h-9'
-                    />
-                  </div>
+                  <Input
+                    id='full_name'
+                    value={formData.full_name}
+                    onChange={(e) =>
+                      handleInputChange('full_name', e.target.value)
+                    }
+                    placeholder='Enter full name'
+                    className='h-9 w-full'
+                  />
                 </div>
 
-                <div className='mb-3 w-full space-y-1'>
+                <div className='mb-3 w-full space-y-2'>
                   <Label htmlFor='username' className='text-xs font-medium'>
                     Username
                   </Label>
@@ -396,22 +317,6 @@ export default function AdminStudentsPage() {
                       handleInputChange('username', e.target.value)
                     }
                     placeholder='Enter username'
-                    className='h-9'
-                    required
-                  />
-                </div>
-
-                <div className='mb-3 w-full space-y-1'>
-                  <Label htmlFor='email' className='text-xs font-medium'>
-                    Email
-                  </Label>
-
-                  <Input
-                    id='email'
-                    type='email'
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder='Enter email'
                     className='h-9'
                     required
                   />
@@ -492,8 +397,9 @@ export default function AdminStudentsPage() {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
-        </div>
+              </Dialog>
+            </div>
+          </header>
 
         {/* Stats */}
 
@@ -620,7 +526,7 @@ export default function AdminStudentsPage() {
                         </TableCell>
 
                         <TableCell className='px-3 py-2 text-xs font-medium sm:px-4 sm:py-3 sm:text-sm'>
-                          {student.first_name} {student.last_name}
+                          {student.full_name}
                         </TableCell>
 
                         <TableCell className='px-3 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm'>
@@ -666,17 +572,6 @@ export default function AdminStudentsPage() {
                               type='button'
                               variant='ghost'
                               size='sm'
-                              className='h-7 w-7 p-0 sm:h-8 sm:w-8 sm:p-2'
-                              onClick={() => openEditModal(student)}
-                              aria-label='Edit'
-                            >
-                              <Edit className='h-3 w-3 sm:h-4 sm:w-4' />
-                            </Button>
-
-                            <Button
-                              type='button'
-                              variant='ghost'
-                              size='sm'
                               className='h-7 w-7 p-0 text-destructive hover:bg-destructive/10 sm:h-8 sm:w-8 sm:p-2'
                               onClick={() => {
                                 setSelectedStudent(student)
@@ -702,13 +597,13 @@ export default function AdminStudentsPage() {
 
         <div className='mt-4 flex flex-col items-center gap-4 sm:mt-6 sm:flex-row sm:justify-between'>
           <p className='text-sm text-muted-foreground'>
-            {students.length} ta ko'rsatilmoqda
+            Jami {totalCount} ta student
           </p>
 
           <ListPagination
             page={page}
             pageSize={pageSize}
-            totalCount={students.length}
+            totalCount={totalCount}
             onPageChange={setPage}
             onPageSizeChange={(size) => {
               setPageSize(size)
@@ -717,17 +612,21 @@ export default function AdminStudentsPage() {
             }}
           />
         </div>
+        </div>
       </Main>
 
       {/* Action Modal */}
 
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className='rounded-2xl border-none bg-card p-6 shadow-xl sm:max-w-lg'>
+        <DialogContent
+          className={cn(
+            adminDialogClass,
+            'border-none bg-card p-6 shadow-xl sm:max-w-lg'
+          )}
+        >
           <DialogHeader>
             <DialogTitle className='text-xl font-bold'>
               {modalAction === 'detail' && 'Student Tafsilotlari'}
-
-              {modalAction === 'edit' && 'Studentni Tahrirlash'}
 
               {modalAction === 'delete' && "Studentni O'chirish"}
             </DialogTitle>
@@ -742,15 +641,13 @@ export default function AdminStudentsPage() {
                       <AvatarImage src={selectedStudent.avatar} />
 
                       <AvatarFallback className='bg-primary text-2xl font-bold text-primary-foreground'>
-                        {selectedStudent.first_name?.[0]}
-
-                        {selectedStudent.last_name?.[0]}
+                        {selectedStudent.full_name?.[0] || 'U'}
                       </AvatarFallback>
                     </Avatar>
 
                     <div className='flex-1'>
                       <h3 className='text-xl font-bold text-foreground'>
-                        {selectedStudent.first_name} {selectedStudent.last_name}
+                        {selectedStudent.full_name}
                       </h3>
 
                       <p className='text-sm text-muted-foreground'>
@@ -770,17 +667,6 @@ export default function AdminStudentsPage() {
                   </div>
 
                   <div className='grid gap-4 sm:grid-cols-2'>
-                    <div className='rounded-xl border bg-card p-4'>
-                      <div className='flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase'>
-                        <Mail className='h-4 w-4' />
-                        Email
-                      </div>
-
-                      <p className='mt-2 text-sm font-medium text-foreground'>
-                        {selectedStudent.email}
-                      </p>
-                    </div>
-
                     <div className='rounded-xl border bg-card p-4'>
                       <div className='flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase'>
                         <Phone className='h-4 w-4' />
@@ -823,82 +709,8 @@ export default function AdminStudentsPage() {
 
               {modalAction === 'delete' && (
                 <p className='text-sm text-muted-foreground'>
-                  {selectedStudent.first_name} {selectedStudent.last_name} ni
-                  o'chirmoqchimisiz?
+                  {selectedStudent.full_name} ni o'chirmoqchimisiz?
                 </p>
-              )}
-
-              {modalAction === 'edit' && (
-                <div className='space-y-4'>
-                  <div>
-                    <Label htmlFor='edit-username'>Username</Label>
-
-                    <Input
-                      id='edit-username'
-                      value={editDraft.username}
-                      onChange={(e) =>
-                        setEditDraft((p) => ({
-                          ...p,
-
-                          username: e.target.value,
-                        }))
-                      }
-                      className='mt-1'
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor='edit-full-name'>To'liq ism</Label>
-
-                    <Input
-                      id='edit-full-name'
-                      value={editDraft.full_name}
-                      onChange={(e) =>
-                        setEditDraft((p) => ({
-                          ...p,
-
-                          full_name: e.target.value,
-                        }))
-                      }
-                      className='mt-1'
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor='edit-phone'>Telefon</Label>
-
-                    <Input
-                      id='edit-phone'
-                      value={editDraft.phone}
-                      onChange={(e) =>
-                        setEditDraft((p) => ({
-                          ...p,
-
-                          phone: formatPhone(e.target.value),
-                        }))
-                      }
-                      placeholder='+998 90 123 45 67'
-                      className='mt-1'
-                    />
-                  </div>
-
-                  <div className='flex items-center justify-between rounded-lg border p-3'>
-                    <div>
-                      <div className='text-sm font-semibold'>Status</div>
-
-                      <div className='text-xs text-muted-foreground'>
-                        {editDraft.is_active ? 'Active' : 'Inactive'}
-                      </div>
-                    </div>
-
-                    <Switch
-                      checked={editDraft.is_active}
-                      onCheckedChange={(checked) =>
-                        setEditDraft((p) => ({ ...p, is_active: checked }))
-                      }
-                    />
-                  </div>
-                </div>
               )}
 
               <div className='flex justify-end gap-2 pt-4'>
@@ -918,16 +730,6 @@ export default function AdminStudentsPage() {
                   >
                     O'chirish
                   </Button>
-                )}
-
-                {modalAction === 'edit' && (
-                  <RoseButton
-                    onClick={confirmEdit}
-                    disabled={updateMutation.isPending}
-                    className='h-10 rounded-xl'
-                  >
-                    Saqlash
-                  </RoseButton>
                 )}
               </div>
             </div>

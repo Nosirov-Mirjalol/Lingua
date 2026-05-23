@@ -12,7 +12,7 @@ export const useCreateAdminStudent = () => {
     mutationFn: (data: AdminStudentCreatePayload) => createAdminStudent(data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['admin', 'students', 'list'],
+        queryKey: ['admin', 'students'],
       })
     },
     onError: (error: unknown) => {

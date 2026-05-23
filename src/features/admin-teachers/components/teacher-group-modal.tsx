@@ -1,5 +1,5 @@
 import * as z from 'zod'
-import { useForm, Controller, useWatch } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
 import { toast } from 'sonner'
@@ -56,7 +56,6 @@ export function TeacherGroupModal({
     control,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
