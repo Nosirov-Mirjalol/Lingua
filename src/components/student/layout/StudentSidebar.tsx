@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   BookOpen,
   CalendarDays,
@@ -21,6 +21,8 @@ import {
 import { useLayout } from '@/context/layout-provider'
 import { useStudentProfile } from '@/hooks/student/useStudentPortal'
 
+const AVATAR_STORAGE_KEY = 'student_avatar'
+
 const studentSidebarData = {
   navGroups: [
     {
@@ -41,14 +43,24 @@ export function StudentSidebar() {
   const { collapsible, variant } = useLayout()
   const { data: profile } = useStudentProfile()
 
-  const user = useMemo(
-    () => ({
+  // API dan yangi avatar kelsa — localStorage ga saqla
+  useEffect(() => {
+    if (profile?.avatar) {
+      localStorage.setItem(AVATAR_STORAGE_KEY, profile.avatar)
+    }
+  }, [profile?.avatar])
+
+  const user = useMemo(() => {
+    // localStorage dan o'qi, yo'q bo'lsa API dan ol
+    const savedAvatar = localStorage.getItem(AVATAR_STORAGE_KEY)
+    const avatar = savedAvatar || profile?.avatar || '/avatars/student1.jpg'
+
+    return {
       name: profile?.full_name || 'Student',
       email: profile?.username || 'student@linguapro.com',
-      avatar: '/avatars/student1.jpg',
-    }),
-    [profile]
-  )
+      avatar,
+    }
+  }, [profile])
 
   const teams = useMemo(
     () => [

@@ -24,6 +24,9 @@ export interface StudentDashboardStats {
   durationDays?: number
   mainGroupName?: string
   mainTeacherName?: string
+  totalHomework?: number
+  submittedHomework?: number
+  unsubmittedHomework?: number
 }
 
 export interface StudentScheduleItem {
