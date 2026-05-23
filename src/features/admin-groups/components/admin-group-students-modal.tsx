@@ -1,18 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { Calendar, Loader2, Trash2, UserPlus, Users } from 'lucide-react'
-import { toast } from 'sonner'
-import { studentListItemToGroupMember } from '@/api/service/admin/group.service'
-import type { Group, GroupStudent } from '@/api/service/teacher/group.type'
 import {
-  mergeEnrolledStudents,
-  useAdminAddStudentToGroup,
-} from '@/hooks/admin/groups/useAdminAddStudentToGroup'
+  Calendar,
+  Loader2,
+  RefreshCw,
+  Search,
+  Trash2,
+  UserPlus,
+  Users,
+} from 'lucide-react'
+import { toast } from 'sonner'
+import type { Group, GroupStudent } from '@/api/service/teacher/group.type'
+import { adminDialogClass, adminInputClass } from '@/lib/admin-ui'
+import { cn } from '@/lib/utils'
+import { useAdminAddStudentToGroup } from '@/hooks/admin/groups/useAdminAddStudentToGroup'
 import { useAdminGroupAvailableStudents } from '@/hooks/admin/groups/useAdminGroupAvailableStudents'
+import { useAdminGroupStudents } from '@/hooks/admin/groups/useAdminGroupStudents'
 import { useAdminGroups } from '@/hooks/admin/groups/useAdminGroups'
 import { useAdminRemoveStudentFromGroup } from '@/hooks/admin/groups/useAdminRemoveStudentFromGroup'
-import { cn } from '@/lib/utils'
-import { adminDialogClass, adminInputClass } from '@/lib/admin-ui'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { RoseButton } from '@/components/ui/rose-button'
 import {
   Select,
@@ -65,6 +70,15 @@ function formatGroupSchedule(group: Group) {
   return [days, time].filter((p) => p && p !== '—').join(' · ')
 }
 
+function useDebouncedValue(value: string, delayMs = 350) {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebounced(value), delayMs)
+    return () => window.clearTimeout(t)
+  }, [value, delayMs])
+  return debounced
+}
+
 type AdminGroupStudentsModalProps = {
   groupId: number | null
   onOpenChange: (open: boolean) => void
@@ -75,10 +89,11 @@ export function AdminGroupStudentsModal({
   onOpenChange,
 }: AdminGroupStudentsModalProps) {
   const open = groupId != null
-  const queryClient = useQueryClient()
-  const [selectedKey, setSelectedKey] = useState('')
+  const [selectedUsername, setSelectedUsername] = useState('')
+  const [studentSearch, setStudentSearch] = useState('')
   const [removingId, setRemovingId] = useState<number | null>(null)
-  const [enrolledStudents, setEnrolledStudents] = useState<GroupStudent[]>([])
+
+  const debouncedSearch = useDebouncedValue(studentSearch)
 
   const { data: groups = [], isLoading: groupsLoading } = useAdminGroups()
 
@@ -88,65 +103,93 @@ export function AdminGroupStudentsModal({
   )
 
   const {
+    data: groupWithStudents,
+    isLoading: studentsLoading,
+    isFetching: studentsFetching,
+    refetch: refetchStudents,
+    isError: studentsError,
+  } = useAdminGroupStudents(open ? groupId : null)
+
+  const {
     data: availableStudents = [],
     isLoading: availableLoading,
+    isFetching: availableFetching,
     isError: availableError,
-  } = useAdminGroupAvailableStudents(groupId)
+    refetch: refetchAvailable,
+  } = useAdminGroupAvailableStudents(open ? groupId : null, debouncedSearch)
 
   const addMutation = useAdminAddStudentToGroup(groupId ?? 0)
   const removeMutation = useAdminRemoveStudentFromGroup(groupId ?? 0)
 
-  const scheduleText = groupMeta ? formatGroupSchedule(groupMeta) : ''
+  const displayGroup = groupWithStudents ?? groupMeta
+  const enrolledStudents: GroupStudent[] = useMemo(
+    () => groupWithStudents?.students ?? [],
+    [groupWithStudents?.students]
+  )
+
+  const enrolledUsernames = useMemo(
+    () =>
+      new Set(
+        enrolledStudents
+          .map((s) => s.username?.trim().toLowerCase())
+          .filter(Boolean) as string[]
+      ),
+    [enrolledStudents]
+  )
+
+  const pickableStudents = useMemo(
+    () =>
+      availableStudents.filter((s) => {
+        const u = s.username?.trim().toLowerCase()
+        return u && !enrolledUsernames.has(u)
+      }),
+    [availableStudents, enrolledUsernames]
+  )
+
+  const scheduleText = displayGroup ? formatGroupSchedule(displayGroup) : ''
 
   useEffect(() => {
-    if (!open || !groupId) {
-      setEnrolledStudents([])
-      setSelectedKey('')
-      return
+    if (!open) {
+      setSelectedUsername('')
+      setStudentSearch('')
     }
+  }, [open])
 
-    const cached = queryClient.getQueryData<Group>([
-      'admin',
-      'groups',
-      'students',
-      groupId,
-    ])
-    const fromList = groups.find((g) => g.id === groupId)
-    const initial = mergeEnrolledStudents(
-      [],
-      cached?.students ?? fromList?.students ?? []
-    )
-    setEnrolledStudents(initial)
-  }, [open, groupId, groups, queryClient])
+  const handleRefresh = () => {
+    void refetchStudents()
+    void refetchAvailable()
+  }
 
   const handleAdd = async () => {
-    if (!groupId || !selectedKey) return
+    if (!groupId) return
 
-    const picked = availableStudents.find((s) => String(s.id) === selectedKey)
-    if (!picked) {
+    const username = selectedUsername.trim()
+    if (!username) {
       toast.error('Talabani tanlang')
       return
     }
 
-    const username = picked.username?.trim()
-    const addPayload = username
-      ? { username }
-      : { student: picked.id }
-
-    const member = studentListItemToGroupMember(picked)
+    const picked = availableStudents.find(
+      (s) => s.username?.trim() === username
+    )
+    if (!picked) {
+      toast.error('Tanlangan talaba topilmadi')
+      return
+    }
 
     try {
       await toast.promise(
-        addMutation.mutateAsync({ payload: addPayload, picked }),
+        addMutation.mutateAsync({
+          payload: { username },
+        }),
         {
           loading: "Qo'shilmoqda...",
-          success: (r) => r.detail || "Talaba qo'shildi",
+          success: (res) => res.detail || "Talaba qo'shildi",
           error: (err: { message?: string }) =>
             err?.message || "Qo'shishda xatolik",
         }
       )
-      setEnrolledStudents((prev) => mergeEnrolledStudents(prev, [member]))
-      setSelectedKey('')
+      setSelectedUsername('')
     } catch {
       /* toast */
     }
@@ -157,39 +200,56 @@ export function AdminGroupStudentsModal({
     try {
       await toast.promise(removeMutation.mutateAsync(studentUserId), {
         loading: "O'chirilmoqda...",
-        success: (r) => r.detail || "Talaba olib tashlandi",
+        success: (res) => res.detail || 'Talaba olib tashlandi',
         error: (err: { message?: string }) =>
           err?.message || "O'chirishda xatolik",
       })
-      setEnrolledStudents((prev) =>
-        prev.filter((s) => s.student !== studentUserId)
-      )
     } finally {
       setRemovingId((c) => (c === studentUserId ? null : c))
     }
   }
 
+  const listBusy = studentsLoading && !groupWithStudents
+  const listRefreshing = studentsFetching && !!groupWithStudents
+
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
-        if (!v) {
-          setSelectedKey('')
-          onOpenChange(false)
-        }
+        if (!v) onOpenChange(false)
       }}
     >
       <DialogContent
         className={cn(
           adminDialogClass,
-          'flex w-[calc(100%-2rem)] max-h-[min(90vh,85vh)] flex-col gap-0 overflow-hidden border-none p-0 sm:max-w-[680px] md:max-w-[760px] lg:max-w-[820px]'
+          'flex max-h-[min(90vh,85vh)] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden border-none p-0 sm:max-w-[680px] md:max-w-[760px] lg:max-w-[820px]'
         )}
       >
         <DialogHeader className='shrink-0 space-y-2 border-b px-5 py-4'>
-          <DialogTitle className='flex items-center gap-2 text-lg font-bold'>
-            <Users className='h-5 w-5 text-primary' />
-            {groupsLoading ? 'Yuklanmoqda...' : (groupMeta?.name ?? 'Guruh')}
-          </DialogTitle>
+          <div className='flex items-start justify-between gap-3'>
+            <DialogTitle className='flex items-center gap-2 text-lg font-bold'>
+              <Users className='h-5 w-5 text-primary' />
+              {groupsLoading && !displayGroup
+                ? 'Yuklanmoqda...'
+                : (displayGroup?.name ?? 'Guruh')}
+            </DialogTitle>
+            <Button
+              type='button'
+              variant='ghost'
+              size='icon'
+              className='h-9 w-9 shrink-0'
+              title='Yangilash'
+              disabled={studentsFetching || availableFetching}
+              onClick={handleRefresh}
+            >
+              <RefreshCw
+                className={cn(
+                  'h-4 w-4',
+                  (studentsFetching || availableFetching) && 'animate-spin'
+                )}
+              />
+            </Button>
+          </div>
           <DialogDescription asChild>
             <div className='space-y-1.5 text-left text-sm text-muted-foreground'>
               <p>Guruhga talaba qo&apos;shish va ro&apos;yxatdan chiqarish</p>
@@ -199,8 +259,8 @@ export function AdminGroupStudentsModal({
                     <Calendar className='h-3.5 w-3.5' />
                     {scheduleText}
                   </span>
-                  {groupMeta?.start_date ? (
-                    <span>Boshlanish: {groupMeta.start_date}</span>
+                  {displayGroup?.start_date ? (
+                    <span>Boshlanish: {displayGroup.start_date}</span>
                   ) : null}
                 </p>
               ) : null}
@@ -213,8 +273,22 @@ export function AdminGroupStudentsModal({
             <p className='mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase'>
               Talaba qo&apos;shish
             </p>
+            <div className='mb-3'>
+              <div className='relative'>
+                <Search className='pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+                <Input
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  placeholder='Ism yoki username bo‘yicha qidirish...'
+                  className={cn(adminInputClass, 'h-11 bg-background pl-9')}
+                />
+              </div>
+            </div>
             <div className='flex flex-col gap-3 sm:flex-row'>
-              <Select value={selectedKey} onValueChange={setSelectedKey}>
+              <Select
+                value={selectedUsername}
+                onValueChange={setSelectedUsername}
+              >
                 <SelectTrigger
                   className={cn(
                     adminInputClass,
@@ -224,7 +298,7 @@ export function AdminGroupStudentsModal({
                   <SelectValue placeholder='Talabani tanlang...' />
                 </SelectTrigger>
                 <SelectContent className='max-h-60'>
-                  {availableLoading ? (
+                  {availableLoading && !availableStudents.length ? (
                     <div className='px-3 py-2 text-sm text-muted-foreground'>
                       Yuklanmoqda...
                     </div>
@@ -232,14 +306,21 @@ export function AdminGroupStudentsModal({
                     <div className='px-3 py-2 text-sm text-destructive'>
                       Ro&apos;yxat yuklanmadi
                     </div>
-                  ) : availableStudents.length === 0 ? (
+                  ) : pickableStudents.length === 0 ? (
                     <div className='px-3 py-2 text-sm text-muted-foreground'>
-                      Mavjud talaba yo&apos;q
+                      {debouncedSearch
+                        ? 'Qidiruv bo‘yicha talaba topilmadi'
+                        : "Guruhga qo'shish uchun mavjud talaba yo'q"}
                     </div>
                   ) : (
-                    availableStudents.map((s) => (
-                      <SelectItem key={s.id} value={String(s.id)}>
-                        {studentLabel(s.id, s.full_name, s.username)}
+                    pickableStudents.map((s) => (
+                      <SelectItem key={s.id} value={s.username}>
+                        <span className='font-medium'>
+                          {studentLabel(s.id, s.full_name, s.username)}
+                        </span>
+                        <span className='ml-1 text-xs text-muted-foreground'>
+                          @{s.username}
+                        </span>
                       </SelectItem>
                     ))
                   )}
@@ -248,7 +329,7 @@ export function AdminGroupStudentsModal({
               <RoseButton
                 type='button'
                 className='h-11 shrink-0 px-6'
-                disabled={!selectedKey || addMutation.isPending}
+                disabled={!selectedUsername || addMutation.isPending}
                 onClick={handleAdd}
               >
                 {addMutation.isPending ? (
@@ -264,17 +345,28 @@ export function AdminGroupStudentsModal({
           </div>
 
           <div>
-            <p className='mb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase'>
-              Guruh talabalari ({enrolledStudents.length})
-            </p>
+            <div className='mb-3 flex items-center justify-between gap-2'>
+              <p className='text-xs font-semibold tracking-wide text-muted-foreground uppercase'>
+                Guruh talabalari ({enrolledStudents.length})
+              </p>
+              {listRefreshing ? (
+                <span className='text-xs text-muted-foreground'>
+                  Yangilanmoqda...
+                </span>
+              ) : null}
+            </div>
 
-            {groupsLoading ? (
+            {listBusy ? (
               <div className='flex justify-center py-10'>
                 <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
               </div>
+            ) : studentsError ? (
+              <p className='rounded-lg border border-dashed py-8 text-center text-sm text-destructive'>
+                Talabalar ro&apos;yxati yuklanmadi. Yangilash tugmasini bosing.
+              </p>
             ) : enrolledStudents.length === 0 ? (
               <p className='rounded-lg border border-dashed py-10 text-center text-sm text-muted-foreground'>
-                Hali talaba yo&apos;q
+                Hali talaba yo&apos;q — yuqoridan username bilan qo&apos;shing
               </p>
             ) : (
               <ul className='max-h-72 space-y-2 overflow-y-auto pr-1'>
@@ -294,6 +386,11 @@ export function AdminGroupStudentsModal({
                       {s.username ? (
                         <p className='truncate text-xs text-muted-foreground'>
                           @{s.username}
+                        </p>
+                      ) : null}
+                      {s.joined_at ? (
+                        <p className='truncate text-xs text-muted-foreground/80'>
+                          Qo&apos;shilgan: {s.joined_at.slice(0, 10)}
                         </p>
                       ) : null}
                     </div>

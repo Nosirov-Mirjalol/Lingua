@@ -1,6 +1,12 @@
-import { apiClient } from '../../client'
 import { GROUP } from '@/constants/apiEndPoints'
-import { getTeacherGroups } from '../teacher/group.service'
+import {
+  addStudentToGroupApi,
+  fetchAvailableStudents,
+  fetchGroupEnrolledStudents,
+  fetchMyGroups,
+  removeStudentFromGroupApi,
+} from '@/api/service/group/group-members.service'
+import { apiClient } from '../../client'
 import {
   type AddStudentPayload,
   type Group,
@@ -26,71 +32,13 @@ function ensureSeconds(t: string): string {
   return t.split(':').length === 2 ? `${t}:00` : t
 }
 
-function normalizeGroupStudent(raw: unknown): GroupStudent | null {
-  if (!raw || typeof raw !== 'object') return null
-  const r = raw as Record<string, unknown>
-
-  let student: number | null = null
-  let full_name =
-    typeof r.full_name === 'string' ? r.full_name : undefined
-  let username = typeof r.username === 'string' ? r.username : undefined
-  const student_name =
-    typeof r.student_name === 'string' ? r.student_name : undefined
-
-  if (typeof r.student === 'number' || /^\d+$/.test(String(r.student ?? ''))) {
-    student = Number(r.student)
-  } else if (r.student && typeof r.student === 'object') {
-    const u = r.student as Record<string, unknown>
-    student = Number(u.id)
-    if (!full_name && typeof u.full_name === 'string') full_name = u.full_name
-    if (!username && typeof u.username === 'string') username = u.username
-  }
-
-  if (
-    (student == null || !Number.isFinite(student)) &&
-    r.student_id != null
-  ) {
-    student = Number(r.student_id)
-  }
-
-  if (student == null || !Number.isFinite(student)) return null
-
-  const membershipId =
-    typeof r.id === 'number' && r.student !== undefined ? r.id : student
-
-  return {
-    id: membershipId,
-    student,
-    student_name,
-    full_name: full_name ?? student_name,
-    username,
-    joined_at:
-      typeof r.joined_at === 'string'
-        ? r.joined_at
-        : new Date().toISOString(),
-  }
-}
-
-function normalizeGroup(raw: unknown): Group | null {
+function normalizeGroupFromAdminList(raw: unknown): Group | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   const id = typeof r.id === 'number' ? r.id : Number(r.id)
   if (!Number.isFinite(id)) return null
-
   const course = Number(r.course)
   const teacher = Number(r.teacher)
-  const studentsRaw =
-    r.students ??
-    r.group_students ??
-    r.members ??
-    r.student_list ??
-    r.enrollments
-  const students = Array.isArray(studentsRaw)
-    ? studentsRaw
-        .map(normalizeGroupStudent)
-        .filter((s): s is GroupStudent => s !== null)
-    : []
-
   return {
     id,
     name: String(r.name ?? ''),
@@ -100,16 +48,15 @@ function normalizeGroup(raw: unknown): Group | null {
       typeof r.teacher_name === 'string' ? r.teacher_name : undefined,
     status: (r.status === 'completed' ? 'completed' : 'active') as Group['status'],
     start_date: String(r.start_date ?? ''),
-    start_time:
-      typeof r.start_time === 'string' ? r.start_time : undefined,
+    start_time: typeof r.start_time === 'string' ? r.start_time : undefined,
     end_time: typeof r.end_time === 'string' ? r.end_time : undefined,
     week_days: r.week_days as Group['week_days'],
     week_days_type: r.week_days_type as Group['week_days_type'],
-    students,
+    students: [],
   }
 }
 
-function unwrapGroups(raw: unknown): Group[] {
+function unwrapAdminList(raw: unknown): Group[] {
   const list = Array.isArray(raw)
     ? raw
     : raw &&
@@ -117,47 +64,36 @@ function unwrapGroups(raw: unknown): Group[] {
         Array.isArray((raw as { results?: unknown }).results)
       ? (raw as { results: unknown[] }).results
       : []
-  return list.map(normalizeGroup).filter((g): g is Group => g !== null)
+  return list
+    .map(normalizeGroupFromAdminList)
+    .filter((g): g is Group => g !== null)
 }
 
-function unwrapStudents(raw: unknown): StudentListItem[] {
-  if (Array.isArray(raw)) return raw as StudentListItem[]
-  if (
-    raw &&
-    typeof raw === 'object' &&
-    Array.isArray((raw as { results?: unknown }).results)
-  ) {
-    return (raw as { results: StudentListItem[] }).results
-  }
-  return []
-}
-
+/** Guruhlar ro'yxati: list-admin + my/ dan students */
 export const getAdminGroups = async (): Promise<Group[]> => {
-  const raw = await apiClient.get<unknown>('/api/groups/list-admin/')
-  return unwrapGroups(raw)
+  const [listRaw, myGroups] = await Promise.all([
+    apiClient.get<unknown>(GROUP.LIST_ADMIN),
+    fetchMyGroups(),
+  ])
+  const list = unwrapAdminList(listRaw)
+  const studentsById = new Map(myGroups.map((g) => [g.id, g.students]))
+
+  return list.map((g) => ({
+    ...g,
+    students: studentsById.get(g.id) ?? g.students,
+  }))
 }
 
-/** Guruh + talabalar (GET update-delete ishlatilmaydi — 405) */
+/** Guruh + talabalar — my/ yoki students-list − available */
 export const getAdminGroupWithStudents = async (
   groupId: number
 ): Promise<Group> => {
-  const list = await getAdminGroups()
-  let group = list.find((g) => g.id === groupId)
-
-  if (!group?.students?.length) {
-    try {
-      const myGroups = await getTeacherGroups()
-      const fromMy = myGroups.find((g) => g.id === groupId)
-      if (fromMy) {
-        group = fromMy
-      }
-    } catch {
-      /* admin uchun MY bo'lmasa ham davom etamiz */
-    }
-  }
-
-  if (group) return group
-
+  const [listRaw, students] = await Promise.all([
+    apiClient.get<unknown>(GROUP.LIST_ADMIN),
+    fetchGroupEnrolledStudents(groupId),
+  ])
+  const meta = unwrapAdminList(listRaw).find((g) => g.id === groupId)
+  if (meta) return { ...meta, students }
   return {
     id: groupId,
     name: '',
@@ -165,56 +101,30 @@ export const getAdminGroupWithStudents = async (
     teacher: 0,
     status: 'active',
     start_date: '',
-    students: [],
+    students,
   }
 }
 
-export function studentListItemToGroupMember(
-  item: StudentListItem
-): GroupStudent {
-  return {
-    id: item.id,
-    student: item.id,
-    full_name: item.full_name ?? undefined,
-    username: item.username,
-    joined_at: new Date().toISOString(),
-  }
-}
+export const getGroupEnrolledStudents = (groupId: number) =>
+  fetchGroupEnrolledStudents(groupId)
 
-export const getAdminGroupAvailableStudents = async (
-  groupId: number
-): Promise<StudentListItem[]> => {
-  const raw = await apiClient.get<unknown>(GROUP.AVAILABLE_STUDENTS(groupId))
-  return unwrapStudents(raw)
-}
+export const getAdminGroupAvailableStudents = (
+  groupId: number,
+  search?: string
+): Promise<StudentListItem[]> => fetchAvailableStudents(groupId, search)
 
-export const addStudentToAdminGroup = async (
+/** POST /api/groups/{id}/add-student/ */
+export const addStudentToAdminGroup = (
   groupId: number,
   payload: AddStudentPayload
-): Promise<MessageResponse> => {
-  const username = payload.username?.trim()
-  if (username) {
-    return apiClient.post<MessageResponse>(GROUP.ADD_STUDENT(groupId), {
-      username,
-    })
-  }
-  if (payload.student != null) {
-    return apiClient.post<MessageResponse>(GROUP.ADD_STUDENT(groupId), {
-      student: payload.student,
-    })
-  }
+): Promise<MessageResponse> => addStudentToGroupApi(groupId, payload)
 
-  return apiClient.post<MessageResponse>(GROUP.ADD_STUDENT(groupId), payload)
-}
-
-export const removeStudentFromAdminGroup = async (
+/** DELETE /api/groups/{id}/remove-student/{sid}/ */
+export const removeStudentFromAdminGroup = (
   groupId: number,
-  studentId: number
-): Promise<MessageResponse> => {
-  return apiClient.delete<MessageResponse>(
-    GROUP.REMOVE_STUDENT(groupId, studentId)
-  )
-}
+  studentUserId: number
+): Promise<MessageResponse> =>
+  removeStudentFromGroupApi(groupId, studentUserId)
 
 export const createAdminGroup = async (
   payload: AdminGroupCreatePayload
@@ -230,8 +140,19 @@ export const createAdminGroup = async (
     status: payload.status,
   }
 
-  const raw = await apiClient.post<unknown>('/api/groups/create-admin/', body)
-  return normalizeGroup(raw) ?? ({ id: 0, name: payload.name, course: body.course, teacher: body.teacher, status: 'active', start_date: payload.start_date, students: [] } as Group)
+  const raw = await apiClient.post<unknown>(GROUP.CREATE_ADMIN, body)
+  const g = normalizeGroupFromAdminList(raw)
+  return (
+    g ?? {
+      id: 0,
+      name: payload.name,
+      course: body.course,
+      teacher: body.teacher,
+      status: 'active',
+      start_date: payload.start_date,
+      students: [],
+    }
+  )
 }
 
 export const updateAdminGroup = async (
@@ -252,17 +173,19 @@ export const updateAdminGroup = async (
   if (payload.status !== undefined) result.status = payload.status
 
   const raw = await apiClient.put<unknown>(
-    `/api/groups/update-delete-admin/${id}/`,
+    GROUP.UPDATE_DELETE_ADMIN(id),
     result
   )
-  const normalized = normalizeGroup(raw)
+  const normalized = normalizeGroupFromAdminList(raw)
   if (normalized) return normalized
   return raw as Group
 }
 
 export const deleteAdminGroup = async (id: number): Promise<void> => {
-  await apiClient.delete(`/api/groups/update-delete-admin/${id}/`)
+  await apiClient.delete(GROUP.UPDATE_DELETE_ADMIN(id))
 }
+
+export { studentListItemToGroupMember } from '@/api/service/group/group-members.service'
 
 export const adminGroupService = {
   getGroups: getAdminGroups,
@@ -270,6 +193,7 @@ export const adminGroupService = {
   updateGroup: updateAdminGroup,
   deleteGroup: deleteAdminGroup,
   getAvailableStudents: getAdminGroupAvailableStudents,
+  getEnrolledStudents: getGroupEnrolledStudents,
   addStudent: addStudentToAdminGroup,
   removeStudent: removeStudentFromAdminGroup,
 }

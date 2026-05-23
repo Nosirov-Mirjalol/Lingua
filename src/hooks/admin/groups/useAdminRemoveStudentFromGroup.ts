@@ -1,39 +1,26 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { removeStudentFromAdminGroup } from '@/api/service/admin/group.service'
-import type { Group } from '@/api/service/teacher/group.type'
+import { resetMyGroupsCache } from '@/api/service/group/group-members.service'
+import { MY_GROUPS_KEY } from '@/hooks/groups/useMyGroups'
 
 export const useAdminRemoveStudentFromGroup = (groupId: number) => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (studentId: number) =>
-      removeStudentFromAdminGroup(groupId, studentId),
-    onSuccess: (_res, studentId) => {
-      queryClient.setQueryData<Group>(
-        ['admin', 'groups', 'students', groupId],
-        (old) =>
-          old
-            ? {
-                ...old,
-                students: old.students.filter((s) => s.student !== studentId),
-              }
-            : old
-      )
-
-      queryClient.setQueryData<Group[]>(['admin', 'groups', 'list'], (old) =>
-        old?.map((g) =>
-          g.id === groupId
-            ? {
-                ...g,
-                students: g.students.filter((s) => s.student !== studentId),
-              }
-            : g
-        )
-      )
-
-      void queryClient.invalidateQueries({
-        queryKey: ['admin', 'groups', groupId, 'available-students'],
-      })
+    mutationFn: (studentUserId: number) =>
+      removeStudentFromAdminGroup(groupId, studentUserId),
+    onSuccess: async () => {
+      resetMyGroupsCache()
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: MY_GROUPS_KEY }),
+        queryClient.invalidateQueries({
+          queryKey: ['admin', 'groups', groupId, 'enrolled'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['admin', 'groups', groupId, 'available-students'],
+        }),
+        queryClient.invalidateQueries({ queryKey: ['admin', 'groups', 'list'] }),
+      ])
     },
   })
 }
