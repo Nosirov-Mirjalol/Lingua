@@ -71,7 +71,7 @@ export function StudentNotificationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='w-full max-w-xl p-0 overflow-hidden rounded-[32px] border-none shadow-2xl bg-white dark:bg-slate-950 gap-0'>
+      <DialogContent className='w-full max-w-xl p-0 overflow-hidden border-radius: 32px border-none shadow-2xl bg-white dark:bg-slate-950 gap-0'>
 
         {/* HEADER */}
         <div className='relative pt-7 px-8 pb-3'>
@@ -92,7 +92,7 @@ export function StudentNotificationModal({
                 onClick={handleMarkAllRead}
                 disabled={markAllRead.isPending || unreadCount === 0}
                 className={cn(
-                  'text-xs font-bold transition-all duration-200 flex items-center gap-1.5 pb-1 relative after:absolute after:bottom-[-13px] after:left-0 after:h-[2px] after:w-full',
+                  'text-xs font-bold transition-all duration-200 flex items-center gap-1.5 pb-1 relative after:absolute after:bottom-3,25 after:left-0 after:h-0,5 after:w-full',
                   unreadCount > 0
                     ? 'text-rose-500 hover:text-rose-600 after:bg-rose-500'
                     : 'text-slate-400 opacity-50 after:bg-transparent'
