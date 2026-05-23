@@ -21,6 +21,7 @@ import { getFullAvatarUrl } from '@/lib/avatar-url'
 type NavUserProps = {
   user: {
     name: string
+    email?: string
     avatar: string
   }
   role?: string
@@ -32,6 +33,38 @@ export function NavUser({ user, role }: NavUserProps) {
 
   const avatarUrl = getFullAvatarUrl(user.avatar)
 
+  // Fallback initials — "Ali Valiyev" → "AV"
+  const initials = user.name
+    .split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'SN'
+
+  // Sidebar va dropdown uchun umumiy user info blok
+  const UserInfo = () => (
+    <div className='grid flex-1 text-start text-sm leading-tight'>
+      <span className='truncate font-semibold'>{user.name}</span>
+      {/* role yoki email — bittasini ko'rsat */}
+      {role ? (
+        <span className='truncate text-xs text-muted-foreground capitalize'>
+          {role}
+        </span>
+      ) : user.email ? (
+        <span className='truncate text-xs text-muted-foreground'>
+          {user.email}
+        </span>
+      ) : null}
+    </div>
+  )
+
+  const UserAvatar = () => (
+    <Avatar className='h-8 w-8 rounded-lg'>
+      {avatarUrl && <AvatarImage src={avatarUrl} alt={user.name} />}
+      <AvatarFallback className='rounded-lg'>{initials}</AvatarFallback>
+    </Avatar>
+  )
+
   return (
     <>
       <SidebarMenu className='-mt-5'>
@@ -42,20 +75,8 @@ export function NavUser({ user, role }: NavUserProps) {
                 size='lg'
                 className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
               >
-                <Avatar className='h-8 w-8 rounded-lg'>
-                  {avatarUrl && (
-                    <AvatarImage src={avatarUrl} alt={user.name} />
-                  )}
-                  <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
-                </Avatar>
-                <div className='grid flex-1 text-start text-sm leading-tight'>
-                  <span className='truncate font-semibold'>{user.name}</span>
-                  {role && (
-                    <span className='truncate text-xs text-muted-foreground capitalize'>
-                      {role}
-                    </span>
-                  )}
-                </div>
+                <UserAvatar />
+                <UserInfo />
                 <ChevronsUpDown className='ms-auto size-4' />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
@@ -67,20 +88,8 @@ export function NavUser({ user, role }: NavUserProps) {
             >
               <DropdownMenuLabel className='p-0 font-normal'>
                 <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
-                  <Avatar className='h-8 w-8 rounded-lg'>
-                    {avatarUrl && (
-                      <AvatarImage src={avatarUrl} alt={user.name} />
-                    )}
-                    <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
-                  </Avatar>
-                  <div className='grid flex-1 text-start text-sm leading-tight'>
-                    <span className='truncate font-semibold'>{user.name}</span>
-                    {role && (
-                      <span className='truncate text-xs text-muted-foreground capitalize'>
-                        {role}
-                      </span>
-                    )}
-                  </div>
+                  <UserAvatar />
+                  <UserInfo />
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />

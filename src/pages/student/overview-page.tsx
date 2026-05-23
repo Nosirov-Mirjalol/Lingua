@@ -82,11 +82,12 @@ export function StudentOverviewPage() {
                   className='rounded-3xl border border-primary/40 bg-card p-4 transition-all hover:border-primary/60 hover:shadow-md'
                 >
                   <p className='text-xs uppercase tracking-[0.18em] text-primary/70 font-bold'>
-                    {highlight.title === 'Active course' ? 'Faol guruh' : 
-                     highlight.title === 'Topshirilgan vazifalar' ? 'Vazifalar' : highlight.title}
+                    {highlight.title === 'Active course' ? 'Faol guruh' : highlight.title}
                   </p>
                   <p className='mt-2 text-base font-semibold text-foreground'>
-                    {highlight.value}
+                    {highlight.title === 'Topshirilgan vazifalar' 
+                      ? dashboard.stats.unsubmittedHomework
+                      : highlight.value}
                   </p>
                 </div>
               ))}

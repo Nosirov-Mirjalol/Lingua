@@ -33,50 +33,66 @@ export function StudentNotificationModal({
   open,
   onOpenChange,
 }: StudentNotificationModalProps) {
-  const { data: notificationsRes, isLoading } = useStudentNotificationsList({
+  const { data: notifications = [], isLoading } = useStudentNotificationsList({
     enabled: open,
   })
-  const { data: unreadRes } = useStudentUnreadCount({
-    enabled: open,
-  })
+  const { data: unreadRes } = useStudentUnreadCount({ enabled: open })
+
   const markAsRead = useStudentMarkAsRead()
   const markAllRead = useStudentMarkAllRead()
   const deleteNotifications = useStudentDeleteNotifications()
 
-  const notifications = notificationsRes || []
-  const unreadCount = unreadRes?.unread_count ?? notifications.filter(n => !n.is_read).length
+  // unread_count: backenddan kelsa ishlatamiz, yo'q bo'lsa local hisob
+  const unreadCount =
+    unreadRes?.unread_count ?? notifications.filter((n) => !n.is_read).length
+
+  // O'qilgan xabarlar ro'yxati
+  const readIds = notifications.filter((n) => n.is_read).map((n) => n.id)
 
   const handleNotificationClick = (n: StudentNotificationAPI) => {
-    if (!n.is_read && !markAsRead.isPending) {
-      markAsRead.mutate(n.id)
-    }
+    // Allaqachon o'qilgan yoki pending bo'lsa — hech narsa qilmaymiz
+    if (n.is_read || markAsRead.isPending) return
+    // Optimistik update — 1 ta so'rov, UI darhol yangilanadi
+    markAsRead.mutate(n.id)
+  }
+
+  const handleDeleteRead = () => {
+    if (deleteNotifications.isPending || readIds.length === 0) return
+    deleteNotifications.mutate(readIds, {
+      onSuccess: () => toast.success("O'qilgan xabarlar o'chirildi"),
+      onError: () => toast.error("Xabarlarni o'chirishda xato yuz berdi"),
+    })
+  }
+
+  const handleMarkAllRead = () => {
+    if (markAllRead.isPending || unreadCount === 0) return
+    markAllRead.mutate()
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='w-full max-w-xl p-0 overflow-hidden rounded-[32px] border-none shadow-2xl bg-white dark:bg-slate-950 gap-0'>
-        
+      <DialogContent className='w-full max-w-xl p-0 overflow-hidden border-radius: 32px border-none shadow-2xl bg-white dark:bg-slate-950 gap-0'>
+
         {/* HEADER */}
         <div className='relative pt-7 px-8 pb-3'>
           <div className='flex items-center justify-between'>
             <DialogTitle className='text-2xl font-bold tracking-tight text-slate-900 dark:text-white'>
               Bildirishnomalar
             </DialogTitle>
-            <DialogDescription className="sr-only">
+            <DialogDescription className='sr-only'>
               Sizga kelgan so'nggi xabarlar ro'yxati
             </DialogDescription>
           </div>
 
-          {/* Flex amallar tugmalari (O'qilgan deb belgilash va Tozalash) */}
           {notifications.length > 0 && (
             <div className='flex items-center gap-4 mt-5 border-b pb-3 border-slate-100 dark:border-slate-900'>
-              
+
               {/* Barchasini o'qish */}
               <button
-                onClick={() => !markAllRead.isPending && markAllRead.mutate()}
+                onClick={handleMarkAllRead}
                 disabled={markAllRead.isPending || unreadCount === 0}
                 className={cn(
-                  'text-xs font-bold transition-all duration-200 flex items-center gap-1.5 pb-1 relative after:absolute after:bottom-[-13px] after:left-0 after:h-[2px] after:w-full',
+                  'text-xs font-bold transition-all duration-200 flex items-center gap-1.5 pb-1 relative after:absolute after:bottom-3,25 after:left-0 after:h-0,5 after:w-full',
                   unreadCount > 0
                     ? 'text-rose-500 hover:text-rose-600 after:bg-rose-500'
                     : 'text-slate-400 opacity-50 after:bg-transparent'
@@ -90,20 +106,13 @@ export function StudentNotificationModal({
                 Barchasini o'qilgan deb belgilash
               </button>
 
-              {/* Tozalash (O'chirish) */}
+              {/* O'qilganlarni tozalash — faqat bitta so'rov */}
               <button
-                onClick={() => {
-                  const readIds = notifications.filter((n) => n.is_read).map((n) => n.id)
-                  if (deleteNotifications.isPending || readIds.length === 0) return
-                  deleteNotifications.mutate(readIds, {
-                    onSuccess: () => toast.success('O‘qilgan xabarlar o‘chirildi'),
-                    onError: () => toast.error('Xabarlarni o‘chirishda xato yuz berdi'),
-                  })
-                }}
-                disabled={deleteNotifications.isPending || notifications.filter((n) => n.is_read).length === 0}
+                onClick={handleDeleteRead}
+                disabled={deleteNotifications.isPending || readIds.length === 0}
                 className={cn(
                   'text-xs font-bold transition-all duration-200 flex items-center gap-1.5 pb-1',
-                  notifications.some((n) => n.is_read)
+                  readIds.length > 0
                     ? 'text-slate-500 hover:text-rose-600'
                     : 'text-slate-400 opacity-50'
                 )}
@@ -120,7 +129,7 @@ export function StudentNotificationModal({
           )}
         </div>
 
-        {/* BODY (Xabarlar ro'yxati) */}
+        {/* BODY */}
         <div className='max-h-[50vh] overflow-y-auto px-6 py-2 scrollbar-hide bg-white dark:bg-slate-950'>
           {isLoading ? (
             <div className='flex flex-col items-center justify-center py-16'>
@@ -132,31 +141,29 @@ export function StudentNotificationModal({
               <div className='flex h-14 w-14 items-center justify-center rounded-full bg-slate-50 mb-3 dark:bg-slate-900'>
                 <BellRing size={24} className='text-slate-300' />
               </div>
-              <h3 className='text-sm font-bold text-slate-800 dark:text-white'>Hozircha xabarlar yo'q</h3>
+              <h3 className='text-sm font-bold text-slate-800 dark:text-white'>
+                Hozircha xabarlar yo'q
+              </h3>
             </div>
           ) : (
             <div className='flex flex-col gap-3 pb-6 pt-1'>
-              {notifications.map((notification) => {
-                const isPendingThis = markAsRead.isPending && markAsRead.variables === notification.id
-
-                return (
-                  <div
-                    key={notification.id}
-                    className={cn(
-                      'transition-all duration-200 rounded-2xl overflow-hidden',
-                      notification.is_read && 'opacity-70'
-                    )}
-                  >
-                    <NotificationCard
-                      title={notification.title}
-                      message={notification.message}
-                      time={isPendingThis ? 'Yuklanmoqda...' : formatRelativeTime(notification.created_at)}
-                      isRead={notification.is_read}
-                      onClick={() => handleNotificationClick(notification)}
-                    />
-                  </div>
-                )
-              })}
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={cn(
+                    'transition-all duration-200 rounded-2xl overflow-hidden',
+                    notification.is_read && 'opacity-70'
+                  )}
+                >
+                  <NotificationCard
+                    title={notification.title}
+                    message={notification.message}
+                    time={formatRelativeTime(notification.created_at)}
+                    isRead={notification.is_read}
+                    onClick={() => handleNotificationClick(notification)}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>
