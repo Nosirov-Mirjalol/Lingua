@@ -61,7 +61,7 @@ export function StudentOverviewPage() {
       </section>
 
       <section className='grid gap-4 lg:grid-cols-[1.5fr_1fr]'>
-        <Card className='overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
+        <Card className='overflow-hidden border-2 border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
           <CardHeader>
             <CardTitle className='text-primary'>Bugungi asosiy ko‘rsatkichlar</CardTitle>
             <CardDescription>
@@ -95,7 +95,7 @@ export function StudentOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className='space-y-4 overflow-hidden border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
+        <Card className='space-y-4 overflow-hidden border-2 border-primary/70 transition-all hover:border-primary/80 hover:shadow-md'>
           <CardHeader>
             <CardTitle className='text-primary'>Tezkor harakatlar</CardTitle>
             <CardDescription>Eng muhim keyingi qadamlarga o‘ting.</CardDescription>
