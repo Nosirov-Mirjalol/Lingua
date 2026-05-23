@@ -285,6 +285,52 @@ export async function removeStudentFromGroupApi(
   return res
 }
 
+/**
+ * Barcha guruhlar bo'yicha kamida bitta guruhga biriktirilgan talaba id lari.
+ * my/ bo'sh bo'lsa: students-list − available-students (har bir guruh uchun).
+ */
+export async function fetchEnrolledStudentUserIds(
+  groupIds: number[]
+): Promise<Set<number>> {
+  const enrolled = new Set<number>()
+  const ids = groupIds.filter((id) => Number.isFinite(id) && id > 0)
+  if (ids.length === 0) return enrolled
+
+  const myGroups = await fetchMyGroups()
+  const myById = new Map(myGroups.map((g) => [Number(g.id), g]))
+  const needsFallback: number[] = []
+
+  for (const gid of ids) {
+    const fromMy = myById.get(gid)?.students ?? []
+    if (fromMy.length > 0) {
+      for (const m of fromMy) {
+        if (m.student != null && Number.isFinite(m.student)) {
+          enrolled.add(m.student)
+        }
+      }
+    } else {
+      needsFallback.push(gid)
+    }
+  }
+
+  if (needsFallback.length === 0) return enrolled
+
+  const allStudents = await fetchStudentsList()
+  const allIds = allStudents.map((s) => s.id)
+
+  await Promise.all(
+    needsFallback.map(async (gid) => {
+      const available = await fetchAvailableStudents(gid)
+      const availIds = new Set(available.map((s) => s.id))
+      for (const sid of allIds) {
+        if (!availIds.has(sid)) enrolled.add(sid)
+      }
+    })
+  )
+
+  return enrolled
+}
+
 export function studentListItemToGroupMember(
   item: StudentListItem
 ): GroupStudent {

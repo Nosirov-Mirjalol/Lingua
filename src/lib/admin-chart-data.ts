@@ -1,4 +1,3 @@
-import type { Group } from '@/api/service/teacher/group.type'
 import type { User } from '@/api/service/teacher/user.type'
 
 const MONTH_LABELS = [
@@ -79,34 +78,65 @@ export function aggregateStudentsByMonth(
 export type GroupEnrollmentStats = {
   occupied: number
   available: number
+  total: number
   occupiedPercentage: number
-  occupiedAngle: number
+}
+
+export type GroupEnrollmentChartSlice = {
+  name: string
+  value: number
+  fill: string
 }
 
 export function computeGroupEnrollmentStats(
   students: User[],
-  groups: Group[]
+  enrolledStudentIds: Set<number>
 ): GroupEnrollmentStats {
-  const studentIdsInGroups = new Set<number>()
+  const totalStudents = students.length
+  let occupied = 0
 
-  for (const group of groups) {
-    for (const member of group.students ?? []) {
-      if (member.student) studentIdsInGroups.add(member.student)
-    }
+  for (const student of students) {
+    if (enrolledStudentIds.has(student.id)) occupied += 1
   }
 
-  const totalStudents = students.length
-  const occupied = studentIdsInGroups.size
   const available = Math.max(0, totalStudents - occupied)
   const occupiedPercentage =
     totalStudents > 0 ? Math.round((occupied / totalStudents) * 100) : 0
-  const occupiedAngle =
-    totalStudents > 0 ? (occupied / totalStudents) * 360 : 0
 
   return {
     occupied,
     available,
+    total: totalStudents,
     occupiedPercentage,
-    occupiedAngle,
   }
+}
+
+export function buildGroupEnrollmentChartData(
+  stats: GroupEnrollmentStats
+): GroupEnrollmentChartSlice[] {
+  if (stats.total === 0) {
+    return [{ name: "Ma'lumot yo'q", value: 1, fill: '#E5E7EB' }]
+  }
+
+  const slices: GroupEnrollmentChartSlice[] = []
+
+  if (stats.occupied > 0) {
+    slices.push({
+      name: 'Guruhda',
+      value: stats.occupied,
+      fill: '#E11D48',
+    })
+  }
+
+  if (stats.available > 0) {
+    slices.push({
+      name: 'Guruhsiz',
+      value: stats.available,
+      fill: '#D1D5DB',
+    })
+  }
+
+  return slices.length > 0
+    ? slices
+    : [{ name: 'Guruhsiz', value: 1, fill: '#E5E7EB' }]
 }

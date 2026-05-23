@@ -1,17 +1,45 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import type { GroupEnrollmentStats } from '@/lib/admin-chart-data'
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  buildGroupEnrollmentChartData,
+  type GroupEnrollmentStats,
+} from '@/lib/admin-chart-data'
 
 type GroupCapacityProps = {
   stats: GroupEnrollmentStats
   isLoading?: boolean
 }
 
+function ChartTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean
+  payload?: Array<{ name?: string; value?: number }>
+}) {
+  if (!active || !payload?.length) return null
+  const item = payload[0]
+  return (
+    <div className='rounded-lg border border-border bg-card px-3 py-2 text-sm shadow-md'>
+      <p className='font-medium text-foreground'>{item.name}</p>
+      <p className='text-muted-foreground'>{item.value} ta o&apos;quvchi</p>
+    </div>
+  )
+}
+
 export function GroupCapacity({ stats, isLoading }: GroupCapacityProps) {
-  const { occupied, available, occupiedPercentage, occupiedAngle } = stats
+  const { occupied, available, total, occupiedPercentage } = stats
+  const chartData = buildGroupEnrollmentChartData(stats)
 
   return (
     <Card className='col-span-1 rounded-4xl border-none shadow-lg lg:col-span-3 dark:bg-[#0B0F1A] dark:shadow-xl'>
-      <CardHeader className='pb-6'>
+      <CardHeader className='pb-4'>
         <div className='space-y-1'>
           <CardTitle className='text-xl font-bold tracking-tight text-gray-900 dark:text-white'>
             Guruh biriktirish
@@ -23,81 +51,71 @@ export function GroupCapacity({ stats, isLoading }: GroupCapacityProps) {
       </CardHeader>
       <CardContent className='px-6 pb-6'>
         {isLoading ? (
-          <div className='flex h-[250px] items-center justify-center text-sm text-muted-foreground'>
+          <div className='flex h-[280px] items-center justify-center text-sm text-muted-foreground'>
             Yuklanmoqda...
           </div>
+        ) : total === 0 ? (
+          <div className='flex h-[280px] flex-col items-center justify-center gap-2 text-center text-sm text-muted-foreground'>
+            <p>Hali o&apos;quvchilar ro&apos;yxati bo&apos;sh</p>
+            <p className='text-xs'>Talaba qo&apos;shilgach grafik yangilanadi</p>
+          </div>
         ) : (
-          <div className='flex flex-col items-center space-y-6'>
-            <div className='relative h-[250px] w-[250px]'>
-              <svg
-                width='250'
-                height='250'
-                viewBox='0 0 250 250'
-                className='-rotate-90 transform'
-              >
-                <circle
-                  cx='125'
-                  cy='125'
-                  r='90'
-                  fill='none'
-                  stroke='#E5E7EB'
-                  strokeWidth='30'
-                />
-                <circle
-                  cx='125'
-                  cy='125'
-                  r='90'
-                  fill='none'
-                  stroke='url(#occupiedGradient)'
-                  strokeWidth='30'
-                  strokeDasharray={`${occupiedAngle} 360`}
-                  className='transition-all duration-1000 ease-out'
-                />
-                <defs>
-                  <linearGradient
-                    id='occupiedGradient'
-                    x1='0%'
-                    y1='0%'
-                    x2='100%'
-                    y2='100%'
+          <div className='flex flex-col items-center gap-6'>
+            <div className='relative h-[220px] w-full max-w-[240px]'>
+              <ResponsiveContainer width='100%' height='100%'>
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx='50%'
+                    cy='50%'
+                    innerRadius={62}
+                    outerRadius={88}
+                    paddingAngle={chartData.length > 1 ? 3 : 0}
+                    dataKey='value'
+                    stroke='none'
                   >
-                    <stop offset='0%' stopColor='#E11D48' />
-                    <stop offset='100%' stopColor='#B80035' />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className='absolute inset-0 flex items-center justify-center'>
+                    {chartData.map((entry) => (
+                      <Cell key={entry.name} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<ChartTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className='pointer-events-none absolute inset-0 flex items-center justify-center'>
                 <div className='text-center'>
                   <div className='text-3xl font-bold text-gray-900 dark:text-white'>
                     {occupiedPercentage}%
                   </div>
-                  <div className='text-sm font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400'>
+                  <div className='text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400'>
                     Guruhda
+                  </div>
+                  <div className='mt-0.5 text-xs text-muted-foreground'>
+                    {occupied} / {total}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className='flex w-full justify-around space-x-8'>
-              <div className='flex items-center space-x-3 rounded-lg bg-red-50 px-4 py-3 dark:bg-red-900/20'>
-                <div className='h-4 w-4 rounded-full bg-gradient-to-br from-red-600 to-red-400' />
-                <div>
-                  <div className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+            <div className='grid w-full grid-cols-2 gap-3'>
+              <div className='flex items-center gap-3 rounded-xl bg-rose-50 px-4 py-3 dark:bg-rose-950/30'>
+                <div className='h-3 w-3 shrink-0 rounded-full bg-[#E11D48]' />
+                <div className='min-w-0'>
+                  <div className='text-xs font-medium text-gray-600 dark:text-gray-400'>
                     Guruhda
                   </div>
-                  <div className='text-xl font-bold text-gray-900 dark:text-white'>
+                  <div className='text-lg font-bold text-gray-900 dark:text-white'>
                     {occupied}
                   </div>
                 </div>
               </div>
 
-              <div className='flex items-center space-x-3 rounded-lg bg-gray-50 px-4 py-3 dark:bg-gray-800/50'>
-                <div className='h-4 w-4 rounded-full bg-gradient-to-br from-gray-400 to-gray-300' />
-                <div>
-                  <div className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+              <div className='flex items-center gap-3 rounded-xl bg-gray-100 px-4 py-3 dark:bg-gray-800/50'>
+                <div className='h-3 w-3 shrink-0 rounded-full bg-gray-400' />
+                <div className='min-w-0'>
+                  <div className='text-xs font-medium text-gray-600 dark:text-gray-400'>
                     Guruhsiz
                   </div>
-                  <div className='text-xl font-bold text-gray-900 dark:text-white'>
+                  <div className='text-lg font-bold text-gray-900 dark:text-white'>
                     {available}
                   </div>
                 </div>

@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { fetchEnrolledStudentUserIds } from '@/api/service/group/group-members.service'
 import { useAdminGroups } from './groups/useAdminGroups'
 import { useAdminStudents } from './students/useAdminStudents'
 import {
@@ -22,14 +24,30 @@ export const useAdminChartData = () => {
   const students = studentsPage?.students ?? []
   const { data: groups = [], isLoading: groupsLoading } = useAdminGroups()
 
+  const groupIds = useMemo(
+    () => groups.map((g) => g.id).filter((id) => Number.isFinite(id)),
+    [groups]
+  )
+
+  const {
+    data: enrolledStudentIds = new Set<number>(),
+    isLoading: enrollmentLoading,
+  } = useQuery({
+    queryKey: ['admin', 'chart', 'enrolled-student-ids', groupIds],
+    queryFn: () => fetchEnrolledStudentUserIds(groupIds),
+    enabled: !groupsLoading,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  })
+
   const studentGrowthData = useMemo(
     () => aggregateStudentsByMonth(students, growthPeriod),
     [students, growthPeriod]
   )
 
   const groupEnrollment = useMemo(
-    () => computeGroupEnrollmentStats(students, groups),
-    [students, groups]
+    () => computeGroupEnrollmentStats(students, enrolledStudentIds),
+    [students, enrolledStudentIds]
   )
 
   const maxStudentsInMonth = useMemo(
@@ -43,6 +61,6 @@ export const useAdminChartData = () => {
     setGrowthPeriod,
     groupEnrollment,
     maxStudentsInMonth,
-    isLoading: studentsLoading || groupsLoading,
+    isLoading: studentsLoading || groupsLoading || enrollmentLoading,
   }
 }
