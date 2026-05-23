@@ -85,7 +85,7 @@ export function StudentProfilePage() {
 
       <div className='grid grid-cols-1 gap-4 lg:grid-cols-[250px_minmax(0,680px)] items-start justify-start w-full h-auto'>
         {/* CHAP PANEL — Avatar */}
-        <aside className='flex flex-col rounded-2xl border border-primary/40 dark:border-slate-800 bg-card p-4 text-card-foreground shadow-sm justify-center items-center shrink-0 h-auto w-full'>
+        <aside className='flex flex-col rounded-2xl border-2 border-red-500 bg-card p-4 text-card-foreground shadow-sm justify-center items-center shrink-0 h-auto w-full'>
           <ProfileAvatar
             avatarUrl={profile.avatar}
             name={profile.full_name || profile.username}
@@ -97,20 +97,21 @@ export function StudentProfilePage() {
         </aside>
 
         {/* O'NG PANEL — Form */}
-        <section className='rounded-2xl border border-primary/40 dark:border-slate-800 bg-card shadow-sm flex flex-col h-auto overflow-hidden w-full'>
+        <section className='rounded-2xl border-2 border-red-500 bg-card shadow-sm flex flex-col h-auto overflow-hidden w-full'>
           <form id='profile-form' onSubmit={handleSubmit(onSubmit)} className='flex flex-col h-auto'>
             <div className='p-4 space-y-4 md:p-5 h-auto'>
               <div className='grid gap-4 sm:grid-cols-2'>
 
                 {/* To'liq ism */}
                 <div className='space-y-1.5'>
-                  <label className='text-[11px] font-bold uppercase tracking-wide text-primary/70 dark:text-slate-300'>
+                  <label className={'text-[11px] font-bold uppercase tracking-wide ' + (errors.full_name ? 'text-destructive' : 'text-primary/70 dark:text-slate-300')}>
                     To'liq ism
                   </label>
                   <Input
-                    {...register('full_name')}
+                    {...register('full_name', { maxLength: { value: 25, message: "Eng ko'pi bilan 25 ta belgi" } })}
                     placeholder="To'liq ismingizni kiriting"
                     disabled={isFormDisabled}
+                    maxLength={25}
                     className='h-9 rounded-xl border-primary/30 dark:border-slate-700 bg-background/50 dark:bg-slate-900/60 focus:border-primary/50 text-foreground text-xs shadow-xs placeholder:text-slate-400 dark:placeholder:text-slate-500'
                   />
                   {errors.full_name && (
@@ -122,13 +123,14 @@ export function StudentProfilePage() {
 
                 {/* Foydalanuvchi nomi */}
                 <div className='space-y-1.5'>
-                  <label className='text-[11px] font-bold uppercase tracking-wide text-primary/70 dark:text-slate-300'>
+                  <label className={'text-[11px] font-bold uppercase tracking-wide ' + (errors.username ? 'text-destructive' : 'text-primary/70 dark:text-slate-300')}>
                     Foydalanuvchi nomi
                   </label>
                   <Input
-                    {...register('username')}
+                    {...register('username', { maxLength: { value: 20, message: "Eng ko'pi bilan 20 ta belgi" } })}
                     placeholder='Foydalanuvchi nomingizni kiriting'
                     disabled={isFormDisabled}
+                    maxLength={20}
                     className='h-9 rounded-xl border-primary/30 dark:border-slate-700 bg-background/50 dark:bg-slate-900/60 focus:border-primary/50 text-foreground text-xs shadow-xs placeholder:text-slate-400 dark:placeholder:text-slate-500'
                   />
                   {errors.username && (
@@ -140,13 +142,14 @@ export function StudentProfilePage() {
 
                 {/* Vaqt zonasi */}
                 <div className='space-y-1.5 sm:col-span-2'>
-                  <label className='text-[11px] font-bold uppercase tracking-wide text-primary/70 dark:text-slate-300'>
+                  <label className={'text-[11px] font-bold uppercase tracking-wide ' + (errors.timezone ? 'text-destructive' : 'text-primary/70 dark:text-slate-300')}>
                     Vaqt zonasi
                   </label>
                   <Input
-                    {...register('timezone')}
+                    {...register('timezone', { maxLength: { value: 20, message: "Eng ko'pi bilan 20 ta belgi" } })}
                     placeholder='Mamlakat/shahar formatida kiriting'
                     disabled={isFormDisabled}
+                    maxLength={20}
                     className='h-9 rounded-xl border-primary/30 dark:border-slate-700 bg-background/50 dark:bg-slate-900/60 focus:border-primary/50 text-foreground text-xs shadow-xs placeholder:text-slate-400 dark:placeholder:text-slate-500'
                   />
                   {errors.timezone && (
@@ -159,30 +162,42 @@ export function StudentProfilePage() {
 
               {/* Bio */}
               <div className='space-y-1.5'>
-                <label className='text-[11px] font-bold uppercase tracking-wide text-primary/70 dark:text-slate-300'>
+                <label className={'text-[11px] font-bold uppercase tracking-wide ' + (errors.bio ? 'text-destructive' : 'text-primary/70 dark:text-slate-300')}>
                   Bio
                 </label>
                 <Textarea
-                  {...register('bio')}
+                  {...register('bio', { maxLength: { value: 80, message: "Eng ko'pi bilan 80 ta belgi" } })}
                   rows={3}
                   placeholder="O'zingiz haqida qisqacha yozing"
                   disabled={isFormDisabled}
+                  maxLength={80}
                   className='resize-none rounded-xl border-primary/30 dark:border-slate-700 bg-background/50 dark:bg-slate-900/60 focus:border-primary/50 text-foreground text-xs p-2.5 shadow-xs placeholder:text-slate-400 dark:placeholder:text-slate-500'
                 />
+                {errors.bio && (
+                  <p className='text-[10px] text-destructive mt-0.5'>
+                    {String(errors.bio.message ?? '')}
+                  </p>
+                )}
               </div>
 
               {/* O'quv maqsadi */}
               <div className='space-y-1.5'>
-                <label className='text-[11px] font-bold uppercase tracking-wide text-primary/70 dark:text-slate-300'>
+                <label className={'text-[11px] font-bold uppercase tracking-wide ' + (errors.learning_goal ? 'text-destructive' : 'text-primary/70 dark:text-slate-300')}>
                   O'quv maqsadi
                 </label>
                 <Textarea
-                  {...register('learning_goal')}
+                  {...register('learning_goal', { maxLength: { value: 50, message: "Eng ko'pi bilan 50 ta belgi" } })}
                   rows={3}
                   placeholder="O'qish maqsadingizni yozing"
                   disabled={isFormDisabled}
+                  maxLength={50}
                   className='resize-none rounded-xl border-primary/30 dark:border-slate-700 bg-background/50 dark:bg-slate-900/60 focus:border-primary/50 text-foreground text-xs p-2.5 shadow-xs placeholder:text-slate-400 dark:placeholder:text-slate-500'
                 />
+                {errors.learning_goal && (
+                  <p className='text-[10px] text-destructive mt-0.5'>
+                    {String(errors.learning_goal.message ?? '')}
+                  </p>
+                )}
               </div>
             </div>
             <div className='shrink-0 border-t border-slate-100 dark:border-slate-800/60 px-4 py-3 md:px-5 flex justify-start bg-card rounded-b-2xl'>
