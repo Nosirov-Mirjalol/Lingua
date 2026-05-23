@@ -10,6 +10,9 @@ export interface StudentNotificationAPI {
   is_read: boolean
   created_at: string
 }
+
+// ─── LIST ─────────────────────────────────────────────────────────────────────
+
 export const useStudentNotificationsList = (
   options: { enabled?: boolean } = {}
 ) => {
@@ -19,11 +22,14 @@ export const useStudentNotificationsList = (
     queryFn: () =>
       apiClient.get<StudentNotificationAPI[]>(NOTIFICATIONS.MY),
     enabled,
-    staleTime: 10_000, 
-    refetchInterval: 30_000, 
+    staleTime: 10_000,
+    refetchInterval: 30_000,
     refetchOnWindowFocus: true,
   })
 }
+
+// ─── UNREAD COUNT ─────────────────────────────────────────────────────────────
+
 export const useStudentUnreadCount = (
   options: { enabled?: boolean } = {}
 ) => {
@@ -33,86 +39,176 @@ export const useStudentUnreadCount = (
     queryFn: () =>
       apiClient.get<{ unread_count: number }>(NOTIFICATIONS.UNREAD_COUNT),
     enabled,
-    staleTime: 0, 
-    refetchInterval: 30_000, 
+    staleTime: 0,
+    refetchInterval: 30_000,
     refetchOnWindowFocus: true,
   })
 }
+
+// ─── MARK AS READ (optimistic) ────────────────────────────────────────────────
+// Bitta so'rov ketadi, UI darhol yangilanadi — qayta so'rov ketmaydi
+
 export const useStudentMarkAsRead = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (id: number) =>
       apiClient.patch<{ detail: string }>(NOTIFICATIONS.MARK_READ(id)),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+
+    // API javobini kutmasdan UI ni darhol yangilaymiz
+    onMutate: async (id: number) => {
+      await queryClient.cancelQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.cancelQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+
+      // Oldingi holatni saqlaymiz (rollback uchun)
+      const prevList = queryClient.getQueryData<StudentNotificationAPI[]>(['student', 'notifications'])
+      const prevCount = queryClient.getQueryData<{ unread_count: number }>(['student', 'notifications', 'unread-count'])
+
+      // Optimistik yangilash — list
+      queryClient.setQueryData<StudentNotificationAPI[]>(
+        ['student', 'notifications'],
+        (old) =>
+          old?.map((n) => (n.id === id ? { ...n, is_read: true } : n)) ?? []
+      )
+
+      // Optimistik yangilash — unread count
+      queryClient.setQueryData<{ unread_count: number }>(
+        ['student', 'notifications', 'unread-count'],
+        (old) => ({
+          unread_count: Math.max(0, (old?.unread_count ?? 1) - 1),
+        })
+      )
+
+      return { prevList, prevCount }
+    },
+
+    // Xato bo'lsa avvalgi holatga qaytaramiz
+    onError: (_err, _id, context) => {
+      if (context?.prevList) {
+        queryClient.setQueryData(['student', 'notifications'], context.prevList)
+      }
+      if (context?.prevCount) {
+        queryClient.setQueryData(['student', 'notifications', 'unread-count'], context.prevCount)
+      }
+    },
+
+    // Muvaffaqiyatli bo'lsa — faqat bitta background refetch (spam emas)
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
     },
   })
 }
 
-/** Barcha bildirishnomalarni o'qilgan deb belgilash */
+// ─── MARK ALL READ ────────────────────────────────────────────────────────────
+
 export const useStudentMarkAllRead = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: () =>
       apiClient.post<{ updated: number }>(NOTIFICATIONS.MARK_ALL_READ),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['student', 'notifications'] })
+      await queryClient.cancelQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+
+      const prevList = queryClient.getQueryData<StudentNotificationAPI[]>(['student', 'notifications'])
+      const prevCount = queryClient.getQueryData<{ unread_count: number }>(['student', 'notifications', 'unread-count'])
+
+      // Hammasini o'qilgan deb belgilaymiz
+      queryClient.setQueryData<StudentNotificationAPI[]>(
+        ['student', 'notifications'],
+        (old) => old?.map((n) => ({ ...n, is_read: true })) ?? []
+      )
+      queryClient.setQueryData<{ unread_count: number }>(
+        ['student', 'notifications', 'unread-count'],
+        { unread_count: 0 }
+      )
+
+      return { prevList, prevCount }
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.prevList) {
+        queryClient.setQueryData(['student', 'notifications'], context.prevList)
+      }
+      if (context?.prevCount) {
+        queryClient.setQueryData(['student', 'notifications', 'unread-count'], context.prevCount)
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
     },
   })
 }
+
+// ─── DELETE (bulk — 1 ta so'rov) ─────────────────────────────────────────────
+// Backend bulk endpoint bo'lsa — bitta so'rov. Yo'q bo'lsa — Promise.all (parallel)
 
 export const useStudentDeleteNotifications = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (ids: number[]) =>
-      Promise.all(
-        ids.map((id) =>
-          apiClient.delete<void>(NOTIFICATIONS.DELETE(id))
-        )
-      ),
-    onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
-      await queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
+    mutationFn: (ids: number[]) => {
+      // Agar backendda bulk delete endpoint mavjud bo'lsa (masalan DELETE /notifications/bulk/)
+      // uni ishlatish tavsiya qilinadi — shunda 1 ta so'rov ketadi:
+      //
+      // return apiClient.delete(NOTIFICATIONS.BULK_DELETE, { data: { ids } })
+      //
+      // Hozircha parallel (bir vaqtda) yuboramiz — ketma-ket emas:
+      return Promise.all(ids.map((id) => apiClient.delete<void>(NOTIFICATIONS.DELETE(id))))
+    },
+
+    // Optimistik — API javobini kutmasdan UI dan o'chirib qo'yamiz
+    onMutate: async (ids: number[]) => {
+      await queryClient.cancelQueries({ queryKey: ['student', 'notifications'] })
+
+      const prevList = queryClient.getQueryData<StudentNotificationAPI[]>(['student', 'notifications'])
+
+      queryClient.setQueryData<StudentNotificationAPI[]>(
+        ['student', 'notifications'],
+        (old) => old?.filter((n) => !ids.includes(n.id)) ?? []
+      )
+
+      return { prevList }
+    },
+
+    onError: (_err, _ids, context) => {
+      if (context?.prevList) {
+        queryClient.setQueryData(['student', 'notifications'], context.prevList)
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'notifications'] })
     },
   })
 }
 
-// ─── WebSocket Hook ───────────────────────────────────────────────────────────
+// ─── WebSocket ────────────────────────────────────────────────────────────────
 
 function getWsBaseUrl(): string {
   const httpBase = import.meta.env.VITE_API_BASE_URL || ''
-
-  if (
-    httpBase &&
-    (httpBase.startsWith('http://') || httpBase.startsWith('https://'))
-  ) {
+  if (httpBase && (httpBase.startsWith('http://') || httpBase.startsWith('https://'))) {
     return httpBase
       .replace(/\/+$/, '')
       .replace(/^http:/, 'ws:')
       .replace(/^https:/, 'wss:')
   }
-
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${protocol}//${window.location.host}`
 }
 
 function getAccessToken(): string {
   if (typeof window === 'undefined') return ''
-  
-  // 1. Check session storage (set by useLogin hook)
+
   const sessionToken = sessionStorage.getItem('linguapro_access_token')
   if (sessionToken) return sessionToken
 
-  // 2. Check local storage (fallback)
   const localToken = localStorage.getItem('access_token')
   if (localToken) return localToken
 
-  // 3. Check cookies (matching auth-store.ts)
   const ACCESS_TOKEN_KEY = 'thisisjustarandomstring'
   const cookieValue = `; ${document.cookie}`
   const parts = cookieValue.split(`; ${ACCESS_TOKEN_KEY}=`)
@@ -124,14 +220,9 @@ function getAccessToken(): string {
       return ''
     }
   }
-
   return ''
 }
 
-/**
- * WebSocket orqali real-time notification olish.
- * Yangi xabar kelganda query cache invalidate qilinadi.
- */
 export const useNotificationWebSocket = (
   options: { enabled?: boolean } = {}
 ) => {
@@ -144,20 +235,17 @@ export const useNotificationWebSocket = (
   const MAX_RECONNECT_ATTEMPTS = 5
 
   const invalidateNotifications = useCallback(() => {
-    // Immediate refetch for instant UI update
     queryClient.refetchQueries({ queryKey: ['student', 'notifications'] })
-    queryClient.refetchQueries({
-      queryKey: ['student', 'notifications', 'unread-count'],
-    })
+    queryClient.refetchQueries({ queryKey: ['student', 'notifications', 'unread-count'] })
   }, [queryClient])
 
   const connect = useCallback(() => {
     if (isConnectingRef.current) return
-    
-    // Agar allaqachon ulanayotgan bo'lsa yoki ulanib bo'lgan bo'lsa, tegmaymiz
-    if (wsRef.current && (wsRef.current.readyState === WebSocket.CONNECTING || wsRef.current.readyState === WebSocket.OPEN)) {
-      return
-    }
+    if (
+      wsRef.current &&
+      (wsRef.current.readyState === WebSocket.CONNECTING ||
+        wsRef.current.readyState === WebSocket.OPEN)
+    ) return
 
     const token = getAccessToken()
     if (!token) return
@@ -174,28 +262,18 @@ export const useNotificationWebSocket = (
         reconnectAttemptRef.current = 0
       }
 
-      ws.onmessage = (event) => {
+      ws.onmessage = () => {
         invalidateNotifications()
-        try {
-          JSON.parse(event.data)
-        } catch {
-          // JSON emas
-        }
       }
 
       ws.onclose = (event) => {
         isConnectingRef.current = false
         wsRef.current = null
 
-        // Auth xatosi bo'lsa qayta ulanmaymiz
         if (event.code >= 4000) return
 
-        // Xatolik bo'lsa spam qilmaslik uchun juda uzoq vaqt kutamiz (masalan 30-60 sekund)
         if (reconnectAttemptRef.current < MAX_RECONNECT_ATTEMPTS) {
-          const delay = Math.min(
-            30_000 * Math.pow(2, reconnectAttemptRef.current),
-            300_000 // Max 5 daqiqa
-          )
+          const delay = Math.min(30_000 * Math.pow(2, reconnectAttemptRef.current), 300_000)
           reconnectAttemptRef.current += 1
           reconnectTimerRef.current = setTimeout(connect, delay)
         }
@@ -213,13 +291,9 @@ export const useNotificationWebSocket = (
 
   useEffect(() => {
     if (!enabled) return
-
     connect()
-
     return () => {
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current)
-      }
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current)
       if (wsRef.current) {
         wsRef.current.onclose = null
         wsRef.current.close()
