@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate } from '@tanstack/react-router'
 import { ArrowRight, Loader2 } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { toast } from 'sonner'
+import { useForgotPassword } from '@/hooks/auth/useForgotPassword'
+import { getAuthErrorMessage } from '@/lib/auth-error-message'
+import { readAuthUserHint } from '@/lib/auth-user-hint'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,7 +23,7 @@ import {
   PHONE_DIGITS_REGEX,
   USERNAME_REGEX,
   formatPhoneDigits,
-  sanitizePhoneDigits,
+  normalizePhoneForApi,
   sanitizeUsername,
 } from '../../validators'
 
@@ -40,8 +44,8 @@ export function ForgotPasswordForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLFormElement>) {
-  const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
+  const forgotMutation = useForgotPassword()
+  const submittedRef = useRef(false)
   const focusInputStyle =
     'focus-visible:ring-[#C70C3D] focus-visible:ring-offset-0'
 
@@ -53,24 +57,47 @@ export function ForgotPasswordForm({
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    const fullPhoneNumber = `+998${data.phone}`
+  useEffect(() => {
+    const hint = readAuthUserHint()
+    if (!hint) return
 
-    navigate({
-      to: '/verify-page',
-      search: { username: data.username },
-    })
+    if (!form.getValues('username')) {
+      form.setValue('username', hint.username, { shouldValidate: false })
+    }
+    if (!form.getValues('phone') && hint.phone.length === 9) {
+      form.setValue('phone', hint.phone, { shouldValidate: false })
+    }
+  }, [form])
 
-    // Keyingi API yuborishda telefon shu ko'rinishda ishlatiladi: +998901234567
-    void fullPhoneNumber
-    setIsLoading(false)
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    if (forgotMutation.isPending || submittedRef.current) return
+    submittedRef.current = true
+
+    try {
+      await forgotMutation.mutateAsync({
+        username: data.username.trim(),
+        phone: data.phone,
+      })
+    } catch (err: unknown) {
+      toast.error(
+        getAuthErrorMessage(
+          err,
+          "Username yoki telefon noto'g'ri. Avval tizimga kirgan hisobingiz ma'lumotlarini kiriting."
+        )
+      )
+    } finally {
+      submittedRef.current = false
+    }
   }
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault()
+          void form.handleSubmit(onSubmit)(e)
+        }}
         className={cn('grid gap-4', className)}
         {...props}
       >
@@ -82,9 +109,11 @@ export function ForgotPasswordForm({
               <FormLabel>Foydalanuvchi nomi</FormLabel>
               <FormControl>
                 <Input
-                  placeholder='Foydalanuvchi nomini kiriting'
+                  placeholder='Login qiladigan nomingiz'
+                  autoComplete='username'
                   className={focusInputStyle}
                   maxLength={20}
+                  disabled={forgotMutation.isPending}
                   {...field}
                   onChange={(e) => field.onChange(sanitizeUsername(e.target.value))}
                 />
@@ -108,18 +137,24 @@ export function ForgotPasswordForm({
                   <Input
                     value={formatPhoneDigits(field.value)}
                     inputMode='numeric'
+                    autoComplete='tel-national'
+                    disabled={forgotMutation.isPending}
                     className={cn(
                       'border-0 shadow-none focus:border-0 focus:ring-0 focus-visible:ring-0',
                       focusInputStyle
                     )}
-                    placeholder='90-123-45-67'
+                    placeholder='88-348-34-34'
                     onChange={(e) =>
-                      field.onChange(sanitizePhoneDigits(e.target.value))
+                      field.onChange(normalizePhoneForApi(e.target.value))
                     }
                   />
                 </div>
               </FormControl>
               <FormMessage />
+              <p className='text-xs text-muted-foreground'>
+                API talabi: 9 raqam (masalan 883483434). Avval tizimga kirgan
+                bo&apos;lsangiz, maydonlar avtomatik to&apos;ldiriladi.
+              </p>
             </FormItem>
           )}
         />
@@ -127,15 +162,22 @@ export function ForgotPasswordForm({
         <Button
           type='submit'
           className='mt-2 w-full bg-[#C70C3D] text-white transition-colors hover:bg-[#C70C3D]/90'
-          disabled={isLoading}
+          disabled={forgotMutation.isPending}
+          aria-busy={forgotMutation.isPending}
         >
-          {isLoading ? (
+          {forgotMutation.isPending ? (
             <Loader2 className='mr-2 h-4 w-4 animate-spin' />
           ) : (
             <ArrowRight className='mr-2 h-4 w-4' />
           )}
-          Davom etish
+          {forgotMutation.isPending ? 'Tekshirilmoqda...' : 'Davom etish'}
         </Button>
+
+        <p className='text-center text-sm text-muted-foreground'>
+          <Link to='/sign-in' className='text-[#C70C3D] hover:underline'>
+            Kirish sahifasiga qaytish
+          </Link>
+        </p>
       </form>
     </Form>
   )

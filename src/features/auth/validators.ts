@@ -1,5 +1,8 @@
+export { normalizePhoneForApi } from '@/lib/phone'
+
 export const USERNAME_REGEX = /^[a-zA-Z0-9_]{3,20}$/
-export const PASSWORD_REGEX = /^[^\s]{7,32}$/
+/** API Register: minLength 8 */
+export const PASSWORD_REGEX = /^[^\s]{8,32}$/
 export const PHONE_DIGITS_REGEX = /^\d{9}$/
 
 export function sanitizeUsername(value: string) {
@@ -15,7 +18,7 @@ export function sanitizePhoneDigits(value: string) {
 }
 
 export function formatPhoneDigits(value: string) {
-  const digits = sanitizePhoneDigits(value)
+  const digits = value.replace(/\D/g, '').replace(/^998/, '').slice(0, 9)
   const part1 = digits.slice(0, 2)
   const part2 = digits.slice(2, 5)
   const part3 = digits.slice(5, 7)

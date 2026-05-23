@@ -5,7 +5,7 @@ export function ForgotPassword() {
   return (
     <AuthCardShell
       title='Parolni tiklash'
-      description='Foydalanuvchi nomi va telefon raqamingizni kiriting.'
+      description="API 1-qadam: username va phone (9 raqam). Keyin yangi parol o'rnatasiz."
     >
       <ForgotPasswordForm />
     </AuthCardShell>

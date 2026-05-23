@@ -21,9 +21,14 @@ const PUBLIC_AUTH_PATHS = [
   '/api/auth/verfiy-password/',
 ]
 
+function isPublicAuthPath(url?: string): boolean {
+  if (!url) return false
+  return PUBLIC_AUTH_PATHS.some((path) => url.includes(path))
+}
+
 function shouldAttachAuthHeader(url?: string): boolean {
   if (!url) return true
-  return !PUBLIC_AUTH_PATHS.some((path) => url.includes(path))
+  return !isPublicAuthPath(url)
 }
 
 function getStoredAccessToken() {
@@ -38,6 +43,14 @@ function getStoredAccessToken() {
   const fromLocal = localStorage.getItem('access_token') ?? ''
   return fromLocal
 }
+function extractNestedErrorMessages(raw: string): string[] {
+  const fromQuotes = [...raw.matchAll(/string='([^']+)'/g)].map((m) => m[1])
+  const fromDoubleQuotes = [...raw.matchAll(/string="([^"]+)"/g)].map(
+    (m) => m[1]
+  )
+  return [...fromQuotes, ...fromDoubleQuotes].filter(Boolean)
+}
+
 function formatDrfErrorDetail(data: unknown): string | null {
   if (data == null) return null
   if (typeof data === 'string') {
@@ -49,13 +62,18 @@ function formatDrfErrorDetail(data: unknown): string | null {
   const o = data as Record<string, unknown>
   const parts: string[] = []
   const pushDetail = (v: unknown) => {
-    if (typeof v === 'string' && v.trim()) parts.push(v.trim())
-    else if (Array.isArray(v))
+    if (typeof v === 'string' && v.trim()) {
+      const nested = extractNestedErrorMessages(v)
+      if (nested.length) parts.push(...nested)
+      else parts.push(v.trim())
+    } else if (Array.isArray(v))
       parts.push(...v.map(String).filter((s) => s && s.trim()))
     else if (v && typeof v === 'object') parts.push(JSON.stringify(v))
   }
 
   if ('detail' in o) pushDetail(o.detail)
+  if ('Error' in o) pushDetail(o.Error)
+  if ('error' in o) pushDetail(o.error)
   if ('non_field_errors' in o) pushDetail(o.non_field_errors)
 
   for (const [key, val] of Object.entries(o)) {
@@ -155,12 +173,14 @@ class ApiClient {
               ''
           )
           const isStaticResourceNoise = msg.includes('No static resource')
-          if (status === 500 && !isStaticResourceNoise) {
+          const isPublicAuth = isPublicAuthPath(error.config?.url)
+
+          if (status === 500 && !isStaticResourceNoise && !isPublicAuth) {
             toast.error(
               "Server vaqtincha ishlamayapti, qaytadan urinib ko'ring"
             )
           }
-          if (status === 404) {
+          if (status === 404 && !isPublicAuth) {
             const base = (this.client.defaults.baseURL ?? '').toString()
             const hint =
               base.length === 0

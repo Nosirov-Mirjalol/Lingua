@@ -37,7 +37,9 @@ const queryClient = new QueryClient({
       staleTime: 10 * 1000, // 10s
     },
     mutations: {
-      onError: (error) => {
+      retry: false,
+      onError: (error, _variables, _context, mutation) => {
+        if (mutation?.meta?.suppressGlobalErrorHandler) return
         handleServerError(error)
 
         if (error instanceof AxiosError) {

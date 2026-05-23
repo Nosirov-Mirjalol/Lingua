@@ -3,16 +3,13 @@ import { render, type RenderResult } from 'vitest-browser-react'
 import { userEvent, type Locator } from 'vitest/browser'
 import { ForgotPasswordForm } from './forgot-password-form'
 
-const navigateMock = vi.fn()
+const mutateAsyncMock = vi.fn()
 
-vi.mock('@tanstack/react-router', async (orig) => {
-  const actual = await orig<typeof import('@tanstack/react-router')>()
-  return { ...actual, useNavigate: () => navigateMock }
-})
-
-vi.mock('@/lib/utils', async (orig) => ({
-  ...(await orig()),
-  sleep: vi.fn(() => Promise.resolve()),
+vi.mock('@/hooks/auth/useForgotPassword', () => ({
+  useForgotPassword: () => ({
+    mutateAsync: mutateAsyncMock,
+    isPending: false,
+  }),
 }))
 
 describe('ForgotPasswordForm', () => {
@@ -23,6 +20,7 @@ describe('ForgotPasswordForm', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
+    mutateAsyncMock.mockResolvedValue(undefined)
 
     screen = await render(<ForgotPasswordForm />)
     usernameInput = screen.getByRole('textbox', {
@@ -46,20 +44,24 @@ describe('ForgotPasswordForm', () => {
       .element(screen.getByText(/^Foydalanuvchi nomini kiriting$/i))
       .toBeInTheDocument()
     await expect
-      .element(screen.getByText(/^Telefon format: \+998 90-123-45-67$/i))
+      .element(
+        screen.getByText(
+          /^Telefon raqamida \+998 dan keyin 9 ta son bo'lsin$/i
+        )
+      )
       .toBeInTheDocument()
   })
 
-  it('navigates to verify-page on success', async () => {
+  it('calls forgot-password API on valid submit', async () => {
     await userEvent.fill(usernameInput, 'testuser')
     await userEvent.clear(phoneInput)
     await userEvent.fill(phoneInput, '+998 90-123-45-67')
     await userEvent.click(continueButton)
 
     await vi.waitFor(() =>
-      expect(navigateMock).toHaveBeenCalledWith({
-        to: '/verify-page',
-        search: { username: 'testuser' },
+      expect(mutateAsyncMock).toHaveBeenCalledWith({
+        username: 'testuser',
+        phone: '901234567',
       })
     )
   })

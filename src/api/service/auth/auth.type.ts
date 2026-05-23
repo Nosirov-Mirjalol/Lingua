@@ -21,3 +21,14 @@ export interface TokenPair {
   refresh: string
   access: string
 }
+
+export interface ForgotPasswordRequest {
+  username: string
+  phone: string
+}
+
+export interface VerifyPasswordRequest {
+  username: string
+  new_password: string
+  confirm_password: string
+}

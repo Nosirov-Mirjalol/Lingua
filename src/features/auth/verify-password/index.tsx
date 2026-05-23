@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate, useSearch } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { Check, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useVerifyPassword } from '@/hooks/auth/useVerifyPassword'
+import { getAuthErrorMessage } from '@/lib/auth-error-message'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -16,7 +18,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
-import { cn, sleep } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { AuthCardShell } from '../auth-card-shell'
 import {
   PASSWORD_REGEX,
@@ -39,14 +41,14 @@ const formSchema = z
       .min(1, 'Yangi parolni kiriting')
       .regex(
         PASSWORD_REGEX,
-        "Parol 7 tadan 32 tagacha bo'lsin va bo'sh joy qatnashmasin"
+        "Parol 8 tadan 32 tagacha bo'lsin va bo'sh joy qatnashmasin"
       ),
     confirm_password: z
       .string()
       .min(1, 'Parolni qayta kiriting')
       .regex(
         PASSWORD_REGEX,
-        "Parol 7 tadan 32 tagacha bo'lsin va bo'sh joy qatnashmasin"
+        "Parol 8 tadan 32 tagacha bo'lsin va bo'sh joy qatnashmasin"
       ),
   })
   .refine((data) => data.new_password === data.confirm_password, {
@@ -57,45 +59,55 @@ const formSchema = z
 export function VerifyPassword() {
   const navigate = useNavigate()
   const search = useSearch({ from: '/(auth)/verify-page' })
-  const [isLoading, setIsLoading] = useState(false)
+  const verifyMutation = useVerifyPassword()
   const focusInputStyle =
     'focus-visible:ring-[#C70C3D] focus-visible:ring-offset-0'
+
+  const usernameFromSearch = search.username?.trim() ?? ''
+
+  useEffect(() => {
+    if (!usernameFromSearch) {
+      navigate({ to: '/forgot-password', replace: true })
+    }
+  }, [usernameFromSearch, navigate])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: search.username ?? '',
+      username: usernameFromSearch,
       new_password: '',
       confirm_password: '',
     },
-  })  
+  })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
-    setIsLoading(true)
+  useEffect(() => {
+    if (usernameFromSearch) {
+      form.setValue('username', usernameFromSearch)
+    }
+  }, [usernameFromSearch, form])
 
-    toast.promise(sleep(2000), {
-      loading: 'Parol yangilanmoqda...',
-      success: () => {
-        setIsLoading(false)
-        form.reset({
-          username: data.username,
-          new_password: '',
-          confirm_password: '',
-        })
-        navigate({ to: '/sign-in' })
-        return 'Parol muvaffaqiyatli yangilandi'
-      },
-      error: () => {
-        setIsLoading(false)
-        return "Xatolik yuz berdi. Qayta urinib ko'ring."
-      },
-    })
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    try {
+      await verifyMutation.mutateAsync({
+        username: data.username.trim(),
+        new_password: data.new_password,
+        confirm_password: data.confirm_password,
+      })
+    } catch (err: unknown) {
+      toast.error(
+        getAuthErrorMessage(err, "Xatolik yuz berdi. Qayta urinib ko'ring.")
+      )
+    }
+  }
+
+  if (!usernameFromSearch) {
+    return null
   }
 
   return (
     <AuthCardShell
       title='Parolni yangilash'
-      description="Foydalanuvchi nomi, yangi parol va qayta tasdiqlash maydonlarini to'ldiring."
+      description="Yangi parolni kiriting va tasdiqlang."
     >
       <Form {...form}>
         <form
@@ -113,10 +125,9 @@ export function VerifyPassword() {
                     placeholder='Foydalanuvchi nomini kiriting'
                     className={focusInputStyle}
                     maxLength={20}
+                    readOnly
+                    disabled
                     {...field}
-                    onChange={(e) =>
-                      field.onChange(sanitizeUsername(e.target.value))
-                    }
                   />
                 </FormControl>
                 <FormMessage />
@@ -135,6 +146,7 @@ export function VerifyPassword() {
                     placeholder='Yangi parolni kiriting'
                     className={focusInputStyle}
                     maxLength={32}
+                    disabled={verifyMutation.isPending}
                     {...field}
                     onChange={(e) =>
                       field.onChange(sanitizePassword(e.target.value))
@@ -157,6 +169,7 @@ export function VerifyPassword() {
                     placeholder='Parolni yana bir bor kiriting'
                     className={focusInputStyle}
                     maxLength={32}
+                    disabled={verifyMutation.isPending}
                     {...field}
                     onChange={(e) =>
                       field.onChange(sanitizePassword(e.target.value))
@@ -169,16 +182,24 @@ export function VerifyPassword() {
           />
 
           <Button
+            type='submit'
             className='mt-2 w-full bg-[#C70C3D] text-white transition-colors hover:bg-[#C70C3D]/90'
-            disabled={isLoading}
+            disabled={verifyMutation.isPending}
+            aria-busy={verifyMutation.isPending}
           >
-            {isLoading ? (
+            {verifyMutation.isPending ? (
               <Loader2 className='mr-2 h-4 w-4 animate-spin' />
             ) : (
               <Check className='mr-2 h-4 w-4' />
             )}
-            Tasdiqlash
+            {verifyMutation.isPending ? 'Saqlanmoqda...' : 'Tasdiqlash'}
           </Button>
+
+          <p className='text-center text-sm text-muted-foreground'>
+            <Link to='/sign-in' className='text-[#C70C3D] hover:underline'>
+              Kirish sahifasiga qaytish
+            </Link>
+          </p>
         </form>
       </Form>
     </AuthCardShell>

@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import type { ApiError } from '@/api/client'
 import { loginService } from '@/api/service/auth/auth.service'
 import type { LoginRequest, LoginResponse } from '@/api/service/auth/auth.type'
+import { saveAuthUserHint } from '@/lib/auth-user-hint'
 import { getDefaultRouteForRole, normalizeUserRole } from '@/lib/auth-role'
 import { queueLoginSuccessToast } from '@/lib/login-feedback'
 import useUserStore, { type UserInfo } from '@/stores/userStore'
@@ -30,6 +31,7 @@ export const useLogin = ({ redirectTo }: UseLoginOptions = {}) => {
       localStorage.setItem('access_token', data.tokens.access)
       localStorage.setItem('refresh_token', data.tokens.refresh)
       localStorage.setItem('user', JSON.stringify(storedUser))
+      saveAuthUserHint(storedUser)
 
       sessionStorage.setItem('linguapro_user', JSON.stringify(storedUser))
       sessionStorage.setItem('linguapro_access_token', data.tokens.access)
