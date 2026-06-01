@@ -1,3 +1,6 @@
-export function CustomLogo() {
-  return <img src='/src/assets/favicon.png' alt='Lingua Admin Logo' />
+import type { ComponentProps } from 'react'
+import favicon from './favicon.png'
+
+export function CustomLogo(props: ComponentProps<'img'>) {
+  return <img src={favicon} alt='Lingua Admin Logo' {...props} />
 }
