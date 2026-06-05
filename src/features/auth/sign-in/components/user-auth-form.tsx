@@ -74,7 +74,7 @@ export function UserAuthForm({
               <FormControl>
                 <Input
                   placeholder='Foydalanuvchi nomini kiriting'
-                  autoComplete='username'
+                  autoComplete='off'
                   className={focusInputStyle}
                   disabled={loginMutation.isPending}
                   {...field}
@@ -102,7 +102,7 @@ export function UserAuthForm({
               <FormControl>
                 <PasswordInput
                   placeholder='Parolni kiriting'
-                  autoComplete='current-password'
+                  autoComplete='off'
                   className={focusInputStyle}
                   disabled={loginMutation.isPending}
                   {...field}
