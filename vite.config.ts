@@ -26,17 +26,17 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.VITE_API_TARGET || 'http://185.190.143.64:8083',
+        target: process.env.VITE_API_TARGET || 'http://51.20.249.164:8000',
         changeOrigin: true,
         secure: false,
       },
       '/media': {
-        target: process.env.VITE_API_TARGET || 'http://185.190.143.64:8083',
+        target: process.env.VITE_API_TARGET || 'http://51.20.249.164:8000',
         changeOrigin: true,
         secure: false,
       },
       '/ws': {
-        target: process.env.VITE_API_TARGET || 'http://185.190.143.64:8083',
+        target: process.env.VITE_API_TARGET || 'http://51.20.249.164:8000',
         ws: true,
         changeOrigin: true,
         secure: false,

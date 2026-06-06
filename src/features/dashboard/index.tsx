@@ -1,4 +1,6 @@
 import { ClipboardCheck, DollarSign, Network, Users } from 'lucide-react'
+import { useAdminChartData } from '@/hooks/admin/useAdminChartData'
+import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { ConfigDrawer } from '@/components/config-drawer'
 import { DashboardCard } from '@/components/dashboard-card'
@@ -6,8 +8,6 @@ import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { GroupCapacity } from './components/group-capacity'
 import { StudentGrowth } from './components/student-growth'
-import { useAdminChartData } from '@/hooks/admin/useAdminChartData'
-import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 
 export default function Dashboard() {
   const stats = useAdminDashboardStats()
@@ -43,6 +43,7 @@ export default function Dashboard() {
                 status={`${stats.activeStudents || 0} ta faol`}
                 statusVariant='success'
                 icon={Users}
+                size='sm'
               />
               <DashboardCard
                 title='JAMI USTOZLAR'
@@ -50,6 +51,7 @@ export default function Dashboard() {
                 status='O`qituvchilar'
                 statusVariant='neutral'
                 icon={Network}
+                size='sm'
               />
               <DashboardCard
                 title='JAMI GURUHLAR'
@@ -57,13 +59,15 @@ export default function Dashboard() {
                 status={`${stats.activeGroups || 0} ta faol`}
                 statusVariant='success'
                 icon={DollarSign}
+                size='sm'
               />
               <DashboardCard
-                title="JAMI KURSLAR"
+                title='JAMI KURSLAR'
                 value={String(stats.totalCourses || 0)}
                 status='Mavjud'
                 statusVariant='warning'
                 icon={ClipboardCheck}
+                size='sm'
               />
             </div>
 
