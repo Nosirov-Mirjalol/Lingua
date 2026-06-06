@@ -45,7 +45,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useToast } from '@/components/ui/toast'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { StudentModal } from './components/StudentModal'
@@ -263,7 +263,7 @@ export default function StudentsPage() {
     <SearchProvider>
       <div className='min-h-screen bg-background'>
         <AdminHeader fixed>
-          <ConfigDrawer />
+          
         </AdminHeader>
 
         <Main>

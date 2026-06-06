@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
@@ -65,7 +65,7 @@ export default function TeacherGroupsPage() {
           <div className='ms-auto flex items-center space-x-2'>
             <Search />
             <ThemeSwitch />
-            <ConfigDrawer />
+            
           </div>
         </Header>
         <Main className='bg-background'>
@@ -84,7 +84,7 @@ export default function TeacherGroupsPage() {
           <div className='ms-auto flex items-center space-x-2'>
             <Search />
             <ThemeSwitch />
-            <ConfigDrawer />
+            
           </div>
         </Header>
         <Main className='bg-background'>
@@ -141,7 +141,7 @@ export default function TeacherGroupsPage() {
           <div className='ms-auto flex items-center space-x-2'>
             <Search />
             <ThemeSwitch />
-            <ConfigDrawer />
+            
           </div>
         </Header>
         <Main className='bg-background'>
@@ -213,7 +213,7 @@ export default function TeacherGroupsPage() {
         <div className='ms-auto flex items-center space-x-2'>
           <Search />
           <ThemeSwitch />
-          <ConfigDrawer />
+          
         </div>
       </Header>
       <Main>

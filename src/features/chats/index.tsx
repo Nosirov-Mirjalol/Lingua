@@ -47,7 +47,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ChatEmptyState } from '@/components/shared/chat/chat-empty-state'
@@ -191,7 +191,7 @@ export function Chats() {
         </div>
         <div className='flex items-center gap-1'>
           <ThemeSwitch />
-          <ConfigDrawer />
+          
         </div>
       </Header>
 

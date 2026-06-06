@@ -54,7 +54,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { ListPagination } from '@/components/list-pagination'
@@ -214,7 +214,7 @@ export default function AdminStudentsPage() {
   return (
     <div className='admin-page min-h-screen bg-background'>
       <AdminHeader fixed>
-        <ConfigDrawer />
+        
       </AdminHeader>
 
       <Main className='admin-page'>

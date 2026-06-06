@@ -2,7 +2,7 @@ import { ClipboardCheck, DollarSign, Network, Users } from 'lucide-react'
 import { useAdminChartData } from '@/hooks/admin/useAdminChartData'
 import { useAdminDashboardStats } from '@/hooks/admin/useAdminDashboardStats'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { DashboardCard } from '@/components/dashboard-card'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
@@ -16,7 +16,7 @@ export default function Dashboard() {
   return (
     <div className='admin-page min-h-screen bg-background'>
       <AdminHeader fixed>
-        <ConfigDrawer />
+        
       </AdminHeader>
 
       <Main className='bg-background'>

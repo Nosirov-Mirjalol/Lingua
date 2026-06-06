@@ -1,5 +1,5 @@
 import { useAdminUsers } from '@/hooks/admin/users/useAdminUsers'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { UsersDialogs } from './components/users-dialogs'
@@ -25,7 +25,7 @@ export function Users() {
   return (
     <UsersProvider>
       <AdminHeader fixed>
-        <ConfigDrawer />
+        
       </AdminHeader>
 
       <Main className='flex flex-1 flex-col gap-4 bg-background sm:gap-6'>

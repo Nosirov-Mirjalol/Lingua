@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
@@ -86,7 +86,7 @@ export function Apps() {
         <h1 className='text-lg font-semibold'>O&apos;qituvchilar</h1>
         <Search className='me-auto' />
         <ThemeSwitch />
-        <ConfigDrawer />
+        
       </Header>
 
       <Main className='bg-background'>

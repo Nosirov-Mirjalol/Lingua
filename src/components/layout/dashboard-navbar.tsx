@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { Bell, Loader2 } from 'lucide-react'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { Header } from '@/components/layout/header'
 import { StudentNotificationModal } from '@/components/student/notifications/StudentNotificationModal'
 import { Button } from '@/components/ui/button'
@@ -72,7 +72,7 @@ export function DashboardNavbar() {
               </span>
             )}
           </Button>
-          <ConfigDrawer />
+          
         </div>
       </Header>
 

@@ -1,4 +1,4 @@
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
@@ -15,7 +15,7 @@ export function Tasks() {
       <Header fixed>
         <Search className='me-auto' />
         <ThemeSwitch />
-        <ConfigDrawer />
+        
       </Header>
 
       <Main className='flex flex-1 flex-col gap-4 bg-background sm:gap-6'>

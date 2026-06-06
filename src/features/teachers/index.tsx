@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/table'
 import { useToast } from '@/components/ui/toast'
 import { GroupModal } from '@/components/GroupModal'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 
@@ -1023,7 +1023,7 @@ export default function TeachersPage() {
   return (
     <>
       <AdminHeader fixed>
-        <ConfigDrawer />
+        
       </AdminHeader>
       <Main className='bg-background'>
         <div

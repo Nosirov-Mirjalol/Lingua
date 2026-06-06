@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { getSessionUserRole } from '@/lib/auth-role'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { MessagesPage } from '@/pages/MessagesPage'
@@ -9,7 +9,7 @@ function AdminChatsPage() {
   return (
     <>
       <AdminHeader fixed>
-        <ConfigDrawer />
+        
       </AdminHeader>
       <Main
         fixed

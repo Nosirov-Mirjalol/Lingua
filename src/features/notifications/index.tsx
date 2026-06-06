@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
@@ -143,7 +143,7 @@ export default function NotificationsPage() {
   return (
     <>
       <AdminHeader fixed>
-        <ConfigDrawer />
+        
       </AdminHeader>
       <Main className='admin-page bg-background font-outfit'>
         <div className='admin-notifications admin-page__container flex min-h-0 flex-1 flex-col'>

@@ -8,7 +8,7 @@ import { useDeleteAdminGroup } from '@/hooks/admin/groups/useDeleteAdminGroup'
 import { useAdminTeachers } from '@/hooks/admin/teachers/useAdminTeachers'
 import { Input } from '@/components/ui/input'
 import { RoseButton } from '@/components/ui/rose-button'
-import { ConfigDrawer } from '@/components/config-drawer'
+
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
@@ -92,7 +92,7 @@ export default function AdminGroupsPage() {
   return (
     <>
       <AdminHeader fixed>
-        <ConfigDrawer />
+        
       </AdminHeader>
       <Main className='admin-page bg-background font-outfit'>
         <div className='admin-page__container'>
