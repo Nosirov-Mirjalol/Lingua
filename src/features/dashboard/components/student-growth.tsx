@@ -105,29 +105,29 @@ export function StudentGrowth({
                 />
                 <XAxis
                   dataKey='month'
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
-                  tickLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
-                  axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+                  axisLine={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
-                  tickLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
-                  axisLine={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                  tickLine={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
+                  axisLine={{ stroke: 'hsl(var(--border))', strokeWidth: 1 }}
                   domain={[0, yMax]}
                   ticks={yTicks}
                   allowDecimals={false}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    border: '1px solid #E5E7EB',
+                    backgroundColor: 'hsl(var(--background))',
+                    border: '1px solid hsl(var(--border))',
                     borderRadius: '12px',
                     padding: '12px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     fontSize: '14px',
                   }}
-                  labelStyle={{ fontWeight: 600, color: '#111827' }}
-                  itemStyle={{ color: '#E11D48', fontWeight: 500 }}
+                  labelStyle={{ fontWeight: 600, color: 'hsl(var(--foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--primary))', fontWeight: 500 }}
                   formatter={(value) => [`${value} ta`, "Qo'shilgan"]}
                 />
                 <Bar

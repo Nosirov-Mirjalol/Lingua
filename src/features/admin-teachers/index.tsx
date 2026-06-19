@@ -2,6 +2,13 @@ import { useMemo, useState } from 'react'
 import { Loader2, Plus, Search, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { AdminTeacher } from '@/api/service/admin/teacher.service'
+import {
+  adminInputClass,
+  adminPageSubtitleClass,
+  adminPageTitleClass,
+} from '@/lib/admin-ui'
+import { cn } from '@/lib/utils'
+import { useAdminGroups } from '@/hooks/admin/groups/useAdminGroups'
 import { useAdminTeachers } from '@/hooks/admin/teachers/useAdminTeachers'
 import { useDeleteAdminTeacher } from '@/hooks/admin/teachers/useDeleteAdminTeacher'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -9,18 +16,11 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { RoseButton } from '@/components/ui/rose-button'
-
 import { DeleteConfirmDialog } from '@/components/delete-confirm-dialog'
 import { AdminHeader } from '@/components/layout/admin-header'
 import { Main } from '@/components/layout/main'
 import { ListPagination } from '@/components/list-pagination'
 import { AdminTeacherCreateModal } from '@/features/admin-teachers/components/admin-teacher-create-modal'
-import {
-  adminInputClass,
-  adminPageSubtitleClass,
-  adminPageTitleClass,
-} from '@/lib/admin-ui'
-import { cn } from '@/lib/utils'
 
 /** full_name dan avatar uchun bosh harf(lar) olish */
 function getInitials(fullName: string): string {
@@ -38,7 +38,20 @@ export default function AdminTeachersPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null)
 
   const { data: teachers = [], isLoading, isError } = useAdminTeachers()
+  const { data: groups = [] } = useAdminGroups()
   const deleteMutation = useDeleteAdminTeacher()
+
+  const teacherGroupsMap = useMemo(() => {
+    const map = new Map<number, string[]>()
+    groups.forEach((group: { teacher?: number; name: string }) => {
+      if (group.teacher) {
+        const existing = map.get(group.teacher) || []
+        existing.push(group.name)
+        map.set(group.teacher, existing)
+      }
+    })
+    return map
+  }, [groups])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -62,16 +75,13 @@ export default function AdminTeachersPage() {
         setDeleteId(null)
         return "O'chirildi"
       },
-      error: (err: unknown) =>
-        (err as Error)?.message || "O'chirishda xatolik",
+      error: (err: unknown) => (err as Error)?.message || "O'chirishda xatolik",
     })
   }
 
   return (
     <>
-      <AdminHeader fixed>
-        
-      </AdminHeader>
+      <AdminHeader fixed></AdminHeader>
 
       <Main className='admin-page bg-background/40'>
         <div className='admin-page__container max-w-7xl'>
@@ -113,8 +123,7 @@ export default function AdminTeachersPage() {
               <table className='w-full text-left'>
                 <thead>
                   <tr className='border-b bg-muted/20'>
-                    {/* Guruhlar olib tashlandi */}
-                    {['F.I.SH', 'Telefon', 'Maqsad', ''].map((h) => (
+                    {['F.I.SH', 'Telefon', 'Guruhlar', ''].map((h) => (
                       <th
                         key={h}
                         className='px-6 py-4 text-xs font-bold tracking-wider text-muted-foreground uppercase'
@@ -180,7 +189,7 @@ export default function AdminTeachersPage() {
                         </td>
 
                         <td className='max-w-48 truncate px-6 py-4 text-sm text-muted-foreground'>
-                          {t.learning_goal || '—'}
+                          {teacherGroupsMap.get(t.id)?.join(', ') || '—'}
                         </td>
 
                         <td className='px-6 py-4 text-right'>

@@ -45,7 +45,8 @@ export function DashboardCard({
           <p
             className={cn(
               'font-semibold tracking-[0.08em] text-muted-foreground uppercase',
-              size === 'sm' ? 'text-[10px]' : 'text-xs'
+              size === 'sm' ? 'text-[10px]' : 'text-xs',
+              'sm:text-[9px]'
             )}
           >
             {title}
@@ -59,7 +60,8 @@ export function DashboardCard({
             <Icon
               className={cn(
                 'text-primary',
-                size === 'sm' ? 'h-4 w-4' : 'h-4.5 w-4.5'
+                size === 'sm' ? 'h-4 w-4' : 'h-4.5 w-4.5',
+                'sm:h-3.5 sm:w-3.5'
               )}
             />
           </div>
@@ -70,6 +72,7 @@ export function DashboardCard({
             className={cn(
               'leading-none font-bold tracking-tight text-foreground',
               size === 'sm' ? 'text-2xl' : 'text-3xl',
+              'sm:text-xl',
               valueClassName
             )}
           >
@@ -79,7 +82,8 @@ export function DashboardCard({
             <span
               className={cn(
                 'mb-0.5 inline-flex shrink-0 items-center rounded-lg px-2 py-0.5 text-[11px] font-semibold',
-                statusVariants[statusVariant]
+                statusVariants[statusVariant],
+                'sm:text-[10px]'
               )}
             >
               {status}
